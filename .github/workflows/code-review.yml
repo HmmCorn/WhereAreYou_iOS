@@ -1,0 +1,84 @@
+name: AI Code Review
+
+# review:* 라벨이 붙은 PR에서만 동작한다.
+# labeled  : 라벨을 새로 붙였을 때 즉시 리뷰
+# synchronize : 라벨이 붙은 상태에서 새 커밋이 push됐을 때 재리뷰
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929' }}
+
+jobs:
+  bug-review:
+    if: contains(github.event.pull_request.labels.*.name, 'review:bug')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run AI review (bug)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ASPECT: bug
+        run: python .github/scripts/ai_review.py
+
+  performance-review:
+    if: contains(github.event.pull_request.labels.*.name, 'review:performance')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run AI review (performance)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ASPECT: performance
+        run: python .github/scripts/ai_review.py
+
+  architecture-review:
+    if: contains(github.event.pull_request.labels.*.name, 'review:architecture')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run AI review (architecture)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ASPECT: architecture
+        run: python .github/scripts/ai_review.py
+
+  summary-review:
+    if: contains(github.event.pull_request.labels.*.name, 'review:summary')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run AI review (summary)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ASPECT: summary
+        run: python .github/scripts/ai_review.py
