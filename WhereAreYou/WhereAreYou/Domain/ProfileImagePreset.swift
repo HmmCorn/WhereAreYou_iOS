@@ -5,7 +5,7 @@
 //  Created by 이상유 on 2026-07-14.
 //
 
-enum ProfileImagePreset {
+enum ProfileImagePreset: String {
 
     case turtle
     case shark
