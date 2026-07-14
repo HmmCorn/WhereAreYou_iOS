@@ -11,7 +11,7 @@ struct AppointmentInfo {
     let id: String
     let code: String
     let title: String
-    let date: Date
-    let location: AppointmentLocation
+    let date: Date?
+    let location: AppointmentLocation?
     let participants: [Participant]
 }

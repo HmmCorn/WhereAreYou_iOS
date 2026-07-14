@@ -16,9 +16,11 @@ final class AppointmentCard: UIView {
     var onPlaceRowTap: (() -> Void)?
     var onMapButtonTap: (() -> Void)?
     var onNameChanged: ((String) -> Void)?
+
     var onCreateTap: (() -> Void)?
     var onLeaveTap: (() -> Void)?
     var onCopyCodeTap: (() -> Void)?
+    var onConfirmTap: (() -> Void)?
 
     let mode: AppointmentCardMode
 
@@ -49,19 +51,13 @@ final class AppointmentCard: UIView {
     }()
 
     // MARK: - Common fields
+    // create/info에서는 테두리 있는 TextFieldRow/ButtonRow, confirm에서는 테두리 없는 InfoRow를 쓰지만
+    // 프로퍼티 자체는 하나로 재사용한다.
 
-    private let nameField = TextFieldRow(
-        icon: UIImage(systemName: "tag"),
-        placeholder: "약속"
-    )
-    private let dateRow = ButtonRow(
-        icon: UIImage(systemName: "calendar"),
-        placeholder: "날짜와 시간을 선택해주세요."
-    )
-    private let placeRow = ButtonRow(
-        icon: UIImage(systemName: "location.circle"),
-        placeholder: "장소를 선택해주세요."
-    )
+    private let nameField: AppointmentFieldDisplaying
+    private let dateRow: AppointmentFieldDisplaying
+    private let placeRow: AppointmentFieldDisplaying
+    private let codeLabel: UILabel
 
     private let mapButton: UIButton = {
         let button = UIButton(type: .system)
@@ -73,24 +69,43 @@ final class AppointmentCard: UIView {
         return button
     }()
 
-    private lazy var placeRowContainer: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [placeRow, mapButton])
-        stack.axis = .horizontal
-        stack.spacing = 2
-        stack.alignment = .fill
-        return stack
+    /// create/info에서는 placeRow + 지도 버튼, confirm에서는 placeRow만 단독으로 사용
+    private lazy var placeRowContent: UIView = {
+        switch mode {
+        case .create, .info:
+            let stack = UIStackView(arrangedSubviews: [placeRow, mapButton])
+            stack.axis = .horizontal
+            stack.spacing = 2
+            stack.alignment = .fill
+            mapButton.widthAnchor.constraint(equalToConstant: 45).isActive = true
+            return stack
+
+        case .confirm:
+            return placeRow
+        }
     }()
 
-    private lazy var mainInfoBox: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [
-            labeledSection(title: "약속 이름", content: nameField),
-            labeledSection(title: "날짜 및 시간", content: dateRow),
-            labeledSection(title: "장소", content: placeRowContainer),
-            memberSection
-        ])
-        stack.axis = .vertical
-        stack.spacing = 15
-        return stack
+    /// "약속 이름" / "날짜 및 시간" / "장소" (+ create·info에서는 "인원")를 묶은 상자.
+    /// mode별로 라벨·테두리 유무가 달라서 내부 구성을 다르게 만든다.
+    private lazy var infoBox: UIStackView = {
+        switch mode {
+        case .create, .info:
+            let stack = UIStackView(arrangedSubviews: [
+                labeledSection(title: "약속 이름", content: nameField),
+                labeledSection(title: "날짜 및 시간", content: dateRow),
+                labeledSection(title: "장소", content: placeRowContent),
+                memberSection
+            ])
+            stack.axis = .vertical
+            stack.spacing = 15
+            return stack
+
+        case .confirm:
+            let stack = UIStackView(arrangedSubviews: [nameField, dateRow, placeRow])
+            stack.axis = .vertical
+            stack.spacing = 10
+            return stack
+        }
     }()
 
     // MARK: - Create-only section
@@ -125,15 +140,6 @@ final class AppointmentCard: UIView {
         return stack
     }()
 
-    private let codeLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.preferredFont(forTextStyle: .footnote)
-        label.textColor = .secondaryLabel
-        label.layer.opacity = 0.6
-        label.textAlignment = .center
-        return label
-    }()
-
     private lazy var leaveButton = makeFooterButton(
         title: "약속 나가기",
         background: .customRed.withAlphaComponent(0.8),
@@ -153,13 +159,73 @@ final class AppointmentCard: UIView {
         return stack
     }()
 
-    /// info 모드에서만 보여야 하는 서브뷰 목록
-    private lazy var infoOnlyViews: [UIView] = [memberSection, codeLabel, footerStack]
+    // MARK: - Confirm-only section
+
+    private let divider: UIView = {
+        let view = UIView()
+        view.backgroundColor = .separator
+        view.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        return view
+    }()
+
+    private lazy var codeCopyButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.title = "복사하기"
+        config.image = UIImage(systemName: "doc.on.doc")
+        config.imagePadding = 4
+        config.baseBackgroundColor = .blue2.withAlphaComponent(0.8)
+        config.baseForegroundColor = .white
+        config.buttonSize = .mini
+        config.cornerStyle = .capsule
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
+        return UIButton(configuration: config)
+    }()
+
+    private lazy var confirmCodeRow: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [codeLabel, codeCopyButton])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.distribution = .equalCentering
+        return stack
+    }()
+
+    private lazy var confirmButton = makeFooterButton(
+        title: "약속으로 이동하기",
+        background: .blue2,
+        tint: .white
+    )
 
     // MARK: - Init
 
     init(mode: AppointmentCardMode) {
         self.mode = mode
+
+        switch mode {
+        case .create, .info:
+            nameField = TextFieldRow(icon: UIImage(systemName: "tag"), placeholder: "약속")
+            dateRow = ButtonRow(icon: UIImage(systemName: "calendar"), placeholder: "날짜와 시간을 선택해주세요.")
+            placeRow = ButtonRow(icon: UIImage(systemName: "location.circle"), placeholder: "장소를 선택해주세요.")
+            codeLabel = {
+                let label = UILabel()
+                label.font = UIFont.preferredFont(forTextStyle: .footnote)
+                label.textColor = .secondaryLabel
+                label.layer.opacity = 0.6
+                label.textAlignment = .center
+                return label
+            }()
+
+        case .confirm:
+            nameField = InfoRow(icon: UIImage(systemName: "tag"))
+            dateRow = InfoRow(icon: UIImage(systemName: "calendar"))
+            placeRow = InfoRow(icon: UIImage(systemName: "location.circle"))
+            codeLabel = {
+                let label = UILabel()
+                label.font = UIFont.preferredFont(forTextStyle: .headline)
+                label.textColor = .secondaryLabel
+                return label
+            }()
+        }
+
         super.init(frame: .zero)
         setUpLayout()
         setUpActions()
@@ -167,7 +233,7 @@ final class AppointmentCard: UIView {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented — use init(mode:name:dateText:placeText:)")
+        fatalError("init(coder:) has not been implemented — use init(mode:)")
     }
 
     // MARK: Layout
@@ -196,16 +262,24 @@ final class AppointmentCard: UIView {
             titleLabel.bottomAnchor.constraint(equalTo: headerContainer.bottomAnchor)
         ])
 
-        mapButton.widthAnchor.constraint(equalToConstant: 45).isActive = true
-
-        footerStack.addArrangedSubview(leaveButton)
-        footerStack.addArrangedSubview(copyButton)
-
         contentStack.addArrangedSubview(headerContainer)
-        contentStack.addArrangedSubview(mainInfoBox)
-        contentStack.addArrangedSubview(codeLabel)
-        contentStack.addArrangedSubview(createButton)
-        contentStack.addArrangedSubview(footerStack)
+        contentStack.addArrangedSubview(infoBox)
+
+        switch mode {
+        case .create:
+            contentStack.addArrangedSubview(createButton)
+
+        case .info:
+            footerStack.addArrangedSubview(leaveButton)
+            footerStack.addArrangedSubview(copyButton)
+            contentStack.addArrangedSubview(codeLabel)
+            contentStack.addArrangedSubview(footerStack)
+
+        case .confirm:
+            contentStack.addArrangedSubview(divider)
+            contentStack.addArrangedSubview(confirmCodeRow)
+            contentStack.addArrangedSubview(confirmButton)
+        }
 
         contentStack.setCustomSpacing(25, after: headerContainer)
 
@@ -247,10 +321,14 @@ final class AppointmentCard: UIView {
         mapButton.addTarget(self, action: #selector(mapTapped), for: .touchUpInside)
         leaveButton.addTarget(self, action: #selector(leaveTapped), for: .touchUpInside)
         copyButton.addTarget(self, action: #selector(copyTapped), for: .touchUpInside)
+        codeCopyButton.addTarget(self, action: #selector(copyTapped), for: .touchUpInside)
         createButton.addTarget(self, action: #selector(createTapped), for: .touchUpInside)
-        dateRow.onTap = { [weak self] in self?.onDateRowTap?() }
-        placeRow.onTap = { [weak self] in self?.onPlaceRowTap?() }
-        nameField.onTextChanged = { [weak self] text in self?.onNameChanged?(text) }
+        confirmButton.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
+
+        // dateRow/placeRow가 confirm 모드에서는 InfoRow(탭 불가)라 ButtonRow일 때만 연결됨
+        (dateRow as? ButtonRow)?.onTap = { [weak self] in self?.onDateRowTap?() }
+        (placeRow as? ButtonRow)?.onTap = { [weak self] in self?.onPlaceRowTap?() }
+        (nameField as? TextFieldRow)?.onTextChanged = { [weak self] text in self?.onNameChanged?(text) }
 
         // 텍스트필드 편집 중 카드의 다른 영역을 탭하면 키보드를 내림
         let dismissKeyboardGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
@@ -264,6 +342,7 @@ final class AppointmentCard: UIView {
     @objc private func leaveTapped() { onLeaveTap?() }
     @objc private func copyTapped() { onCopyCodeTap?() }
     @objc private func createTapped() { onCreateTap?() }
+    @objc private func confirmTapped() { onConfirmTap?() }
     @objc private func dismissKeyboard() { endEditing(true) }
 
     // MARK: - Configuration
@@ -274,23 +353,33 @@ final class AppointmentCard: UIView {
         case .create:
             titleLabel.text = "약속 만들기"
             nameField.text = "약속"
+
             closeButton.isHidden = true
-            createButton.isHidden = false
-            infoOnlyViews.forEach { $0.isHidden = true }
-            contentStack.setCustomSpacing(20, after: mainInfoBox)
+            memberSection.isHidden = true
+            contentStack.setCustomSpacing(20, after: infoBox)
 
         case .info(let data):
             titleLabel.text = "약속 정보"
-            closeButton.isHidden = false
-            createButton.isHidden = true
-            infoOnlyViews.forEach { $0.isHidden = false }
-
+            configureInfo(data)
             memberSectionLabel.text = "인원 (\(data.participants.count)명)"
             data.participants.forEach { member in
                 memberStack.addArrangedSubview(ParticipantBox(member: member))
             }
-            codeLabel.text = "약속 코드 : \(data.code)"
+
+        case .confirm(let data):
+            titleLabel.text = "약속을 만들었어요!"
+            configureInfo(data)
+
+            closeButton.isHidden = true
+            contentStack.setCustomSpacing(20, after: confirmCodeRow)
         }
+    }
+
+    private func configureInfo(_ data: AppointmentInfo) {
+        nameField.text = data.title
+        dateRow.text = data.date?.description ?? "미정"
+        placeRow.text = data.location?.title ?? "미정"
+        codeLabel.text = "약속 코드 : \(data.code)"
     }
 
 }
