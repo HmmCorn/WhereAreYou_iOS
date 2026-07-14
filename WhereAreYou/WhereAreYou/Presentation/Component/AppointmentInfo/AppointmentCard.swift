@@ -57,7 +57,15 @@ final class AppointmentCard: UIView {
     private let nameField: AppointmentFieldDisplaying
     private let dateRow: AppointmentFieldDisplaying
     private let placeRow: AppointmentFieldDisplaying
-    private let codeLabel: UILabel
+
+    private let codeLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.preferredFont(forTextStyle: .footnote)
+        label.textColor = .secondaryLabel
+        label.layer.opacity = 0.6
+        label.textAlignment = .center
+        return label
+    }()
 
     private let mapButton: UIButton = {
         let button = UIButton(type: .system)
@@ -108,6 +116,20 @@ final class AppointmentCard: UIView {
         }
     }()
 
+    private lazy var copyButton = makeFooterButton(
+        title: "코드 복사하기",
+        background: .systemGray2,
+        tint: .white
+    )
+
+    private let footerStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 4
+        stack.distribution = .fillEqually
+        return stack
+    }()
+
     // MARK: - Create-only section
 
     private lazy var createButton = makeFooterButton(
@@ -145,19 +167,6 @@ final class AppointmentCard: UIView {
         background: .customRed.withAlphaComponent(0.8),
         tint: .white
     )
-    private lazy var copyButton = makeFooterButton(
-        title: "코드 복사하기",
-        background: .systemGray2,
-        tint: .white
-    )
-
-    private let footerStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 4
-        stack.distribution = .fillEqually
-        return stack
-    }()
 
     // MARK: - Confirm-only section
 
@@ -166,27 +175,6 @@ final class AppointmentCard: UIView {
         view.backgroundColor = .separator
         view.heightAnchor.constraint(equalToConstant: 1).isActive = true
         return view
-    }()
-
-    private lazy var codeCopyButton: UIButton = {
-        var config = UIButton.Configuration.filled()
-        config.title = "복사하기"
-        config.image = UIImage(systemName: "doc.on.doc")
-        config.imagePadding = 4
-        config.baseBackgroundColor = .blue2.withAlphaComponent(0.8)
-        config.baseForegroundColor = .white
-        config.buttonSize = .mini
-        config.cornerStyle = .capsule
-        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
-        return UIButton(configuration: config)
-    }()
-
-    private lazy var confirmCodeRow: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [codeLabel, codeCopyButton])
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.distribution = .equalCentering
-        return stack
     }()
 
     private lazy var confirmButton = makeFooterButton(
@@ -205,25 +193,11 @@ final class AppointmentCard: UIView {
             nameField = TextFieldRow(icon: UIImage(systemName: "tag"), placeholder: "약속")
             dateRow = ButtonRow(icon: UIImage(systemName: "calendar"), placeholder: "날짜와 시간을 선택해주세요.")
             placeRow = ButtonRow(icon: UIImage(systemName: "location.circle"), placeholder: "장소를 선택해주세요.")
-            codeLabel = {
-                let label = UILabel()
-                label.font = UIFont.preferredFont(forTextStyle: .footnote)
-                label.textColor = .secondaryLabel
-                label.layer.opacity = 0.6
-                label.textAlignment = .center
-                return label
-            }()
 
         case .confirm:
             nameField = InfoRow(icon: UIImage(systemName: "tag"))
             dateRow = InfoRow(icon: UIImage(systemName: "calendar"))
             placeRow = InfoRow(icon: UIImage(systemName: "location.circle"))
-            codeLabel = {
-                let label = UILabel()
-                label.font = UIFont.preferredFont(forTextStyle: .headline)
-                label.textColor = .secondaryLabel
-                return label
-            }()
         }
 
         super.init(frame: .zero)
@@ -276,9 +250,11 @@ final class AppointmentCard: UIView {
             contentStack.addArrangedSubview(footerStack)
 
         case .confirm:
+            footerStack.addArrangedSubview(copyButton)
+            footerStack.addArrangedSubview(confirmButton)
             contentStack.addArrangedSubview(divider)
-            contentStack.addArrangedSubview(confirmCodeRow)
-            contentStack.addArrangedSubview(confirmButton)
+            contentStack.addArrangedSubview(codeLabel)
+            contentStack.addArrangedSubview(footerStack)
         }
 
         contentStack.setCustomSpacing(25, after: headerContainer)
@@ -321,7 +297,6 @@ final class AppointmentCard: UIView {
         mapButton.addTarget(self, action: #selector(mapTapped), for: .touchUpInside)
         leaveButton.addTarget(self, action: #selector(leaveTapped), for: .touchUpInside)
         copyButton.addTarget(self, action: #selector(copyTapped), for: .touchUpInside)
-        codeCopyButton.addTarget(self, action: #selector(copyTapped), for: .touchUpInside)
         createButton.addTarget(self, action: #selector(createTapped), for: .touchUpInside)
         confirmButton.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
 
@@ -371,7 +346,6 @@ final class AppointmentCard: UIView {
             configureInfo(data)
 
             closeButton.isHidden = true
-            contentStack.setCustomSpacing(20, after: confirmCodeRow)
         }
     }
 
