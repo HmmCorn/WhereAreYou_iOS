@@ -66,7 +66,7 @@ final class AppointmentCard: UIView {
     private let mapButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "map"), for: .normal)
-        button.tintColor = UIColor(named: "blue2")
+        button.tintColor = .blue2
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.separator.cgColor
         button.layer.cornerRadius = 12
@@ -97,7 +97,7 @@ final class AppointmentCard: UIView {
 
     private lazy var createButton = makeFooterButton(
         title: "생성하기",
-        background: UIColor(named: "blue2"),
+        background: .blue2,
         tint: .white
     )
 
@@ -136,7 +136,7 @@ final class AppointmentCard: UIView {
 
     private lazy var leaveButton = makeFooterButton(
         title: "약속 나가기",
-        background: UIColor(named: "customRed")?.withAlphaComponent(0.8),
+        background: .customRed.withAlphaComponent(0.8),
         tint: .white
     )
     private lazy var copyButton = makeFooterButton(
