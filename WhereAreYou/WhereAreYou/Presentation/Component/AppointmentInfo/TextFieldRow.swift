@@ -32,7 +32,6 @@ final class TextFieldRow: UIView {
     }
 
     required init?(coder: NSCoder) {
-        // TODO: Log 출력으로 수정 필요
         fatalError("init(coder:) has not been implemented")
     }
 
