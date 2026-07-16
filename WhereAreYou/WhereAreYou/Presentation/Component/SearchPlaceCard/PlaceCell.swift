@@ -32,7 +32,7 @@ final class PlaceCell: UIView {
         self.placeTag = PlaceTagCapsule(place.tag)
         self.selectionButton = UIButton.filled(
             title: buttonText,
-            background: .blue2,
+            background: .blue2.withAlphaComponent(0.85),
             tint: .white,
             font: .caption1,
             edgeInsets: NSDirectionalEdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
