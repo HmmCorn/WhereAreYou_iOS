@@ -13,8 +13,8 @@ struct Appointment {
     let code: String
     let name: String
     let dateTime: Date
-    let palce: Place?
+    let place: Place?
     let participants: [User: Route?]
-    let PlaceVoteStatus: [Place: [User]]
+    let placeVoteStatus: [Place: [User]]
     
 }
