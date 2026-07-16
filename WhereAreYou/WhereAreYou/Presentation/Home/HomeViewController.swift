@@ -200,7 +200,7 @@ final class HomeViewController: UIViewController {
 
     private func presentJoinSheet() {
         let overlay = UIView()
-        overlay.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        overlay.backgroundColor = UIColor.black.withAlphaComponent(0.2)
         overlay.translatesAutoresizingMaskIntoConstraints = false
 
         let sheet = JoinAppointmentSheet()

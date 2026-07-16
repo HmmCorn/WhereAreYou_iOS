@@ -14,32 +14,51 @@ final class JoinAppointmentSheet: UIView {
     var onCancel: (() -> Void)?
     var onJoin: ((String) -> Void)?
 
-    private let card = CardContainerView(title: "약속 코드 입력")
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "약속 코드 입력"
+        label.font = .preferredFont(forTextStyle: .title3)
+        label.textAlignment = .center
+        return label
+    }()
 
     private let codeField: UITextField = {
         let field = UITextField()
         field.placeholder = "코드를 입력해주세요"
-        field.borderStyle = .roundedRect
+        field.font = .preferredFont(forTextStyle: .callout)
+        field.textAlignment = .center
+        field.layer.borderWidth = 1
+        field.layer.borderColor = UIColor.separator.cgColor
+        field.layer.cornerRadius = 12
         return field
     }()
 
-    private lazy var pasteButton = UIButton.filled(
-        title: "붙여넣기",
-        background: .systemGray2,
-        tint: .white
-    )
+    private let pasteButton: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.title = "붙여넣기"
+        config.baseForegroundColor = .secondaryLabel
+        config.image = UIImage(systemName: "document.on.clipboard")
+        config.imagePlacement = .leading
+        config.imagePadding = 6
+        config.cornerStyle = .fixed
+        config.background.cornerRadius = 12
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = .preferredFont(forTextStyle: .caption2)
+            return outgoing
+        }
+        config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
+            font: .preferredFont(forTextStyle: .caption2)
+        )
+        let button = UIButton(configuration: config)
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.separator.cgColor
+        return button
+    }()
 
-    private lazy var cancelButton = UIButton.filled(
-        title: "취소",
-        background: .systemGray4,
-        tint: .label
-    )
+    private let cancelButton = UIButton.filled(title: "취소", background: .systemGray2, tint: .white)
 
-    private lazy var joinButton = UIButton.filled(
-        title: "참여하기",
-        background: .blue2,
-        tint: .white
-    )
+    private let joinButton = UIButton.filled(title: "참여하기", background: .blue1, tint: .white)
 
     init() {
         super.init(frame: .zero)
@@ -52,43 +71,71 @@ final class JoinAppointmentSheet: UIView {
 
     private func setUp() {
         translatesAutoresizingMaskIntoConstraints = false
-        card.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(card)
-        NSLayoutConstraint.activate([
-            card.topAnchor.constraint(equalTo: topAnchor),
-            card.leadingAnchor.constraint(equalTo: leadingAnchor),
-            card.trailingAnchor.constraint(equalTo: trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
 
-        let fieldStack = UIStackView(arrangedSubviews: [codeField, pasteButton])
-        fieldStack.axis = .horizontal
-        fieldStack.spacing = 8
+        backgroundColor = .white
+        layer.cornerRadius = 12
+        layer.shadowColor = UIColor.black.cgColor
 
         let buttonStack = UIStackView(arrangedSubviews: [cancelButton, joinButton])
         buttonStack.axis = .horizontal
         buttonStack.spacing = 8
         buttonStack.distribution = .fillEqually
 
-        card.contentStack.addArrangedSubview(fieldStack)
-        card.contentStack.addArrangedSubview(buttonStack)
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        codeField.translatesAutoresizingMaskIntoConstraints = false
+        pasteButton.translatesAutoresizingMaskIntoConstraints = false
+        buttonStack.translatesAutoresizingMaskIntoConstraints = false
 
-        card.onClose = { [weak self] in self?.onCancel?() }
-        pasteButton.addTarget(self, action: #selector(pasteTapped), for: .touchUpInside)
-        cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
-        joinButton.addTarget(self, action: #selector(joinTapped), for: .touchUpInside)
+        addSubview(titleLabel)
+        addSubview(codeField)
+        addSubview(pasteButton)
+        addSubview(buttonStack)
+
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 19),
+            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+
+            codeField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 22),
+            codeField.heightAnchor.constraint(equalToConstant: 32),
+            codeField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 40),
+            codeField.trailingAnchor.constraint(equalTo: pasteButton.leadingAnchor, constant: -8),
+
+            pasteButton.centerYAnchor.constraint(equalTo: codeField.centerYAnchor),
+            pasteButton.heightAnchor.constraint(equalToConstant: 32),
+            pasteButton.widthAnchor.constraint(equalToConstant: 90),
+            pasteButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -40),
+
+            buttonStack.topAnchor.constraint(equalTo: codeField.bottomAnchor, constant: 20),
+            buttonStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 40),
+            buttonStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -40),
+            buttonStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -31),
+            cancelButton.heightAnchor.constraint(equalToConstant: 35),
+            joinButton.heightAnchor.constraint(equalToConstant: 35)
+        ])
+
+        pasteButton.addAction(UIAction { [weak self] _ in
+            self?.pasteTapped()
+        }, for: .touchUpInside)
+
+        cancelButton.addAction(UIAction { [weak self] _ in
+            self?.cancelTapped()
+        }, for: .touchUpInside)
+
+        joinButton.addAction(UIAction { [weak self] _ in
+            self?.joinTapped()
+        }, for: .touchUpInside)
     }
 
-    @objc private func pasteTapped() {
+    private func pasteTapped() {
         print("붙여넣기 tapped")
     }
 
-    @objc private func cancelTapped() {
+    private func cancelTapped() {
         onCancel?()
     }
 
-    @objc private func joinTapped() {
-        print("참여하기 tapped, code: \(codeField.text ?? "")")
+    private func joinTapped() {
+        print("참여하기 tapped")
         onJoin?(codeField.text ?? "")
     }
 
