@@ -57,7 +57,9 @@ final class FilterTagBox: UIView {
 
     init() {
         super.init(frame: .zero)
-        setUp()
+        setUpLayout()
+        setUpActions()
+        configure(selected: [])
     }
 
     required init?(coder: NSCoder) {
@@ -91,7 +93,9 @@ final class FilterTagBox: UIView {
         }
     }
 
-    private func setUp() {
+    // MARK: - Layout
+
+    private func setUpLayout() {
         let header = UIStackView(arrangedSubviews: [headerLabel, resetButton])
         header.axis = .horizontal
         header.distribution = .equalSpacing
@@ -112,7 +116,11 @@ final class FilterTagBox: UIView {
             filterStack.leadingAnchor.constraint(equalTo: leadingAnchor),
             filterStack.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+    }
 
+    // MARK: - Actions
+
+    private func setUpActions() {
         filters.values.forEach { capsule in
             capsule.addTarget(self, action: #selector(filterTapped(_:)), for: .touchUpInside)
         }

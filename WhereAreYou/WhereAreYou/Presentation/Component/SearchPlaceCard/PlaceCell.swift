@@ -25,21 +25,32 @@ final class PlaceCell: UIView {
         return label
     }()
 
-    init(_ place: PlaceInfo, buttonText: String) {
-        super.init(frame: .zero)
-        setUp(place, buttonText: buttonText)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    private let placeTag: PlaceTagCapsule
+    private let selectionButton: UIButton
 
-    private func setUp(_ place: PlaceInfo, buttonText: String) {
+    init(_ place: PlaceInfo, buttonText: String) {
+        self.placeTag = PlaceTagCapsule(place.tag)
+        self.selectionButton = UIButton.filled(
+            title: buttonText,
+            background: .blue2,
+            tint: .white,
+            font: .caption1,
+            edgeInsets: NSDirectionalEdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10)
+        )
+        super.init(frame: .zero)
         nameLabel.text = place.name
         addressLabel.text = place.address
+        setUpLayout()
+        setUpActions()
+    }
 
-        let placeTag = PlaceTagCapsule(place.tag)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented — use init(_:buttonText:)")
+    }
 
+    // MARK: - Layout
+
+    private func setUpLayout() {
         let placeInfoFirstRow = UIStackView(arrangedSubviews: [nameLabel, placeTag])
         placeInfoFirstRow.axis = .horizontal
         placeInfoFirstRow.spacing = 5
@@ -50,25 +61,12 @@ final class PlaceCell: UIView {
         placeInfoStack.spacing = 3
         placeInfoStack.alignment = .leading
 
-        let button = UIButton.filled(
-            title: buttonText,
-            background: .blue2,
-            tint: .white,
-            font: .caption1,
-            edgeInsets: .init(
-                top: 4,
-                leading: 10,
-                bottom: 4,
-                trailing: 10
-            )
-        )
-        let contentStack = UIStackView(arrangedSubviews: [placeInfoStack, button])
+        let contentStack = UIStackView(arrangedSubviews: [placeInfoStack, selectionButton])
         contentStack.axis = .horizontal
         contentStack.alignment = .center
         contentStack.distribution = .equalSpacing
-
-        addSubview(contentStack)
         contentStack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(contentStack)
 
         NSLayoutConstraint.activate([
             contentStack.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -76,10 +74,14 @@ final class PlaceCell: UIView {
             contentStack.topAnchor.constraint(equalTo: topAnchor, constant: 10),
             contentStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10)
         ])
-
-        button.addTarget(self, action: #selector(onButtonTapped), for: .touchUpInside)
     }
 
-    @objc private func onButtonTapped() { onButtonTap?() }
+    // MARK: - Actions
+
+    private func setUpActions() {
+        selectionButton.addTarget(self, action: #selector(selectionButtonTapped), for: .touchUpInside)
+    }
+
+    @objc private func selectionButtonTapped() { onButtonTap?() }
 
 }

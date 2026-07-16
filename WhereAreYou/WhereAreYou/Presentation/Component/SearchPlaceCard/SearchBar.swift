@@ -10,7 +10,6 @@ import UIKit
 final class SearchBar: UIView {
 
     var onTextChanged: ((String) -> Void)?
-    var onBarTap: (() -> Void)?
     var onSearchTap: (() -> Void)?
 
     var text: String? {
@@ -38,14 +37,17 @@ final class SearchBar: UIView {
 
     init() {
         super.init(frame: .zero)
-        setUp()
+        setUpLayout()
+        setUpActions()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func setUp() {
+    // MARK: - Layout
+
+    private func setUpLayout() {
         layer.borderWidth = 1
         layer.borderColor = UIColor.separator.cgColor
         layer.cornerRadius = 12
@@ -69,7 +71,11 @@ final class SearchBar: UIView {
             stack.topAnchor.constraint(equalTo: topAnchor),
             stack.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+    }
 
+    // MARK: - Actions
+
+    private func setUpActions() {
         textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
         searchButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
     }
