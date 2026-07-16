@@ -11,8 +11,8 @@ extension PlaceType {
 
     var title: String {
         switch self {
-        case .subway: return "지하철역"
-        case .restaurant: return "레스토랑"
+        case .subway: return "지하철 출구"
+        case .restaurant: return "식당"
         case .cafe: return "카페"
         case .hospital: return "병원"
         case .station: return "정류장"
