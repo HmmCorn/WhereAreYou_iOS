@@ -129,11 +129,11 @@ final class FilterTagBox: UIView {
 
 }
 
-// MARK: - Sub-component
+// MARK: - Sub-components
 
 extension FilterTagBox {
 
-    final class FilterCapsule: UIButton {
+    final class FilterCapsule: UIControl {
 
         let placeType: PlaceType
 
@@ -145,8 +145,11 @@ extension FilterTagBox {
             didSet { updateAppearance() }
         }
 
+        private let capsule: PlaceTagCapsule
+
         init(placeType: PlaceType) {
             self.placeType = placeType
+            self.capsule = PlaceTagCapsule(placeType)
             super.init(frame: .zero)
             setUp()
         }
@@ -156,16 +159,16 @@ extension FilterTagBox {
         }
 
         private func setUp() {
-            var configuration = UIButton.Configuration.filled()
+            capsule.isUserInteractionEnabled = false
+            capsule.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(capsule)
+            NSLayoutConstraint.activate([
+                capsule.topAnchor.constraint(equalTo: topAnchor),
+                capsule.bottomAnchor.constraint(equalTo: bottomAnchor),
+                capsule.leadingAnchor.constraint(equalTo: leadingAnchor),
+                capsule.trailingAnchor.constraint(equalTo: trailingAnchor)
+            ])
 
-            var title = AttributedString(placeType.title)
-            title.font = .preferredFont(forTextStyle: .caption2)
-            title.foregroundColor = .white
-
-            configuration.attributedTitle = title
-            configuration.contentInsets = NSDirectionalEdgeInsets(top: 2, leading: 5, bottom: 2, trailing: 5)
-
-            self.configuration = configuration
             setContentHuggingPriority(.required, for: .horizontal)
             setContentCompressionResistancePriority(.required, for: .horizontal)
 
@@ -176,7 +179,7 @@ extension FilterTagBox {
             let baseColor: UIColor = isSelected
                 ? placeType.color
                 : UIColor.systemGray2.withAlphaComponent(0.3)
-            configuration?.background.backgroundColor = isHighlighted ? baseColor.withAlphaComponent(0.6) : baseColor
+            capsule.setColor(isHighlighted ? baseColor.withAlphaComponent(0.6) : baseColor)
         }
 
     }
