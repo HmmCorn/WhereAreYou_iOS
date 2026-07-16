@@ -15,7 +15,7 @@ struct User: Hashable {
     let defaultTransportMode: TransportType
     let locationSharingScope: LocationSharingScope
     let isNotificationEnabled: Bool
-    let appointments: [String: Bool]
+    let appointmentsNotification: [String: Bool]
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
