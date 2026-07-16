@@ -14,7 +14,8 @@ struct Appointment {
     let name: String
     let dateTime: Date
     let place: Place?
-    let participants: [User: Route?]
-    let placeVoteStatus: [Place: [User]]
-    
+    let participants: [User]
+    let routes: [String: Route]
+    let placeVoteStatus: [String: [User]]
+
 }
