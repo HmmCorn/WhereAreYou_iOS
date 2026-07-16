@@ -168,17 +168,25 @@ final class HomeViewController: UIViewController {
     }
 
     private func setUpActions() {
+        createButton.addAction(UIAction { _ in
+            print("약속 만들기 탭")
+        }, for: .touchUpInside)
+
         joinButton.addAction(UIAction { [weak self] _ in
             self?.presentJoinSheet()
         }, for: .touchUpInside)
     }
 
     private func setUpUpcomingCards() {
-        let cards = viewModel.upcomingAppointments.map { UpcomingAppointmentCard(appointment: $0) }
+        let appointments = viewModel.upcomingAppointments
+        let cards = appointments.map { UpcomingAppointmentCard(appointment: $0) }
 
-        cards.forEach {
-            upcomingStack.addArrangedSubview($0)
-            $0.widthAnchor.constraint(equalTo: createButton.widthAnchor).isActive = true
+        zip(cards, appointments).forEach { card, appointment in
+            card.onTap = {
+                print(appointment.title)
+            }
+            upcomingStack.addArrangedSubview(card)
+            card.widthAnchor.constraint(equalTo: createButton.widthAnchor).isActive = true
         }
 
         if let firstCard = cards.first {

@@ -8,17 +8,47 @@
 import UIKit
 
 // MARK: - 홈 화면의 "얼마 남지 않은 약속" 카드
-//       - AppointmentSummaryCard에 남은 시간 라벨(accessoryView)만 꽂아서 구성
+//       - 제목 + 남은 시간(옵셔널) + 인원/장소/날짜 3줄로 구성
+//       - 카드 자체가 탭 가능
 
 final class UpcomingAppointmentCard: UIView {
 
-    private let summaryCard = AppointmentSummaryCard()
+    var onTap: (() -> Void)?
+
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.preferredFont(forTextStyle: .headline)
+        label.lineBreakMode = .byTruncatingTail
+        label.numberOfLines = 1
+        return label
+    }()
 
     private let remainingTimeLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .caption1).pointSize)
+
+        let baseDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .footnote)
+        if let boldDescriptor = baseDescriptor.withSymbolicTraits(.traitBold) {
+            label.font = UIFont(descriptor: boldDescriptor, size: 0)
+        } else {
+            label.font = UIFont.preferredFont(forTextStyle: .footnote)
+        }
+
         label.textColor = .blue2
+        label.adjustsFontForContentSizeCategory = true
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
+    }()
+
+    private let participantRow = IconLabel(iconName: "person.2.fill")
+    private let placeRow = IconLabel(iconName: "location.fill")
+    private let dateRow = IconLabel(iconName: "calendar.badge.clock")
+
+    private lazy var rowStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [participantRow, placeRow, dateRow])
+        stack.axis = .vertical
+        stack.spacing = 3
+        return stack
     }()
 
     init(appointment: UpcomingAppointment) {
@@ -32,20 +62,50 @@ final class UpcomingAppointmentCard: UIView {
     }
 
     private func setUp() {
-        summaryCard.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(summaryCard)
+        backgroundColor = .white
+        layer.cornerRadius = 20
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.25
+        layer.shadowRadius = 2
+        layer.shadowOffset = CGSize(width: 0, height: 4)
+
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        remainingTimeLabel.translatesAutoresizingMaskIntoConstraints = false
+        rowStack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(titleLabel)
+        addSubview(remainingTimeLabel)
+        addSubview(rowStack)
+
         NSLayoutConstraint.activate([
-            summaryCard.topAnchor.constraint(equalTo: topAnchor),
-            summaryCard.leadingAnchor.constraint(equalTo: leadingAnchor),
-            summaryCard.trailingAnchor.constraint(equalTo: trailingAnchor),
-            summaryCard.bottomAnchor.constraint(equalTo: bottomAnchor)
+            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            titleLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: remainingTimeLabel.leadingAnchor, constant: -8
+            ),
+
+            remainingTimeLabel.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
+            remainingTimeLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+
+            rowStack.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
+            rowStack.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor, constant: 6),
+            rowStack.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -14),
+            rowStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14)
         ])
+
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(cardTapped)))
     }
 
     private func configure(with appointment: UpcomingAppointment) {
-        summaryCard.configure(with: appointment)
+        titleLabel.text = appointment.title
         remainingTimeLabel.text = appointment.date?.remainingTimeText
-        summaryCard.accessoryView = remainingTimeLabel
+        participantRow.text = "\(appointment.participantCount)명"
+        placeRow.text = appointment.location?.title ?? "미정"
+        dateRow.text = appointment.date?.koreanDateTimeString ?? "미정"
+    }
+
+    @objc private func cardTapped() {
+        onTap?()
     }
 
 }
