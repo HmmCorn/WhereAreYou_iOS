@@ -9,6 +9,10 @@ import UIKit
 
 final class HomeViewController: UIViewController {
 
+    private static let cardSpacing: CGFloat = 16
+
+    private let viewModel = HomeViewModel()
+
     // MARK: - Logo
 
     private let logoImageView: UIImageView = {
@@ -94,19 +98,18 @@ final class HomeViewController: UIViewController {
         return label
     }()
 
-    private let upcomingCard = UpcomingAppointmentCard(
-        appointment: UpcomingAppointment(
-            id: "1",
-            title: "고등학교 친구들과 저녁",
-            participantCount: 5,
-            location: AppointmentLocation(
-                title: "고기굽는방앗간 이수역점",
-                address: "",
-                coordinate: Coordinate(latitude: 0, longitude: 0)
-            ),
-            date: Calendar.current.date(byAdding: .hour, value: 10, to: Date())
-        )
-    )
+    private let upcomingScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        return scrollView
+    }()
+
+    private let upcomingStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = HomeViewController.cardSpacing
+        return stack
+    }()
 
     // MARK: - Join sheet
 
@@ -117,14 +120,21 @@ final class HomeViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
+        setUpUpcomingCards()
     }
 
     private func setUpLayout() {
-        [logoImageView, logoTitleLabel, createButton, joinButton, upcomingSectionLabel, upcomingCard]
+        upcomingScrollView.delegate = self
+
+        [logoImageView, logoTitleLabel, createButton,
+         joinButton, upcomingSectionLabel, upcomingScrollView]
             .forEach {
                 $0.translatesAutoresizingMaskIntoConstraints = false
                 view.addSubview($0)
             }
+
+        upcomingStack.translatesAutoresizingMaskIntoConstraints = false
+        upcomingScrollView.addSubview(upcomingStack)
 
         NSLayoutConstraint.activate([
             logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 43),
@@ -146,21 +156,39 @@ final class HomeViewController: UIViewController {
             upcomingSectionLabel.topAnchor.constraint(equalTo: joinButton.bottomAnchor, constant: 88),
             upcomingSectionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
 
-            upcomingCard.topAnchor.constraint(equalTo: upcomingSectionLabel.bottomAnchor, constant: 12),
-            upcomingCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            upcomingCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40)
+            upcomingScrollView.topAnchor.constraint(equalTo: upcomingSectionLabel.bottomAnchor),
+            upcomingScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            upcomingScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
+            upcomingStack.topAnchor.constraint(equalTo: upcomingScrollView.contentLayoutGuide.topAnchor, constant: 16),
+            upcomingStack.leadingAnchor.constraint(equalTo: upcomingScrollView.contentLayoutGuide.leadingAnchor, constant: 40),
+            upcomingStack.trailingAnchor.constraint(equalTo: upcomingScrollView.contentLayoutGuide.trailingAnchor, constant: -40),
+            upcomingStack.bottomAnchor.constraint(equalTo: upcomingScrollView.contentLayoutGuide.bottomAnchor, constant: -16)
         ])
     }
 
     private func setUpActions() {
-        joinButton.addTarget(self, action: #selector(joinButtonTapped), for: .touchUpInside)
+        joinButton.addAction(UIAction { [weak self] _ in
+            self?.presentJoinSheet()
+        }, for: .touchUpInside)
+    }
+
+    private func setUpUpcomingCards() {
+        let cards = viewModel.upcomingAppointments.map { UpcomingAppointmentCard(appointment: $0) }
+
+        cards.forEach {
+            upcomingStack.addArrangedSubview($0)
+            $0.widthAnchor.constraint(equalTo: createButton.widthAnchor).isActive = true
+        }
+
+        if let firstCard = cards.first {
+            upcomingScrollView.heightAnchor.constraint(
+                equalTo: firstCard.heightAnchor, constant: 32
+            ).isActive = true
+        }
     }
 
     // MARK: - Join sheet
-
-    @objc private func joinButtonTapped() {
-        presentJoinSheet()
-    }
 
     private func presentJoinSheet() {
         let overlay = UIView()
@@ -192,6 +220,32 @@ final class HomeViewController: UIViewController {
     private func dismissJoinSheet() {
         joinSheetOverlay?.removeFromSuperview()
         joinSheetOverlay = nil
+    }
+
+}
+
+// MARK: - UIScrollViewDelegate
+
+extension HomeViewController: UIScrollViewDelegate {
+
+    func scrollViewWillEndDragging(
+        _ scrollView: UIScrollView,
+        withVelocity velocity: CGPoint,
+        targetContentOffset: UnsafeMutablePointer<CGPoint>
+    ) {
+        // 카드 하나가 차지하는 가로 폭(카드 너비 + 카드 사이 간격)
+        let cardStride: CGFloat = createButton.bounds.width + Self.cardSpacing
+
+        // 관성 스크롤이 원래 멈추려던 지점(targetContentOffset.x)이
+        // 카드 몇 개째 지점에 해당하는지를 소수로 계산
+        let rawIndex = targetContentOffset.pointee.x / cardStride
+
+        // 소수점 인덱스를 가장 가까운 정수로 반올림해서, "몇 번째 카드"로 스냅할지 결정
+        let roundedIndex = round(rawIndex)
+
+        // 반올림된 카드 인덱스에 cardStride를 다시 곱해서,
+        // 실제로 스크롤이 멈춰야 할 x좌표(카드 경계)로 되돌림
+        targetContentOffset.pointee.x = roundedIndex * cardStride
     }
 
 }
