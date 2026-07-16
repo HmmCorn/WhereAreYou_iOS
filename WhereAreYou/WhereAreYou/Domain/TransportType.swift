@@ -5,10 +5,8 @@
 //  Created by 이상유 on 2026-07-14.
 //
 
-import UIKit.UIColor
-
 enum TransportType {
-    
+
     case walk
     case car
     case transit
@@ -20,15 +18,6 @@ enum TransportType {
         case .car: return "자동차"
         case .transit: return "대중교통"
         case .bicycle: return "자전거"
-        }
-    }
-
-    var color: UIColor {
-        switch self {
-        case .walk: return .systemBrown
-        case .car: return .systemIndigo
-        case .transit: return .systemGreen
-        case .bicycle: return .systemYellow
         }
     }
 
