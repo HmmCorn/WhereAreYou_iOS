@@ -7,8 +7,6 @@
 
 import UIKit
 
-// MARK: - InfoRow
-
 final class InfoRow: UIView {
 
     var text: String? {

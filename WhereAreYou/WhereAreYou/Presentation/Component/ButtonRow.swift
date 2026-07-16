@@ -1,5 +1,5 @@
 //
-//  TextFieldRow.swift
+//  ButtonRow.swift
 //  WhereAreYou
 //
 //  Created by 이상유 on 2026-07-14.
@@ -7,27 +7,36 @@
 
 import UIKit
 
-// MARK: - TextFieldRow
+// MARK: - 아이콘과 텍스트를 테두리로 감싸는 커스텀 버튼 행 UI
 
-final class TextFieldRow: UIView {
+final class ButtonRow: UIControl {
 
-    var onTextChanged: ((String) -> Void)?
+    var onTap: (() -> Void)?
 
-    var text: String? {
-        get { textField.text }
-        set { textField.text = newValue }
+    override var isHighlighted: Bool {
+        didSet { updateHighlightAppearance() }
     }
 
+    var text: String? {
+        didSet {
+            valueLabel.text = text ?? placeholder
+            valueLabel.textColor = text == nil ? .placeholderText : .label
+        }
+    }
+
+    private let placeholder: String
     private let iconView = UIImageView()
-    private let textField = UITextField()
+    private let valueLabel = UILabel()
 
     init(icon: UIImage?, placeholder: String) {
+        self.placeholder = placeholder
         super.init(frame: .zero)
         iconView.image = icon
         iconView.tintColor = .label
         iconView.contentMode = .scaleAspectFit
-        textField.placeholder = placeholder
-        textField.font = UIFont.preferredFont(forTextStyle: .caption1)
+        valueLabel.text = placeholder
+        valueLabel.textColor = .placeholderText
+        valueLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
         setUp()
     }
 
@@ -39,11 +48,13 @@ final class TextFieldRow: UIView {
         layer.borderWidth = 1
         layer.borderColor = UIColor.separator.cgColor
         layer.cornerRadius = 12
+        isUserInteractionEnabled = true
 
-        let stack = UIStackView(arrangedSubviews: [iconView, textField])
+        let stack = UIStackView(arrangedSubviews: [iconView, valueLabel])
         stack.axis = .horizontal
         stack.spacing = 8
         stack.alignment = .center
+        stack.isUserInteractionEnabled = false
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
 
@@ -57,9 +68,15 @@ final class TextFieldRow: UIView {
             stack.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
 
-        textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
+        addTarget(self, action: #selector(tapped), for: .touchUpInside)
     }
 
-    @objc private func textChanged() { onTextChanged?(textField.text ?? "") }
-    
+    @objc private func tapped() { onTap?() }
+
+    private func updateHighlightAppearance() {
+        UIView.animate(withDuration: 0.12) {
+            self.backgroundColor = self.isHighlighted ? UIColor.systemGray6 : .clear
+        }
+    }
+
 }
