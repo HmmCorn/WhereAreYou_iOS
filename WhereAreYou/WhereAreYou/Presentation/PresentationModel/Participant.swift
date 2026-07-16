@@ -8,5 +8,5 @@
 struct Participant {
     let id: String
     let nickname: String
-    let profileImage: ProfileImagePreset
+    let profileImage: String
 }

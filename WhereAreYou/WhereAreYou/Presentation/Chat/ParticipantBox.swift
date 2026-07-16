@@ -16,7 +16,7 @@ final class ParticipantBox: UIView {
     init(member: Participant) {
         super.init(frame: .zero)
 
-        let avatar = UIImageView(image: UIImage(named: member.profileImage.rawValue))
+        let avatar = UIImageView(image: UIImage(named: member.profileImage))
         avatar.backgroundColor = .pointBackground
         avatar.layer.cornerRadius = Self.avatarSize / 2
         avatar.clipsToBounds = true
