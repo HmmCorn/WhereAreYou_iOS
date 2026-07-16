@@ -24,6 +24,7 @@ final class SearchPlaceCard: UIView {
     private let resultScrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
+        scrollView.delaysContentTouches = false
         return scrollView
     }()
 
