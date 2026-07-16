@@ -23,7 +23,7 @@ final class SearchPlaceCard: UIView {
 
     private let resultScrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.showsVerticalScrollIndicator = true
+        scrollView.showsVerticalScrollIndicator = false
         return scrollView
     }()
 
