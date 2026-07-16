@@ -153,12 +153,17 @@ final class HomeViewController: UIViewController {
             joinButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             joinButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
 
-            upcomingSectionLabel.topAnchor.constraint(equalTo: joinButton.bottomAnchor, constant: 88),
+            upcomingSectionLabel.topAnchor.constraint(
+                greaterThanOrEqualTo: joinButton.bottomAnchor, constant: 32
+            ),
             upcomingSectionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
 
             upcomingScrollView.topAnchor.constraint(equalTo: upcomingSectionLabel.bottomAnchor),
             upcomingScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             upcomingScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            upcomingScrollView.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -60
+            ),
 
             upcomingStack.topAnchor.constraint(equalTo: upcomingScrollView.contentLayoutGuide.topAnchor, constant: 16),
             upcomingStack.leadingAnchor.constraint(equalTo: upcomingScrollView.contentLayoutGuide.leadingAnchor, constant: 40),
