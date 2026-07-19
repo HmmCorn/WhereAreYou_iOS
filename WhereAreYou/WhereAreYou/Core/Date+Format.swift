@@ -17,15 +17,6 @@ extension Date {
         Self.koreanDateTimeFormatter.string(from: self)
     }
 
-    var remainingTimeText: String {
-        let hours = Calendar.current.dateComponents([.hour], from: Date(), to: self).hour ?? 0
-
-        if hours >= 24 {
-            return "\(hours / 24)일 남음"
-        }
-        return "\(hours)시간 남음"
-    }
-
     private static let koreanDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
