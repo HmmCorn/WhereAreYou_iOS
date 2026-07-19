@@ -12,7 +12,7 @@ final class AppointmentConfirmCard: UIView {
     var onCopyCodeTap: (() -> Void)?
     var onConfirmTap: (() -> Void)?
 
-    private let card = CardContainerView(title: "약속을 만들었어요!")
+    private let card = CardContainerView(headerStyle: .title("약속을 만들었어요!"))
 
     private let nameRow = InfoRow(icon: UIImage(systemName: "tag"))
     private let dateRow = InfoRow(icon: UIImage(systemName: "calendar"))

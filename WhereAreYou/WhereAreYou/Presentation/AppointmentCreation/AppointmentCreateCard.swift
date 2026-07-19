@@ -15,7 +15,7 @@ final class AppointmentCreateCard: UIView {
     var onMapButtonTap: (() -> Void)?
     var onCreateTap: (() -> Void)?
 
-    private let card = CardContainerView(title: "약속 만들기")
+    private let card = CardContainerView(headerStyle: .title("약속 만들기"))
     private let fieldsBox = AppointmentFieldsBox()
     private lazy var createButton = UIButton.filled(title: "생성하기", background: .blue2, tint: .white)
 

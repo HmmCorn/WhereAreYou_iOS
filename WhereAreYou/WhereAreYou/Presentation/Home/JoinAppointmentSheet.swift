@@ -14,13 +14,7 @@ final class JoinAppointmentSheet: UIView {
     var onCancel: (() -> Void)?
     var onJoin: ((String) -> Void)?
 
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "약속 참여하기"
-        label.font = .preferredFont(forTextStyle: .title3)
-        label.textAlignment = .center
-        return label
-    }()
+    private let card = CardContainerView(headerStyle: .title("약속 참여하기"))
 
     private let codeField: UITextField = {
         let field = UITextField()
@@ -30,6 +24,7 @@ final class JoinAppointmentSheet: UIView {
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.separator.cgColor
         field.layer.cornerRadius = 12
+        field.heightAnchor.constraint(equalToConstant: 32).isActive = true
         return field
     }()
 
@@ -53,12 +48,22 @@ final class JoinAppointmentSheet: UIView {
         let button = UIButton(configuration: config)
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.separator.cgColor
+        button.widthAnchor.constraint(equalToConstant: 90).isActive = true
+        button.heightAnchor.constraint(equalToConstant: 32).isActive = true
         return button
     }()
 
-    private let cancelButton = UIButton.filled(title: "취소", background: .systemGray2, tint: .white)
+    private let cancelButton: UIButton = {
+        let button = UIButton.filled(title: "취소", background: .systemGray2, tint: .white)
+        button.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        return button
+    }()
 
-    private let joinButton = UIButton.filled(title: "참여하기", background: .blue1, tint: .white)
+    private let joinButton: UIButton = {
+        let button = UIButton.filled(title: "참여하기", background: .blue1, tint: .white)
+        button.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        return button
+    }()
 
     init() {
         super.init(frame: .zero)
@@ -71,47 +76,31 @@ final class JoinAppointmentSheet: UIView {
 
     private func setUp() {
         translatesAutoresizingMaskIntoConstraints = false
+        card.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(card)
+        NSLayoutConstraint.activate([
+            card.topAnchor.constraint(equalTo: topAnchor),
+            card.leadingAnchor.constraint(equalTo: leadingAnchor),
+            card.trailingAnchor.constraint(equalTo: trailingAnchor),
+            card.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
 
-        backgroundColor = .white
-        layer.cornerRadius = 12
-        layer.shadowColor = UIColor.black.cgColor
+        let fieldStack = UIStackView(arrangedSubviews: [codeField, pasteButton])
+        fieldStack.axis = .horizontal
+        fieldStack.spacing = 8
+        fieldStack.isLayoutMarginsRelativeArrangement = true
+        fieldStack.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24)
 
         let buttonStack = UIStackView(arrangedSubviews: [cancelButton, joinButton])
         buttonStack.axis = .horizontal
         buttonStack.spacing = 8
         buttonStack.distribution = .fillEqually
+        buttonStack.isLayoutMarginsRelativeArrangement = true
+        buttonStack.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24)
 
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        codeField.translatesAutoresizingMaskIntoConstraints = false
-        pasteButton.translatesAutoresizingMaskIntoConstraints = false
-        buttonStack.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(titleLabel)
-        addSubview(codeField)
-        addSubview(pasteButton)
-        addSubview(buttonStack)
-
-        NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 19),
-            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-
-            codeField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 22),
-            codeField.heightAnchor.constraint(equalToConstant: 32),
-            codeField.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 40),
-            codeField.trailingAnchor.constraint(equalTo: pasteButton.leadingAnchor, constant: -8),
-
-            pasteButton.centerYAnchor.constraint(equalTo: codeField.centerYAnchor),
-            pasteButton.heightAnchor.constraint(equalToConstant: 32),
-            pasteButton.widthAnchor.constraint(equalToConstant: 90),
-            pasteButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -40),
-
-            buttonStack.topAnchor.constraint(equalTo: codeField.bottomAnchor, constant: 20),
-            buttonStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 40),
-            buttonStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -40),
-            buttonStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -31),
-            cancelButton.heightAnchor.constraint(equalToConstant: 35),
-            joinButton.heightAnchor.constraint(equalToConstant: 35)
-        ])
+        card.contentStack.addArrangedSubview(fieldStack)
+        card.contentStack.addArrangedSubview(buttonStack)
+        card.contentStack.setCustomSpacing(20, after: fieldStack)
 
         pasteButton.addAction(UIAction { [weak self] _ in
             self?.pasteTapped()
