@@ -24,14 +24,7 @@ final class HomeViewController: UIViewController {
     private let logoTitleLabel: UILabel = {
         let label = UILabel()
         label.text = "어딘데"
-
-        let baseDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .title2)
-        if let boldDescriptor = baseDescriptor.withSymbolicTraits(.traitBold) {
-            label.font = UIFont(descriptor: boldDescriptor, size: 0)
-        } else {
-            label.font = UIFont.preferredFont(forTextStyle: .title2)
-        }
-
+        label.font = .boldPreferredFont(forTextStyle: .title2)
         label.textColor = .blue1
         label.textAlignment = .center
         label.adjustsFontForContentSizeCategory = true

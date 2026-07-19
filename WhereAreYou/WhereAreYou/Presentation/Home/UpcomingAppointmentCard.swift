@@ -25,14 +25,7 @@ final class UpcomingAppointmentCard: UIView {
 
     private let remainingTimeLabel: UILabel = {
         let label = UILabel()
-
-        let baseDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .footnote)
-        if let boldDescriptor = baseDescriptor.withSymbolicTraits(.traitBold) {
-            label.font = UIFont(descriptor: boldDescriptor, size: 0)
-        } else {
-            label.font = UIFont.preferredFont(forTextStyle: .footnote)
-        }
-
+        label.font = .boldPreferredFont(forTextStyle: .footnote)
         label.textColor = .blue2
         label.adjustsFontForContentSizeCategory = true
         label.setContentHuggingPriority(.required, for: .horizontal)
