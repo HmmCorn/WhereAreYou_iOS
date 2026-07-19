@@ -16,7 +16,7 @@ final class JoinAppointmentSheet: UIView {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "약속 코드 입력"
+        label.text = "약속 참여하기"
         label.font = .preferredFont(forTextStyle: .title3)
         label.textAlignment = .center
         return label
@@ -24,7 +24,7 @@ final class JoinAppointmentSheet: UIView {
 
     private let codeField: UITextField = {
         let field = UITextField()
-        field.placeholder = "코드를 입력해주세요"
+        field.placeholder = "코드 입력"
         field.font = .preferredFont(forTextStyle: .callout)
         field.textAlignment = .center
         field.layer.borderWidth = 1
