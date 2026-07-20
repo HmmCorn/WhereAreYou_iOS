@@ -16,7 +16,7 @@ final class AppointmentInfoCard: UIView {
     var onLeaveTap: (() -> Void)?
     var onCopyCodeTap: (() -> Void)?
 
-    private let card = CardContainerView(title: "약속 정보", showsCloseButton: true)
+    private let card = CardContainerView(headerStyle: .titleWithCloseButton("약속 정보"))
     private let fieldsBox = AppointmentFieldsBox()
 
     private let memberSectionLabel: UILabel = {
