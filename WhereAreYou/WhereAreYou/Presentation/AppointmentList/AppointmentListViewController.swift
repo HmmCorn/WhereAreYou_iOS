@@ -169,7 +169,7 @@ final class AppointmentListViewController: UIViewController {
     }
 
     private func presentPastAppointmentList() {
-        print("지난 약속 화면으로 이동")
+        navigationController?.pushViewController(PastAppointmentListViewController(), animated: true)
     }
 
 }
