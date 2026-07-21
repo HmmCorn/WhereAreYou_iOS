@@ -25,32 +25,20 @@ final class PastAppointmentListViewModel {
     }
 
     private func loadDummyData() {
-        let allPastAppointments = [
+        let allPastAppointments = (1...15).map { index in
             AppointmentListItem(
-                id: "past-1",
-                title: "고등학교 친구들과 저녁",
-                participantCount: 5,
+                id: "past-\(index)",
+                title: "지난 약속 \(index)",
+                participantCount: index % 10 + 1,
                 location: AppointmentLocation(
-                    title: "고기굽는방앗간 이수역점",
+                    title: "테스트 장소 \(index)",
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .day, value: -5, to: Date()),
-                isNotificationEnabled: true
-            ),
-            AppointmentListItem(
-                id: "past-2",
-                title: "동아리 MT",
-                participantCount: 12,
-                location: AppointmentLocation(
-                    title: "강촌 펜션",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Calendar.current.date(byAdding: .day, value: -20, to: Date()),
+                date: Calendar.current.date(byAdding: .day, value: -index, to: Date()),
                 isNotificationEnabled: true
             )
-        ]
+        }
 
         pastAppointments = allPastAppointments.sorted {
             ($0.date ?? .distantPast) > ($1.date ?? .distantPast)
