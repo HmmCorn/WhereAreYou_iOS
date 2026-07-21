@@ -17,6 +17,10 @@ final class AppointmentListCard: AppointmentCardBase {
 
     var onChatTap: (() -> Void)?
     var onMapTap: (() -> Void)?
+    var onToggleNotification: (() -> Void)?
+    var onLeave: (() -> Void)?
+
+    private var isNotificationEnabled: Bool
 
     private lazy var chatButton = UIButton.filled(
         title: "대화 열기", background: .systemGray6, tint: .label, font: .preferredFont(forTextStyle: .footnote)
@@ -26,6 +30,8 @@ final class AppointmentListCard: AppointmentCardBase {
     )
 
     init(item: AppointmentListItem, accessoryView: UIView?) {
+        isNotificationEnabled = item.isNotificationEnabled
+
         super.init(
             participantCount: item.participantCount,
             placeText: item.location?.title ?? "미정",
@@ -34,6 +40,7 @@ final class AppointmentListCard: AppointmentCardBase {
             accessoryView: accessoryView
         )
         setUpButtons()
+        setUpContextMenu()
     }
 
     required init?(coder: NSCoder) {
@@ -57,6 +64,45 @@ final class AppointmentListCard: AppointmentCardBase {
 
         chatButton.addAction(UIAction { [weak self] _ in self?.onChatTap?() }, for: .touchUpInside)
         mapButton.addAction(UIAction { [weak self] _ in self?.onMapTap?() }, for: .touchUpInside)
+    }
+
+    private func setUpContextMenu() {
+        addInteraction(UIContextMenuInteraction(delegate: self))
+    }
+
+    private func makeContextMenu() -> UIMenu {
+        let notificationTitle = isNotificationEnabled ? "알림 끄기" : "알림 켜기"
+        let notificationIcon = isNotificationEnabled ? "bell.slash" : "bell"
+
+        let toggleNotificationAction = UIAction(
+            title: notificationTitle,
+            image: UIImage(systemName: notificationIcon)
+        ) { [weak self] _ in
+            self?.onToggleNotification?()
+        }
+
+        let leaveAction = UIAction(
+            title: "약속 나가기",
+            image: UIImage(systemName: "rectangle.portrait.and.arrow.right"),
+            attributes: .destructive
+        ) { [weak self] _ in
+            self?.onLeave?()
+        }
+
+        return UIMenu(children: [toggleNotificationAction, leaveAction])
+    }
+
+}
+
+// MARK: - UIContextMenuInteractionDelegate
+
+extension AppointmentListCard: UIContextMenuInteractionDelegate {
+
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        UIContextMenuConfiguration(actionProvider: { [weak self] _ in self?.makeContextMenu() })
     }
 
 }
