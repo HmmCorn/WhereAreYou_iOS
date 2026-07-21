@@ -57,7 +57,19 @@ final class AppointmentListViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .hour, value: 10, to: Date()),
+                date: Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date()),
+                isNotificationEnabled: true
+            ),
+            AppointmentListItem(
+                id: "today-2",
+                title: "오늘 저녁 약속",
+                participantCount: 3,
+                location: AppointmentLocation(
+                    title: "테스트 장소",
+                    address: "",
+                    coordinate: Coordinate(latitude: 0, longitude: 0)
+                ),
+                date: Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: Date()),
                 isNotificationEnabled: true
             ),
             AppointmentListItem(

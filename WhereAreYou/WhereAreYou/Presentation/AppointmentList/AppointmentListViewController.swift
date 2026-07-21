@@ -10,6 +10,10 @@ import UIKit
 final class AppointmentListViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
+    private static let cardLeadingInset: CGFloat = 40
+    private static let sectionHeaderLeadingInset: CGFloat = 26
+    private static let sectionHeaderTopSpacing: CGFloat = 18
+    private static let sectionHeaderBottomSpacing: CGFloat = 10
 
     private let viewModel = AppointmentListViewModel()
 
@@ -106,10 +110,10 @@ final class AppointmentListViewController: UIViewController {
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
 
             contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 8),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 40),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -40),
+            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: Self.cardLeadingInset),
+            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -Self.cardLeadingInset),
             contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -16),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -80),
+            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -(Self.cardLeadingInset * 2)),
 
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
@@ -153,11 +157,31 @@ final class AppointmentListViewController: UIViewController {
 
     private func addSectionHeaderIfNeeded(title: String, isNeeded: Bool) {
         guard isNeeded else { return }
+
         let label = UILabel()
         label.text = title
         label.font = .preferredFont(forTextStyle: .callout)
         label.textColor = .secondaryLabel
-        contentStack.addArrangedSubview(label)
+
+        let headerContainer = UIView()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        headerContainer.addSubview(label)
+
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: headerContainer.topAnchor),
+            label.bottomAnchor.constraint(equalTo: headerContainer.bottomAnchor),
+            label.leadingAnchor.constraint(
+                equalTo: headerContainer.leadingAnchor,
+                constant: Self.sectionHeaderLeadingInset - Self.cardLeadingInset
+            ),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: headerContainer.trailingAnchor)
+        ])
+
+        if let previousView = contentStack.arrangedSubviews.last {
+            contentStack.setCustomSpacing(Self.sectionHeaderTopSpacing, after: previousView)
+        }
+        contentStack.addArrangedSubview(headerContainer)
+        contentStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: headerContainer)
     }
 
     private func addCard(for item: AppointmentListItem) {
