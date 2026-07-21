@@ -41,8 +41,24 @@ final class AppointmentListViewController: UIViewController {
 
     private let pastAppointmentButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "arrow.uturn.backward.circle.fill"), for: .normal)
-        button.tintColor = .blue2
+        button.backgroundColor = .white
+        button.tintColor = .black
+        button.layer.cornerRadius = 24
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOpacity = 0.25
+        button.layer.shadowRadius = 4
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+
+        let symbolConfiguration = UIImage.SymbolConfiguration(
+            font: .systemFont(ofSize: 19, weight: .semibold)
+        )
+        button.setImage(
+            UIImage(
+                systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90",
+                withConfiguration: symbolConfiguration
+            ),
+            for: .normal
+        )
         return button
     }()
 
