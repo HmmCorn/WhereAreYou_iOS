@@ -94,7 +94,7 @@ final class UpcomingAppointmentCard: UIView {
         remainingTimeLabel.text = appointment.date?.remainingTimeText
         participantRow.text = "\(appointment.participantCount)명"
         placeRow.text = appointment.location?.title ?? "미정"
-        dateRow.text = appointment.date?.koreanDateTimeString ?? "미정"
+        dateRow.text = appointment.date?.appointmentDateTimeText ?? "미정"
     }
 
     @objc private func cardTapped() {
