@@ -13,10 +13,17 @@ final class AppointmentListViewController: UIViewController {
 
     private let viewModel = AppointmentListViewModel()
 
+    private let logoImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "Logo"))
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "약속 목록"
         label.font = .boldPreferredFont(forTextStyle: .title1)
+        label.textColor = .blue1
         return label
     }()
 
@@ -70,8 +77,13 @@ final class AppointmentListViewController: UIViewController {
         reloadCards()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
+
     private func setUpLayout() {
-        [titleLabel, scrollView, emptyLabel, pastAppointmentButton].forEach {
+        [logoImageView, titleLabel, scrollView, emptyLabel, pastAppointmentButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
@@ -80,8 +92,13 @@ final class AppointmentListViewController: UIViewController {
         scrollView.addSubview(contentStack)
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            logoImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            logoImageView.widthAnchor.constraint(equalToConstant: 77),
+            logoImageView.heightAnchor.constraint(equalToConstant: 48),
+
+            titleLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 18),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
 
             scrollView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),

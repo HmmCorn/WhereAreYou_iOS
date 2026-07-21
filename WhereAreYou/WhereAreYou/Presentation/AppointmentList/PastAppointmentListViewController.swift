@@ -50,6 +50,11 @@ final class PastAppointmentListViewController: UIViewController {
         reloadCards()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
     private func setUpLayout() {
         [descriptionLabel, scrollView, emptyLabel].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
