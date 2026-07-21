@@ -73,6 +73,18 @@ final class AppointmentListViewModel {
                 isNotificationEnabled: true
             ),
             AppointmentListItem(
+                id: "today-3",
+                title: "곧 시작하는 약속",
+                participantCount: 4,
+                location: AppointmentLocation(
+                    title: "테스트 장소",
+                    address: "",
+                    coordinate: Coordinate(latitude: 0, longitude: 0)
+                ),
+                date: Calendar.current.date(byAdding: .minute, value: 30, to: Date()),
+                isNotificationEnabled: true
+            ),
+            AppointmentListItem(
                 id: "2",
                 title: "고등학교 친구들과 저녁",
                 participantCount: 5,
