@@ -155,16 +155,10 @@ final class AppointmentListViewController: UIViewController {
     }
 
     private func presentLeaveConfirmAlert(id: String, title: String) {
-        let alert = UIAlertController(
-            title: "약속 나가기",
-            message: "'\(title)' 약속에서 나가시겠어요?",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: "나가기", style: .destructive) { [weak self] _ in
+        let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
             self?.viewModel.leave(id: id)
             self?.reloadCards()
-        })
+        }
         present(alert, animated: true)
     }
 

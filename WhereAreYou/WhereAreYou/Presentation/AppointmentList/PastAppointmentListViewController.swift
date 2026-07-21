@@ -93,22 +93,13 @@ final class PastAppointmentListViewController: UIViewController {
     }
 
     private func addCard(for item: AppointmentListItem) {
-        let deleteButton = UIButton(type: .system)
-        deleteButton.setImage(UIImage(systemName: "trash.circle.fill"), for: .normal)
-        deleteButton.tintColor = .customRed
-
-        let card = AppointmentListCard(item: item, accessoryView: deleteButton)
+        let card = AppointmentListCard(item: item, accessoryView: nil)
         card.onChatTap = {
             print("\(item.title) 대화 열기")
         }
         card.onMapTap = {
             print("\(item.title) 지도 열기")
         }
-
-        deleteButton.addAction(UIAction { [weak self] _ in
-            self?.presentDeleteConfirmAlert(id: item.id, title: item.title)
-        }, for: .touchUpInside)
-
         card.onLeave = { [weak self] in
             self?.presentDeleteConfirmAlert(id: item.id, title: item.title)
         }
@@ -117,16 +108,10 @@ final class PastAppointmentListViewController: UIViewController {
     }
 
     private func presentDeleteConfirmAlert(id: String, title: String) {
-        let alert = UIAlertController(
-            title: "약속 삭제",
-            message: "'\(title)' 약속을 목록에서 삭제하시겠어요?",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+        let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
             self?.viewModel.delete(id: id)
             self?.reloadCards()
-        })
+        }
         present(alert, animated: true)
     }
 
