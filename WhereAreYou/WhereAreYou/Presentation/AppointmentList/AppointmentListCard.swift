@@ -33,8 +33,11 @@ final class AppointmentListCard: AppointmentCardBase {
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
             font: .preferredFont(forTextStyle: .caption1)
         )
+        button.configuration?.cornerStyle = .fixed
+        button.configuration?.background.cornerRadius = 8
         button.configuration?.imagePlacement = .leading
         button.configuration?.imagePadding = 6
+        button.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0)
         return button
     }()
 
@@ -49,8 +52,11 @@ final class AppointmentListCard: AppointmentCardBase {
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
             font: .preferredFont(forTextStyle: .caption1)
         )
+        button.configuration?.cornerStyle = .fixed
+        button.configuration?.background.cornerRadius = 8
         button.configuration?.imagePlacement = .leading
         button.configuration?.imagePadding = 6
+        button.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0)
         return button
     }()
 
@@ -84,7 +90,7 @@ final class AppointmentListCard: AppointmentCardBase {
             buttonStack.topAnchor.constraint(equalTo: rowStack.bottomAnchor, constant: 10),
             buttonStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
             buttonStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
-            buttonStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14)
+            buttonStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8)
         ])
 
         chatButton.addAction(UIAction { [weak self] _ in self?.onChatTap?() }, for: .touchUpInside)
