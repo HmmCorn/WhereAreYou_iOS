@@ -11,7 +11,7 @@ import UIKit
 //       - 제목 + 인원/장소/날짜 3줄 + 대화 열기·지도 열기 버튼으로 구성
 //       - 짧게 탭했을 땐 카드 자체는 반응하지 않고 대화/지도 버튼만 반응
 //       - 꾹 눌렀을 땐 카드 전체가 반응해 컨텍스트 메뉴(알림 토글/약속 나가기)를 표시
-//       - 오른쪽 상단 액세서리(남은 시간 라벨 / 휴지통 버튼 등)는 외부에서 주입
+//       - 오른쪽 상단 액세서리는 외부에서 주입
 
 final class AppointmentListCard: AppointmentCardBase {
 
@@ -22,12 +22,37 @@ final class AppointmentListCard: AppointmentCardBase {
 
     private var isNotificationEnabled: Bool
 
-    private lazy var chatButton = UIButton.filled(
-        title: "대화 열기", background: .systemGray6, tint: .label, font: .preferredFont(forTextStyle: .footnote)
-    )
-    private lazy var mapButton = UIButton.filled(
-        title: "지도 열기", background: .systemGray6, tint: .label, font: .preferredFont(forTextStyle: .footnote)
-    )
+    private lazy var chatButton: UIButton = {
+        let button = UIButton.filled(
+            title: "대화 열기",
+            background: .blue2.withAlphaComponent(0.8),
+            tint: .white,
+            font: .preferredFont(forTextStyle: .caption1)
+        )
+        button.configuration?.image = UIImage(systemName: "text.bubble")
+        button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
+            font: .preferredFont(forTextStyle: .caption1)
+        )
+        button.configuration?.imagePlacement = .leading
+        button.configuration?.imagePadding = 6
+        return button
+    }()
+
+    private lazy var mapButton: UIButton = {
+        let button = UIButton.filled(
+            title: "지도 열기",
+            background: .blue2.withAlphaComponent(0.8),
+            tint: .white,
+            font: .preferredFont(forTextStyle: .caption1)
+        )
+        button.configuration?.image = UIImage(systemName: "map")
+        button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
+            font: .preferredFont(forTextStyle: .caption1)
+        )
+        button.configuration?.imagePlacement = .leading
+        button.configuration?.imagePadding = 6
+        return button
+    }()
 
     init(item: AppointmentListItem, accessoryView: UIView?) {
         isNotificationEnabled = item.isNotificationEnabled
@@ -56,7 +81,7 @@ final class AppointmentListCard: AppointmentCardBase {
         addSubview(buttonStack)
 
         NSLayoutConstraint.activate([
-            buttonStack.topAnchor.constraint(equalTo: rowStack.bottomAnchor, constant: 16),
+            buttonStack.topAnchor.constraint(equalTo: rowStack.bottomAnchor, constant: 10),
             buttonStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
             buttonStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
             buttonStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14)
