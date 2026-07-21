@@ -15,10 +15,11 @@ final class PastAppointmentListViewController: UIViewController {
 
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "30일 이내의 지난 약속이 보관됩니다."
+        label.text = "30일 이내의 지난 약속이 보관됩니다.\n약속을 길게 눌러 삭제할 수 있습니다."
         label.font = .preferredFont(forTextStyle: .footnote)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
+        label.numberOfLines = 0
         return label
     }()
 
@@ -59,7 +60,7 @@ final class PastAppointmentListViewController: UIViewController {
         scrollView.addSubview(contentStack)
 
         NSLayoutConstraint.activate([
-            descriptionLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            descriptionLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             descriptionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             descriptionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
 
