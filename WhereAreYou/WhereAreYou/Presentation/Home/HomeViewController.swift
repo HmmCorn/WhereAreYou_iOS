@@ -35,7 +35,7 @@ final class HomeViewController: UIViewController {
 
     private let createButton: UIButton = {
         let button = UIButton.filled(
-            title: "약속 만들기", background: .blue2, tint: .white, font: .preferredFont(forTextStyle: .headline)
+            title: "약속 만들기", background: .blue2, tint: .white, font: .headline
         )
         button.configuration?.image = UIImage(systemName: "calendar.and.person")
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
@@ -59,7 +59,7 @@ final class HomeViewController: UIViewController {
 
     private let joinButton: UIButton = {
         let button = UIButton.filled(
-            title: "약속 참여하기", background: .white, tint: .blue2, font: .preferredFont(forTextStyle: .headline)
+            title: "약속 참여하기", background: .white, tint: .blue2, font: .headline
         )
         button.configuration?.image = UIImage(systemName: "person.line.dotted.person.fill")
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
