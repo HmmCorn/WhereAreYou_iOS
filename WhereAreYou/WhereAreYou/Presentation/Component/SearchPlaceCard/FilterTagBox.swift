@@ -66,25 +66,13 @@ final class FilterTagBox: UIView {
         fatalError("init(coder:) has not been implemented — use init()")
     }
 
-    func configure(selected: Set<PlaceType>) {
-        var selectedTypes: [PlaceType] = []
-        var unselectedTypes: [PlaceType] = []
-        selectedTypes.reserveCapacity(selected.count)
-        unselectedTypes.reserveCapacity(PlaceType.allCases.count - selected.count)
-
-        for placeType in PlaceType.allCases {
-            if selected.contains(placeType) {
-                selectedTypes.append(placeType)
-            } else {
-                unselectedTypes.append(placeType)
-            }
-        }
-
-        selectedTypes.append(contentsOf: unselectedTypes)
+    func configure(selected: [PlaceType]) {
+        let unselectedTypes = PlaceType.allCases.filter { !selected.contains($0) }
+        let orderedTypes = selected + unselectedTypes
 
         UIView.animate(withDuration: 0.2) {
             self.filterStack.arrangedSubviews.forEach { self.filterStack.removeArrangedSubview($0) }
-            for placeType in selectedTypes {
+            for placeType in orderedTypes {
                 guard let capsule = self.filters[placeType] else { continue }
                 capsule.isSelected = selected.contains(placeType)
                 self.filterStack.addArrangedSubview(capsule)

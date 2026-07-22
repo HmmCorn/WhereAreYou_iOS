@@ -129,7 +129,7 @@ final class SearchPlaceCard: UIView {
 
     // MARK: - Public Configuration
 
-    func configureSelectedFilters(_ selected: Set<PlaceType>) {
+    func configureSelectedFilters(_ selected: [PlaceType]) {
         filterSection.configure(selected: selected)
     }
 
