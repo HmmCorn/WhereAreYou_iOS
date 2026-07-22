@@ -9,6 +9,14 @@ import Foundation
 
 extension Date {
 
+    var koreanDateString: String {
+        Self.koreanDateFormatter.string(from: self)
+    }
+
+    var koreanDateTimeString: String {
+        Self.koreanDateTimeFormatter.string(from: self)
+    }
+
     private static let koreanDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -16,8 +24,11 @@ extension Date {
         return formatter
     }()
 
-    var koreanDateString: String {
-        Self.koreanDateFormatter.string(from: self)
-    }
+    private static let koreanDateTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
+        return formatter
+    }()
 
 }
