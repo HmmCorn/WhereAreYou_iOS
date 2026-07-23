@@ -1,0 +1,59 @@
+//
+//  SearchPlaceCardViewModel.swift
+//  WhereAreYou
+//
+//  Created by 이상유 on 2026-07-24.
+//
+
+import Foundation
+import Combine
+
+final class SearchPlaceCardViewModel {
+
+    @Published private(set) var filteredPlaces: [Place] = []
+    @Published private(set) var selectedFilters: [PlaceType] = []
+
+    private var allPlaces: [Place] = []
+    private let searchPlacesUseCase: SearchPlacesUseCase
+
+    init(searchPlacesUseCase: SearchPlacesUseCase) {
+        self.searchPlacesUseCase = searchPlacesUseCase
+    }
+
+    func search(keyword: String) {
+        searchPlacesUseCase.execute(keyword: keyword) { [weak self] result in
+            guard let self else { return }
+            if case .success(let places) = result {
+                self.allPlaces = places
+                self.applyFilter()
+            }
+        }
+    }
+
+    func toggleFilter(_ placeType: PlaceType) {
+        if let index = selectedFilters.firstIndex(of: placeType) {
+            selectedFilters.remove(at: index)
+        } else {
+            selectedFilters.append(placeType)
+        }
+        applyFilter()
+    }
+
+    func resetFilters() {
+        selectedFilters = []
+        applyFilter()
+    }
+
+    func place(for placeInfo: PlaceInfo) -> Place? {
+        allPlaces.first { $0.id == placeInfo.id }
+    }
+
+    private func applyFilter() {
+        if selectedFilters.isEmpty {
+            filteredPlaces = allPlaces
+        } else {
+            filteredPlaces = allPlaces.filter { selectedFilters.contains($0.type) }
+        }
+    }
+
+}
