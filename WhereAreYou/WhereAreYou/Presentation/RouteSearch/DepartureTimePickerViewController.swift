@@ -40,6 +40,7 @@ final class DepartureTimePickerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        datePicker.minimumDate = Date()
         datePicker.date = initialDate
 
         let stack = UIStackView(arrangedSubviews: [datePicker, confirmButton])
