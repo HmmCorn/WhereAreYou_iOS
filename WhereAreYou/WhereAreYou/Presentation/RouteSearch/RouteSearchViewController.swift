@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 final class RouteSearchViewController: UIViewController {
 
@@ -18,7 +19,10 @@ final class RouteSearchViewController: UIViewController {
     private static let bottomButtonBottomPadding: CGFloat = 16
     private static let contentTopPadding: CGFloat = 16
 
+    // MARK: - Dependencies
 
+    private let viewModel: RouteSearchViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Section 1: Place input
 
@@ -118,7 +122,8 @@ final class RouteSearchViewController: UIViewController {
     private let initialDeparture: Place?
     private let initialDestination: Place?
 
-    init(departure: Place? = nil, destination: Place? = nil) {
+    init(viewModel: RouteSearchViewModel, departure: Place? = nil, destination: Place? = nil) {
+        self.viewModel = viewModel
         self.initialDeparture = departure
         self.initialDestination = destination
         super.init(nibName: nil, bundle: nil)
@@ -142,10 +147,10 @@ final class RouteSearchViewController: UIViewController {
 
     private func setUpInitialPlaces() {
         if let dep = initialDeparture {
-            placeInputView.setDeparture(name: dep.name)
+            viewModel.setDeparture(dep)
         }
         if let dest = initialDestination {
-            placeInputView.setArrival(name: dest.name)
+            viewModel.setDestination(dest)
         }
     }
 
@@ -241,11 +246,19 @@ final class RouteSearchViewController: UIViewController {
     private func setUpActions() {
         placeInputView.onDepartureTapped = { }
         placeInputView.onArrivalTapped = { }
-        placeInputView.onCurrentLocationTapped = { }
-        placeInputView.onDepartureClear = { }
-        placeInputView.onArrivalClear = { }
+        placeInputView.onCurrentLocationTapped = { [weak self] in
+            self?.viewModel.fetchCurrentLocation()
+        }
+        placeInputView.onDepartureClear = { [weak self] in
+            self?.viewModel.setDeparture(nil)
+        }
+        placeInputView.onArrivalClear = { [weak self] in
+            self?.viewModel.setDestination(nil)
+        }
 
-        transportSelector.onTransportTypeSelected = { _ in }
+        transportSelector.onTransportTypeSelected = { [weak self] type in
+            self?.viewModel.setTransportType(type)
+        }
 
         timeButton.addAction(UIAction { [weak self] _ in
             self?.presentTimePicker()
@@ -258,41 +271,86 @@ final class RouteSearchViewController: UIViewController {
 
     // MARK: - ViewModel binding
 
-    private func bindViewModel() { }
+    private func bindViewModel() {
+        viewModel.$departure
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] place in
+                self?.placeInputView.setDeparture(name: place?.name)
+            }
+            .store(in: &cancellables)
 
-    // MARK: - Place search overlay
+        viewModel.$destination
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] place in
+                self?.placeInputView.setArrival(name: place?.name)
+            }
+            .store(in: &cancellables)
 
-    private func presentPlaceSearchOverlay(title: String) {
-        let overlay = UIView()
-        overlay.backgroundColor = .black.withAlphaComponent(0.4)
-        overlay.translatesAutoresizingMaskIntoConstraints = false
+        viewModel.$departureTime
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] time in
+                guard let self else { return }
+                var attr = AttributedString(time.koreanShortDateTimeString)
+                attr.font = .preferredFont(forTextStyle: .footnote)
+                self.timeButton.configuration?.attributedTitle = attr
+            }
+            .store(in: &cancellables)
 
-        // TODO: 임시 카드
-        let card = CardContainerView(headerStyle: .titleWithCloseButton(title))
-        card.translatesAutoresizingMaskIntoConstraints = false
-        card.onClose = { [weak self] in
-            self?.dismissPlaceSearchOverlay()
-        }
+        viewModel.$isLoading
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoading in
+                guard let self else { return }
+                if isLoading {
+                    self.emptyStateLabel.isHidden = true
+                    self.routeScrollView.isHidden = true
+                    self.loadingIndicator.isHidden = false
+                    self.loadingIndicator.startAnimating()
+                }
+            }
+            .store(in: &cancellables)
 
-        overlay.addSubview(card)
-        view.addSubview(overlay)
-        placeSearchOverlay = overlay
-
-        NSLayoutConstraint.activate([
-            overlay.topAnchor.constraint(equalTo: view.topAnchor),
-            overlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            overlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            overlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            card.leadingAnchor.constraint(equalTo: overlay.leadingAnchor, constant: 24),
-            card.trailingAnchor.constraint(equalTo: overlay.trailingAnchor, constant: -24),
-            card.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
-        ])
+        Publishers.CombineLatest3(viewModel.$routes, viewModel.$selectedRouteIndex, viewModel.$isLoading)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] routes, selectedIndex, isLoading in
+                guard let self, !isLoading else { return }
+                self.updateRouteSection(routes: routes, selectedIndex: selectedIndex)
+            }
+            .store(in: &cancellables)
     }
 
-    private func dismissPlaceSearchOverlay() {
-        placeSearchOverlay?.removeFromSuperview()
-        placeSearchOverlay = nil
+    // MARK: - Update UI
+
+    private func updateRouteSection(routes: [Route], selectedIndex: Int) {
+        routeCardsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        let hasPlaces = viewModel.departure != nil && viewModel.destination != nil
+
+        loadingIndicator.isHidden = true
+        loadingIndicator.stopAnimating()
+
+        if !hasPlaces {
+            emptyStateLabel.isHidden = false
+            routeScrollView.isHidden = true
+            return
+        }
+
+        emptyStateLabel.isHidden = true
+
+        if routes.isEmpty {
+            // TODO: 길찾기 API 확인 후 대체 텍스트 설정 필요
+            routeScrollView.isHidden = true
+            return
+        }
+
+        routeScrollView.isHidden = false
+
+        for (index, route) in routes.enumerated() {
+            let card = RouteCard(route: route, isSelected: index == selectedIndex)
+            card.onTap = { [weak self] in
+                self?.viewModel.selectRoute(at: index)
+            }
+            routeCardsStack.addArrangedSubview(card)
+        }
     }
 
     // MARK: - Current location
@@ -302,8 +360,10 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Time picker
 
     private func presentTimePicker() {
-        let pickerViewController = DepartureTimePickerViewController(initialDate: .now)
-        pickerViewController.onDateSelected = { _ in }
+        let pickerViewController = DepartureTimePickerViewController(initialDate: viewModel.departureTime)
+        pickerViewController.onDateSelected = { [weak self] date in
+            self?.viewModel.setDepartureTime(date)
+        }
 
         if let sheet = pickerViewController.sheetPresentationController {
             sheet.detents = [.medium()]
