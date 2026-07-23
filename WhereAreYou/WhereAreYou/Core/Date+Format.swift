@@ -17,6 +17,14 @@ extension Date {
         Self.koreanDateTimeFormatter.string(from: self)
     }
 
+    var koreanShortDateTimeString: String {
+        Self.koreanShortDateTimeFormatter.string(from: self)
+    }
+
+    var koreanTimeString: String {
+        Self.koreanTimeFormatter.string(from: self)
+    }
+
     private static let koreanDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
@@ -28,6 +36,20 @@ extension Date {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "yyyy년 MM월 dd일 HH:mm"
+        return formatter
+    }()
+
+    private static let koreanShortDateTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M월 d일 (E) a h:mm"
+        return formatter
+    }()
+
+    private static let koreanTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "HH:mm"
         return formatter
     }()
 

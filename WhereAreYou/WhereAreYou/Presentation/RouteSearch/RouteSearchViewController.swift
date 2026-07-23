@@ -118,14 +118,7 @@ final class RouteSearchViewController: UIViewController {
 
     private var placeSearchOverlay: UIView?
 
-    // MARK: - Date formatting
 
-    private static let departureTimeFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "M월 d일 (E) a h:mm"
-        return f
-    }()
 
     // MARK: - Init
 

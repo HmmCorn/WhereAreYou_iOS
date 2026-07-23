@@ -14,13 +14,6 @@ final class RouteCard: UIView {
     private let route: Route
     private let isSelected: Bool
 
-    private static let timeFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "ko_KR")
-        f.dateFormat = "HH:mm"
-        return f
-    }()
-
     init(route: Route, isSelected: Bool) {
         self.route = route
         self.isSelected = isSelected
@@ -79,8 +72,8 @@ final class RouteCard: UIView {
         durationLabel.font = .boldPreferredFont(forTextStyle: .headline)
 
         let timeRangeLabel = UILabel()
-        let depStr = Self.timeFormatter.string(from: route.departureTime)
-        let arrStr = Self.timeFormatter.string(from: route.arrivalTime)
+        let depStr = route.departureTime.koreanTimeString
+        let arrStr = route.arrivalTime.koreanTimeString
         timeRangeLabel.text = "\(depStr) - \(arrStr)"
         timeRangeLabel.font = .preferredFont(forTextStyle: .footnote)
         timeRangeLabel.textColor = .secondaryLabel
