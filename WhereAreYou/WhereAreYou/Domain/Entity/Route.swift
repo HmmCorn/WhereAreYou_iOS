@@ -13,5 +13,5 @@ struct Route {
     let arrivalTime: Date
     let step: [RouteStep]
     let totalDistance: Double
-    
+
 }
