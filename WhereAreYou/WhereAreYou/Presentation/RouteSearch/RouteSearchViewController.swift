@@ -17,22 +17,8 @@ final class RouteSearchViewController: UIViewController {
     private static let bottomButtonHeight: CGFloat = 50
     private static let bottomButtonBottomPadding: CGFloat = 16
     private static let contentTopPadding: CGFloat = 16
-    private static let contentBottomPadding: CGFloat = 80
 
-    // MARK: - Scroll
 
-    private let scrollView: UIScrollView = {
-        let sv = UIScrollView()
-        sv.showsVerticalScrollIndicator = false
-        sv.alwaysBounceVertical = true
-        return sv
-    }()
-
-    private let contentStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .vertical
-        return stack
-    }()
 
     // MARK: - Section 1: Place input
 
@@ -98,6 +84,13 @@ final class RouteSearchViewController: UIViewController {
         return indicator
     }()
 
+    private let routeScrollView: UIScrollView = {
+        let sv = UIScrollView()
+        sv.showsVerticalScrollIndicator = false
+        sv.alwaysBounceVertical = true
+        return sv
+    }()
+
     private let routeCardsStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -159,48 +152,59 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Layout
 
     private func setUpLayout() {
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        selectRouteButton.translatesAutoresizingMaskIntoConstraints = false
+        let topStack = UIStackView()
+        topStack.axis = .vertical
+        topStack.translatesAutoresizingMaskIntoConstraints = false
 
-        view.addSubview(scrollView)
-        view.addSubview(selectRouteButton)
-        scrollView.addSubview(contentStack)
-
-        contentStack.isLayoutMarginsRelativeArrangement = true
-        contentStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
+        topStack.isLayoutMarginsRelativeArrangement = true
+        topStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
             top: Self.contentTopPadding,
             leading: Self.horizontalPadding,
-            bottom: Self.contentBottomPadding,
+            bottom: 0,
             trailing: Self.horizontalPadding
         )
 
         let timeSectionRow = makeTimeSectionRow()
 
         [placeInputView, transportSectionLabel, transportSelector,
-         timeSectionRow, routeSectionLabel, emptyStateLabel,
-         loadingIndicator, routeCardsStack]
-            .forEach { contentStack.addArrangedSubview($0) }
+         timeSectionRow, routeSectionLabel]
+            .forEach { topStack.addArrangedSubview($0) }
 
-        contentStack.setCustomSpacing(Self.sectionSpacing, after: placeInputView)
-        contentStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: transportSectionLabel)
-        contentStack.setCustomSpacing(Self.sectionSpacing, after: transportSelector)
-        contentStack.setCustomSpacing(Self.sectionSpacing, after: timeSectionRow)
-        contentStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: routeSectionLabel)
-        contentStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: emptyStateLabel)
-        contentStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: loadingIndicator)
+        topStack.setCustomSpacing(Self.sectionSpacing, after: placeInputView)
+        topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: transportSectionLabel)
+        topStack.setCustomSpacing(Self.sectionSpacing, after: transportSelector)
+        topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: routeSectionLabel)
+
+        [routeScrollView, routeCardsStack, selectRouteButton, emptyStateLabel, loadingIndicator]
+            .forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
+
+        routeScrollView.addSubview(routeCardsStack)
+
+        [topStack, emptyStateLabel, loadingIndicator, routeScrollView, selectRouteButton]
+            .forEach { view.addSubview($0) }
 
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            topStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            topStack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            topStack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
-            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            emptyStateLabel.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: Self.sectionSpacing),
+            emptyStateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.horizontalPadding),
+            emptyStateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.horizontalPadding),
+
+            loadingIndicator.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: Self.sectionSpacing),
+            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+
+            routeScrollView.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: Self.sectionHeaderBottomSpacing),
+            routeScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            routeScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            routeScrollView.bottomAnchor.constraint(equalTo: selectRouteButton.topAnchor, constant: -8),
+
+            routeCardsStack.topAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.topAnchor),
+            routeCardsStack.leadingAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.leadingAnchor, constant: Self.horizontalPadding),
+            routeCardsStack.trailingAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.trailingAnchor, constant: -Self.horizontalPadding),
+            routeCardsStack.bottomAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.bottomAnchor, constant: -8),
+            routeCardsStack.widthAnchor.constraint(equalTo: routeScrollView.frameLayoutGuide.widthAnchor, constant: -Self.horizontalPadding * 2),
 
             selectRouteButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.horizontalPadding),
             selectRouteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.horizontalPadding),
@@ -208,7 +212,7 @@ final class RouteSearchViewController: UIViewController {
             selectRouteButton.heightAnchor.constraint(equalToConstant: Self.bottomButtonHeight),
         ])
 
-        routeCardsStack.isHidden = true
+        routeScrollView.isHidden = true
         loadingIndicator.isHidden = true
     }
 
