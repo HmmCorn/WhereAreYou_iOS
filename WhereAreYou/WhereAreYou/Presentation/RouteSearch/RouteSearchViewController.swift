@@ -165,6 +165,9 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Layout
 
     private func setUpLayout() {
+
+        // 상단 고정 영역: 장소 입력 / 이동 수단 / 출발 시간 / 섹션 헤더들
+
         let topStack = UIStackView()
         topStack.axis = .vertical
         topStack.translatesAutoresizingMaskIntoConstraints = false
@@ -189,6 +192,8 @@ final class RouteSearchViewController: UIViewController {
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: timeSectionRow)
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: routeSectionLabel)
 
+        // 경로 검색 결과 영역: 빈 상태 / 로딩 / 경로 카드 목록
+
         [routeScrollView, routeCardsStack, selectRouteButton, emptyStateLabel, loadingIndicator]
             .forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
 
@@ -198,28 +203,35 @@ final class RouteSearchViewController: UIViewController {
             .forEach { view.addSubview($0) }
 
         NSLayoutConstraint.activate([
+
+            // 상단 고정 영역
             topStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             topStack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             topStack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
+            // 빈 상태 라벨 (topStack 바로 아래)
             emptyStateLabel.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: Self.sectionSpacing),
             emptyStateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.horizontalPadding),
             emptyStateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.horizontalPadding),
 
+            // 로딩 인디케이터 (topStack 바로 아래)
             loadingIndicator.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: Self.sectionSpacing),
             loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
+            // 경로 카드 스크롤 영역 (topStack ~ 하단 버튼 사이)
             routeScrollView.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: Self.sectionHeaderBottomSpacing),
             routeScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             routeScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             routeScrollView.bottomAnchor.constraint(equalTo: selectRouteButton.topAnchor, constant: -8),
 
+            // 스크롤 내부 카드 스택
             routeCardsStack.topAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.topAnchor),
             routeCardsStack.leadingAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.leadingAnchor, constant: Self.horizontalPadding),
             routeCardsStack.trailingAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.trailingAnchor, constant: -Self.horizontalPadding),
             routeCardsStack.bottomAnchor.constraint(equalTo: routeScrollView.contentLayoutGuide.bottomAnchor, constant: -8),
             routeCardsStack.widthAnchor.constraint(equalTo: routeScrollView.frameLayoutGuide.widthAnchor, constant: -Self.horizontalPadding * 2),
 
+            // 하단 고정 버튼
             selectRouteButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.horizontalPadding),
             selectRouteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.horizontalPadding),
             selectRouteButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -Self.bottomButtonBottomPadding),
