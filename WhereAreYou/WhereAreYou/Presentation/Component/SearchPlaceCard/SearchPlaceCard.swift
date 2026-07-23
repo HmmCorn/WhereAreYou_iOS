@@ -16,8 +16,9 @@ final class SearchPlaceCard: UIView {
     var onFilterTap: ((PlaceType) -> Void)?
 
     var onPlaceTap: ((PlaceInfo) -> Void)?
+    var onClose: (() -> Void)?
 
-    private let card = CardContainerView()
+    private let card: CardContainerView
     private let searchBar = SearchBar()
     private let filterSection = FilterTagBox()
 
@@ -46,11 +47,13 @@ final class SearchPlaceCard: UIView {
     private let selectionButtonTitle: String
     private var cells: [PlaceCell] = []
 
-    init(selectionButtonTitle: String) {
+    init(selectionButtonTitle: String, headerStyle: CardContainerView.HeaderStyle = .none) {
         self.selectionButtonTitle = selectionButtonTitle
+        self.card = CardContainerView(headerStyle: headerStyle)
         super.init(frame: .zero)
         setUpLayout()
         setUpActions()
+        card.onClose = { [weak self] in self?.onClose?() }
     }
 
     required init?(coder: NSCoder) {

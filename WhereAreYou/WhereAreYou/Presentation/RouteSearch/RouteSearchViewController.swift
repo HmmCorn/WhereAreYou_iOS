@@ -376,7 +376,8 @@ final class RouteSearchViewController: UIViewController {
         let searchViewModel = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
         let searchVC = SearchPlaceCardViewController(
             viewModel: searchViewModel,
-            selectionButtonTitle: buttonTitle
+            selectionButtonTitle: buttonTitle,
+            style: .dimmed(title: "장소 검색")
         )
 
         searchVC.onPlaceSelected = { [weak self] place in

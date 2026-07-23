@@ -10,20 +10,40 @@ import Combine
 
 final class SearchPlaceCardViewController: UIViewController {
 
+    enum Style {
+        case plain
+        case dimmed(title: String)
+    }
+
     var onPlaceSelected: ((Place) -> Void)?
 
+    private let style: Style
     private let viewModel: SearchPlaceCardViewModel
     private var cancellables = Set<AnyCancellable>()
 
     private var searchCard: SearchPlaceCard
-    private var dimView = UIView()
+    private var dimView: UIView?
 
-    init(viewModel: SearchPlaceCardViewModel, selectionButtonTitle: String) {
+    init(viewModel: SearchPlaceCardViewModel, selectionButtonTitle: String, style: Style = .plain) {
+        self.style = style
         self.viewModel = viewModel
-        self.searchCard = SearchPlaceCard(selectionButtonTitle: selectionButtonTitle)
+
+        switch style {
+        case .plain:
+            self.searchCard = SearchPlaceCard(selectionButtonTitle: selectionButtonTitle)
+        case .dimmed(let title):
+            self.searchCard = SearchPlaceCard(
+                selectionButtonTitle: selectionButtonTitle,
+                headerStyle: .titleWithCloseButton(title)
+            )
+        }
+
         super.init(nibName: nil, bundle: nil)
-        modalPresentationStyle = .overFullScreen
-        modalTransitionStyle = .crossDissolve
+
+        if case .dimmed = style {
+            modalPresentationStyle = .overFullScreen
+            modalTransitionStyle = .crossDissolve
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -40,27 +60,40 @@ final class SearchPlaceCardViewController: UIViewController {
     // MARK: - Layout
 
     private func setUpLayout() {
-        dimView.backgroundColor = .black.withAlphaComponent(0.4)
-        dimView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(dimView)
-
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimTapped(_:)))
-        dimView.addGestureRecognizer(tapGesture)
-
         searchCard.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchCard)
 
-        NSLayoutConstraint.activate([
-            dimView.topAnchor.constraint(equalTo: view.topAnchor),
-            dimView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            dimView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            dimView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        switch style {
+        case .dimmed:
+            let dim = UIView()
+            dim.backgroundColor = .black.withAlphaComponent(0.4)
+            dim.translatesAutoresizingMaskIntoConstraints = false
+            view.insertSubview(dim, belowSubview: searchCard)
+            self.dimView = dim
 
-            searchCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            searchCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-            searchCard.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            searchCard.heightAnchor.constraint(lessThanOrEqualTo: view.heightAnchor, multiplier: 0.7),
-        ])
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimTapped(_:)))
+            dim.addGestureRecognizer(tapGesture)
+
+            NSLayoutConstraint.activate([
+                dim.topAnchor.constraint(equalTo: view.topAnchor),
+                dim.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                dim.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                dim.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+                searchCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+                searchCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+                searchCard.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                searchCard.heightAnchor.constraint(lessThanOrEqualTo: view.heightAnchor, multiplier: 0.7),
+            ])
+
+        case .plain:
+            NSLayoutConstraint.activate([
+                searchCard.topAnchor.constraint(equalTo: view.topAnchor),
+                searchCard.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                searchCard.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                searchCard.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            ])
+        }
     }
 
     // MARK: - Actions
@@ -73,7 +106,7 @@ final class SearchPlaceCardViewController: UIViewController {
         searchCard.onPlaceTap = { [weak self] placeInfo in
             guard let self, let place = self.viewModel.place(for: placeInfo) else { return }
             self.onPlaceSelected?(place)
-            self.dismiss(animated: true)
+            if case .dimmed = self.style { self.dismiss(animated: true) }
         }
 
         searchCard.onFilterTap = { [weak self] placeType in
@@ -82,6 +115,10 @@ final class SearchPlaceCardViewController: UIViewController {
 
         searchCard.onResetFilterTap = { [weak self] in
             self?.viewModel.resetFilters()
+        }
+
+        searchCard.onClose = { [weak self] in
+            self?.dismiss(animated: true)
         }
     }
 
