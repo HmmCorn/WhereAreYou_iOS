@@ -186,6 +186,7 @@ final class RouteSearchViewController: UIViewController {
         topStack.setCustomSpacing(Self.sectionSpacing, after: placeInputView)
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: transportSectionLabel)
         topStack.setCustomSpacing(Self.sectionSpacing, after: transportSelector)
+        topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: timeSectionRow)
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: routeSectionLabel)
 
         [routeScrollView, routeCardsStack, selectRouteButton, emptyStateLabel, loadingIndicator]
