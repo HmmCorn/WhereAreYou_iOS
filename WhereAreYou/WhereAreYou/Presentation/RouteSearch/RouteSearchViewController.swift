@@ -113,9 +113,12 @@ final class RouteSearchViewController: UIViewController {
 
     // MARK: - Overlay
 
-    private var placeSearchOverlay: UIView?
+    private var placeSearchTarget: PlaceSearchTarget = .departure
 
-
+    private enum PlaceSearchTarget {
+        case departure
+        case arrival
+    }
 
     // MARK: - Init
 
@@ -143,6 +146,11 @@ final class RouteSearchViewController: UIViewController {
         setUpActions()
         bindViewModel()
         setUpInitialPlaces()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.setDepartureTime(Date())
     }
 
     private func setUpInitialPlaces() {
@@ -244,8 +252,12 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Actions
 
     private func setUpActions() {
-        placeInputView.onDepartureTapped = { }
-        placeInputView.onArrivalTapped = { }
+        placeInputView.onDepartureTapped = { [weak self] in
+            self?.presentPlaceSearch(target: .departure)
+        }
+        placeInputView.onArrivalTapped = { [weak self] in
+            self?.presentPlaceSearch(target: .arrival)
+        }
         placeInputView.onCurrentLocationTapped = { [weak self] in
             self?.viewModel.fetchCurrentLocation()
         }
@@ -353,9 +365,32 @@ final class RouteSearchViewController: UIViewController {
         }
     }
 
-    // MARK: - Current location
+    // MARK: - Place search
 
-    private func setCurrentLocationAsDeparture() { }
+    private func presentPlaceSearch(target: PlaceSearchTarget) {
+        placeSearchTarget = target
+
+        let buttonTitle = target == .departure ? "출발지로" : "도착지로"
+        // TODO: DIContainer로 대체
+        let searchPlacesUseCase = SearchPlacesUseCase(repository: MockPlaceSearchRepository())
+        let searchViewModel = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
+        let searchVC = SearchPlaceCardViewController(
+            viewModel: searchViewModel,
+            selectionButtonTitle: buttonTitle
+        )
+
+        searchVC.onPlaceSelected = { [weak self] place in
+            guard let self else { return }
+            switch self.placeSearchTarget {
+            case .departure:
+                self.viewModel.setDeparture(place)
+            case .arrival:
+                self.viewModel.setDestination(place)
+            }
+        }
+
+        present(searchVC, animated: true)
+    }
 
     // MARK: - Time picker
 
