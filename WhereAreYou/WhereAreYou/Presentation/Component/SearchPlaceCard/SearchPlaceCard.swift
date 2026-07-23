@@ -10,7 +10,7 @@ import UIKit
 final class SearchPlaceCard: UIView {
 
     var onSearchBarTap: (() -> Void)?
-    var onSearchTap: (() -> Void)?
+    var onSearchTap: ((String) -> Void)?
 
     var onResetFilterTap: (() -> Void)?
     var onFilterTap: ((PlaceType) -> Void)?
@@ -35,12 +35,18 @@ final class SearchPlaceCard: UIView {
         return stack
     }()
 
-    private let places: [PlaceInfo]
+    private var resultDivider = {
+        let divider = UIView()
+        divider.backgroundColor = .separator
+        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        return divider
+    }()
+
+    private var places: [PlaceInfo] = []
     private let selectionButtonTitle: String
     private var cells: [PlaceCell] = []
 
-    init(_ searchResult: [PlaceInfo], selectionButtonTitle: String) {
-        self.places = searchResult
+    init(selectionButtonTitle: String) {
         self.selectionButtonTitle = selectionButtonTitle
         super.init(frame: .zero)
         setUpLayout()
@@ -48,7 +54,7 @@ final class SearchPlaceCard: UIView {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented — use init(_:selectionButtonTitle:)")
+        fatalError("init(coder:) has not been implemented — use init(selectionButtonTitle:)")
     }
 
     // MARK: - Layout
@@ -67,38 +73,28 @@ final class SearchPlaceCard: UIView {
 
         card.contentStack.addArrangedSubview(searchBar)
         card.contentStack.addArrangedSubview(filterSection)
-
-        guard !places.isEmpty else { return }
-
-        card.contentStack.addArrangedSubview(Self.makeDivider())
+        card.contentStack.addArrangedSubview(resultDivider)
         card.contentStack.addArrangedSubview(resultScrollView)
-        setUpResultScrollView()
+
+        setUpResultScrollViewConstraints()
+
+        resultDivider.isHidden = true
+        resultScrollView.isHidden = true
     }
 
-    private func setUpResultScrollView() {
+    private func setUpResultScrollViewConstraints() {
         resultScrollView.translatesAutoresizingMaskIntoConstraints = false
         resultStack.translatesAutoresizingMaskIntoConstraints = false
         resultScrollView.addSubview(resultStack)
 
         NSLayoutConstraint.activate([
+            resultScrollView.heightAnchor.constraint(equalToConstant: 300),
             resultStack.topAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.topAnchor),
             resultStack.bottomAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.bottomAnchor),
             resultStack.leadingAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.leadingAnchor),
             resultStack.trailingAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.trailingAnchor),
             resultStack.widthAnchor.constraint(equalTo: resultScrollView.frameLayoutGuide.widthAnchor)
         ])
-
-        cells = places.map { place in
-            let cell = PlaceCell(place, buttonText: selectionButtonTitle)
-            if let lastCell = resultStack.arrangedSubviews.last {
-                let divider = Self.makeDivider()
-                resultStack.addArrangedSubview(divider)
-                resultStack.setCustomSpacing(10, after: lastCell)
-                resultStack.setCustomSpacing(10, after: divider)
-            }
-            resultStack.addArrangedSubview(cell)
-            return cell
-        }
     }
 
     private static func makeDivider() -> UIView {
@@ -111,13 +107,12 @@ final class SearchPlaceCard: UIView {
     // MARK: - Actions
 
     private func setUpActions() {
-        searchBar.onSearchTap = { [weak self] in self?.onSearchTap?() }
+        searchBar.onSearchTap = { [weak self] in
+            guard let self else { return }
+            self.onSearchTap?(self.searchBar.text ?? "")
+        }
         filterSection.onResetTap = { [weak self] in self?.onResetFilterTap?() }
         filterSection.onFilterTap = { [weak self] placeType in self?.onFilterTap?(placeType) }
-
-        for (place, cell) in zip(places, cells) {
-            cell.onButtonTap = { [weak self] in self?.onPlaceTap?(place) }
-        }
 
         let dismissKeyboardGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         dismissKeyboardGesture.cancelsTouchesInView = false
@@ -129,8 +124,43 @@ final class SearchPlaceCard: UIView {
 
     // MARK: - Public Configuration
 
+    func updatePlaces(_ newPlaces: [PlaceInfo]) {
+        places = newPlaces
+        rebuildResultCells()
+    }
+
     func configureSelectedFilters(_ selected: [PlaceType]) {
         filterSection.configure(selected: selected)
+    }
+
+    // MARK: - Result Cells
+
+    private func rebuildResultCells() {
+        resultStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        cells = []
+
+        guard !places.isEmpty else {
+            // TODO: 장소 검색 API 확인 후 대체 텍스트 설정 필요
+            resultDivider.isHidden = true
+            resultScrollView.isHidden = true
+            return
+        }
+
+        resultDivider.isHidden = false
+        resultScrollView.isHidden = false
+
+        cells = places.map { place in
+            let cell = PlaceCell(place, buttonText: selectionButtonTitle)
+            if let lastView = resultStack.arrangedSubviews.last {
+                let divider = Self.makeDivider()
+                resultStack.addArrangedSubview(divider)
+                resultStack.setCustomSpacing(10, after: lastView)
+                resultStack.setCustomSpacing(10, after: divider)
+            }
+            resultStack.addArrangedSubview(cell)
+            cell.onButtonTap = { [weak self] in self?.onPlaceTap?(place) }
+            return cell
+        }
     }
 
 }
