@@ -24,17 +24,16 @@ final class AppointmentListCard: AppointmentCardBase {
             title: "대화 열기",
             background: .blue2.withAlphaComponent(0.8),
             tint: .white,
-            font: UIFont.preferredFont(forTextStyle: .caption1)
+            font: .caption1,
+            edgeInsets: NSDirectionalEdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0)
         )
+        button.layer.cornerRadius = 8
         button.configuration?.image = UIImage(systemName: "text.bubble")
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
-            font: UIFont.preferredFont(forTextStyle: .caption1)
+            font: .preferredFont(forTextStyle: .caption1)
         )
-        button.configuration?.cornerStyle = .fixed
-        button.configuration?.background.cornerRadius = 8
         button.configuration?.imagePlacement = .leading
         button.configuration?.imagePadding = 6
-        button.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0)
         return button
     }()
 
@@ -43,17 +42,16 @@ final class AppointmentListCard: AppointmentCardBase {
             title: "지도 열기",
             background: .blue2.withAlphaComponent(0.8),
             tint: .white,
-            font: UIFont.preferredFont(forTextStyle: .caption1)
+            font: .caption1,
+            edgeInsets: NSDirectionalEdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0)
         )
+        button.layer.cornerRadius = 8
         button.configuration?.image = UIImage(systemName: "map")
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
-            font: UIFont.preferredFont(forTextStyle: .caption1)
+            font: .preferredFont(forTextStyle: .caption1)
         )
-        button.configuration?.cornerStyle = .fixed
-        button.configuration?.background.cornerRadius = 8
         button.configuration?.imagePlacement = .leading
         button.configuration?.imagePadding = 6
-        button.configuration?.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 0, bottom: 5, trailing: 0)
         return button
     }()
 
