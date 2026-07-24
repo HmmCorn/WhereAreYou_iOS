@@ -27,6 +27,14 @@ final class AppointmentListViewModel {
         return (todayAppointments, upcomingAppointments)
     }
 
+    func notificationMenuTitle(for item: AppointmentListItem) -> String {
+        item.isNotificationEnabled ? "알림 끄기" : "알림 켜기"
+    }
+
+    func notificationMenuIcon(for item: AppointmentListItem) -> String {
+        item.isNotificationEnabled ? "bell.slash" : "bell"
+    }
+
     @discardableResult
     func leave(id: String) -> (today: [AppointmentListItem], upcoming: [AppointmentListItem]) {
         todayAppointments.removeAll { $0.id == id }

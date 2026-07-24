@@ -24,6 +24,32 @@ final class PastAppointmentListViewModel {
         return pastAppointments
     }
 
+    @discardableResult
+    func toggleNotification(id: String) -> [AppointmentListItem] {
+        pastAppointments = pastAppointments.map { toggledIfMatching(id: id, item: $0) }
+        return pastAppointments
+    }
+
+    func notificationMenuTitle(for item: AppointmentListItem) -> String {
+        item.isNotificationEnabled ? "알림 끄기" : "알림 켜기"
+    }
+
+    func notificationMenuIcon(for item: AppointmentListItem) -> String {
+        item.isNotificationEnabled ? "bell.slash" : "bell"
+    }
+
+    private func toggledIfMatching(id: String, item: AppointmentListItem) -> AppointmentListItem {
+        guard item.id == id else { return item }
+        return AppointmentListItem(
+            id: item.id,
+            title: item.title,
+            participantCount: item.participantCount,
+            location: item.location,
+            date: item.date,
+            isNotificationEnabled: !item.isNotificationEnabled
+        )
+    }
+
     private func loadDummyData() {
         let allPastAppointments = (1...15).map { index in
             AppointmentListItem(

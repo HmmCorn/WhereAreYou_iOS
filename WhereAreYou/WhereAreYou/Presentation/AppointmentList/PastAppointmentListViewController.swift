@@ -106,11 +106,31 @@ final class PastAppointmentListViewController: UIViewController {
         card.onMapTap = {
             print("\(item.title) 지도 열기")
         }
-        card.onLeave = { [weak self] in
-            self?.presentDeleteConfirmAlert(id: item.id, title: item.title)
+        card.contextMenuProvider = { [weak self] in
+            self?.makeContextMenu(for: item) ?? UIMenu(children: [])
         }
 
         contentStack.addArrangedSubview(card)
+    }
+
+    private func makeContextMenu(for item: AppointmentListItem) -> UIMenu {
+        let notificationAction = UIAction(
+            title: viewModel.notificationMenuTitle(for: item),
+            image: UIImage(systemName: viewModel.notificationMenuIcon(for: item))
+        ) { [weak self] _ in
+            self?.viewModel.toggleNotification(id: item.id)
+            self?.reloadCards()
+        }
+
+        let leaveAction = UIAction(
+            title: "약속 나가기",
+            image: UIImage(systemName: "rectangle.portrait.and.arrow.right"),
+            attributes: .destructive
+        ) { [weak self] _ in
+            self?.presentDeleteConfirmAlert(id: item.id, title: item.title)
+        }
+
+        return UIMenu(children: [notificationAction, leaveAction])
     }
 
     private func presentDeleteConfirmAlert(id: String, title: String) {
