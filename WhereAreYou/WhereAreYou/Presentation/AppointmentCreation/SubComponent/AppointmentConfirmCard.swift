@@ -34,8 +34,8 @@ final class AppointmentConfirmCard: UIView {
         return label
     }()
 
-    private lazy var copyButton = UIButton.filled(title: "코드 복사하기", background: .systemGray2, tint: .white)
-    private lazy var confirmButton = UIButton.filled(title: "약속으로 이동하기", background: .blue2, tint: .white)
+    private lazy var copyButton = UIButton.filled(title: "코드 복사하기", background: .systemGray2, tint: .white, font: .subheadline)
+    private lazy var confirmButton = UIButton.filled(title: "약속으로 이동하기", background: .blue2, tint: .white, font: .subheadline)
 
     private let footerStack: UIStackView = {
         let stack = UIStackView()
