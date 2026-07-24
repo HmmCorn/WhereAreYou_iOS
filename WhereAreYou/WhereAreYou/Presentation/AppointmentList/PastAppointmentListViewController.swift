@@ -108,20 +108,20 @@ final class PastAppointmentListViewController: UIViewController {
             print("\(item.title) 지도 열기")
         }
         card.contextMenuProvider = { [weak self] in
-            self?.makeContextMenu(for: item) ?? UIMenu(children: [])
+            self?.makeContextMenu(id: item.id) ?? UIMenu(children: [])
         }
 
         contentStack.addArrangedSubview(card)
     }
 
-    private func makeContextMenu(for item: AppointmentListItem) -> UIMenu {
+    private func makeContextMenu(id: String) -> UIMenu {
+        guard let item = viewModel.item(id: id) else { return UIMenu(children: []) }
+
         let notificationAction = UIAction(
             title: viewModel.notificationMenuTitle(for: item),
             image: UIImage(systemName: viewModel.notificationMenuIcon(for: item))
         ) { [weak self] _ in
-            guard let self else { return }
-            let updated = viewModel.toggleNotification(id: item.id)
-            reloadCards(pastAppointments: updated)
+            self?.viewModel.toggleNotification(id: item.id)
         }
 
         let leaveAction = UIAction(

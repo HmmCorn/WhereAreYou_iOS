@@ -20,10 +20,18 @@ final class AppointmentListViewModel {
         loadDummyData()
     }
 
-    func toggleNotification(id: String) -> (today: [AppointmentListItem], upcoming: [AppointmentListItem]) {
-        todayAppointments = todayAppointments.map { toggledIfMatching(id: id, item: $0) }
-        upcomingAppointments = upcomingAppointments.map { toggledIfMatching(id: id, item: $0) }
-        return (todayAppointments, upcomingAppointments)
+    func toggleNotification(id: String) {
+        if let index = todayAppointments.firstIndex(where: { $0.id == id }) {
+            todayAppointments[index] = toggledNotification(of: todayAppointments[index])
+            return
+        }
+        if let index = upcomingAppointments.firstIndex(where: { $0.id == id }) {
+            upcomingAppointments[index] = toggledNotification(of: upcomingAppointments[index])
+        }
+    }
+
+    func item(id: String) -> AppointmentListItem? {
+        todayAppointments.first { $0.id == id } ?? upcomingAppointments.first { $0.id == id }
     }
 
     func notificationMenuTitle(for item: AppointmentListItem) -> String {
@@ -40,9 +48,8 @@ final class AppointmentListViewModel {
         return (todayAppointments, upcomingAppointments)
     }
 
-    private func toggledIfMatching(id: String, item: AppointmentListItem) -> AppointmentListItem {
-        guard item.id == id else { return item }
-        return AppointmentListItem(
+    private func toggledNotification(of item: AppointmentListItem) -> AppointmentListItem {
+        AppointmentListItem(
             id: item.id,
             title: item.title,
             participantCount: item.participantCount,

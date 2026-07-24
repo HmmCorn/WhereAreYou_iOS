@@ -18,9 +18,13 @@ final class PastAppointmentListViewModel {
         loadDummyData()
     }
 
-    func toggleNotification(id: String) -> [AppointmentListItem] {
-        pastAppointments = pastAppointments.map { toggledIfMatching(id: id, item: $0) }
-        return pastAppointments
+    func toggleNotification(id: String) {
+        guard let index = pastAppointments.firstIndex(where: { $0.id == id }) else { return }
+        pastAppointments[index] = toggledNotification(of: pastAppointments[index])
+    }
+
+    func item(id: String) -> AppointmentListItem? {
+        pastAppointments.first { $0.id == id }
     }
 
     func notificationMenuTitle(for item: AppointmentListItem) -> String {
@@ -36,9 +40,8 @@ final class PastAppointmentListViewModel {
         return pastAppointments
     }
 
-    private func toggledIfMatching(id: String, item: AppointmentListItem) -> AppointmentListItem {
-        guard item.id == id else { return item }
-        return AppointmentListItem(
+    private func toggledNotification(of item: AppointmentListItem) -> AppointmentListItem {
+        AppointmentListItem(
             id: item.id,
             title: item.title,
             participantCount: item.participantCount,
