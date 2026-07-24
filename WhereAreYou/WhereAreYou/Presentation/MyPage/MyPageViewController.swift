@@ -168,8 +168,8 @@ final class MyPageViewController: UIViewController {
         locationPermissionRow.onTap = { [weak self] in
             self?.presentLocationPermission()
         }
-        appointmentNotificationRow.onTap = {
-            print("약속별 알림 탭")
+        appointmentNotificationRow.onTap = { [weak self] in
+            self?.presentAppointmentNotificationList()
         }
         inquiryRow.onTap = {
             print("문의 및 도움말 탭")
@@ -212,6 +212,11 @@ final class MyPageViewController: UIViewController {
     private func presentLocationPermission() {
         let permissionVC = LocationPermissionViewController(viewModel: viewModel)
         navigationController?.pushViewController(permissionVC, animated: true)
+    }
+
+    private func presentAppointmentNotificationList() {
+        let listVC = AppointmentNotificationListViewController(viewModel: viewModel)
+        navigationController?.pushViewController(listVC, animated: true)
     }
 
 }
