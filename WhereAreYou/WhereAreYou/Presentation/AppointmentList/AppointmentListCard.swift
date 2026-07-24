@@ -24,11 +24,11 @@ final class AppointmentListCard: AppointmentCardBase {
             title: "대화 열기",
             background: .blue2.withAlphaComponent(0.8),
             tint: .white,
-            font: .preferredFont(forTextStyle: .caption1)
+            font: UIFont.preferredFont(forTextStyle: .caption1)
         )
         button.configuration?.image = UIImage(systemName: "text.bubble")
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
-            font: .preferredFont(forTextStyle: .caption1)
+            font: UIFont.preferredFont(forTextStyle: .caption1)
         )
         button.configuration?.cornerStyle = .fixed
         button.configuration?.background.cornerRadius = 8
@@ -43,11 +43,11 @@ final class AppointmentListCard: AppointmentCardBase {
             title: "지도 열기",
             background: .blue2.withAlphaComponent(0.8),
             tint: .white,
-            font: .preferredFont(forTextStyle: .caption1)
+            font: UIFont.preferredFont(forTextStyle: .caption1)
         )
         button.configuration?.image = UIImage(systemName: "map")
         button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
-            font: .preferredFont(forTextStyle: .caption1)
+            font: UIFont.preferredFont(forTextStyle: .caption1)
         )
         button.configuration?.cornerStyle = .fixed
         button.configuration?.background.cornerRadius = 8
