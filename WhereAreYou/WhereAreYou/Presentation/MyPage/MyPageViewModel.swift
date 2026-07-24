@@ -14,10 +14,12 @@ import CoreLocation
 //         (지금은 이 ViewModel이 CLLocationManager와 변환 로직을 함께 들고 있지만,
 //          추후 Data 계층(Repository)으로 위치 권한 조회를 옮길 때 이 변환도 함께 옮겨짐을 예상)
 
-final class MyPageViewModel {
+final class MyPageViewModel: NSObject {
 
     private(set) var profile: MyPageProfile
     private(set) var appointmentNotifications: [AppointmentListItem] = []
+
+    var onLocationPermissionChanged: (() -> Void)?
 
     private let locationManager = CLLocationManager()
 
@@ -32,9 +34,15 @@ final class MyPageViewModel {
         }
     }
 
-    init() {
-        profile = Self.makeDummyProfile()
+    init(profile: MyPageProfile? = nil) {
+        self.profile = profile ?? Self.makeDummyProfile()
+        super.init()
+        locationManager.delegate = self
         loadDummyAppointmentNotifications()
+    }
+
+    func requestLocationPermission() {
+        locationManager.requestWhenInUseAuthorization()
     }
 
     func toggleNotification(id: String) {
@@ -116,6 +124,16 @@ final class MyPageViewModel {
                 isNotificationEnabled: true
             )
         ]
+    }
+
+}
+
+// MARK: - CLLocationManagerDelegate
+
+extension MyPageViewModel: CLLocationManagerDelegate {
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        onLocationPermissionChanged?()
     }
 
 }

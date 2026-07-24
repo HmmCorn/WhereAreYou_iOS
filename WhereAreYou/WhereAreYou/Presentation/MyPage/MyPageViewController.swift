@@ -165,8 +165,8 @@ final class MyPageViewController: UIViewController {
         locationSharingRow.onTap = { [weak self] in
             self?.presentLocationSharingSelection()
         }
-        locationPermissionRow.onTap = {
-            print("위치 권한 설정 탭")
+        locationPermissionRow.onTap = { [weak self] in
+            self?.presentLocationPermission()
         }
         appointmentNotificationRow.onTap = {
             print("약속별 알림 탭")
@@ -207,6 +207,11 @@ final class MyPageViewController: UIViewController {
             self?.locationSharingRow.value = option.title
         }
         navigationController?.pushViewController(selectionVC, animated: true)
+    }
+
+    private func presentLocationPermission() {
+        let permissionVC = LocationPermissionViewController(viewModel: viewModel)
+        navigationController?.pushViewController(permissionVC, animated: true)
     }
 
 }

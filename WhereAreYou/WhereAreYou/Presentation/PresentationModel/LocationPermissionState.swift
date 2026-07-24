@@ -7,7 +7,7 @@
 
 // MARK: - 위치 권한 화면에서 사용하는 표시 전용 모델
 
-enum LocationPermissionState {
+enum LocationPermissionState: Equatable {
 
     case notDetermined
     case denied
