@@ -162,8 +162,8 @@ final class MyPageViewController: UIViewController {
         profileRow.onTap = {
             print("프로필 편집 탭")
         }
-        locationSharingRow.onTap = {
-            print("위치 공유 설정 탭")
+        locationSharingRow.onTap = { [weak self] in
+            self?.presentLocationSharingSelection()
         }
         locationPermissionRow.onTap = {
             print("위치 권한 설정 탭")
@@ -198,6 +198,15 @@ final class MyPageViewController: UIViewController {
 
         inquiryRow.value = "어딘데 지원 정보"
         appInfoRow.value = "버전 정보"
+    }
+
+    private func presentLocationSharingSelection() {
+        let selectionVC = LocationSharingSelectionViewController(selectedOption: viewModel.profile.locationSharingOption)
+        selectionVC.onOptionSelected = { [weak self] option in
+            self?.viewModel.setLocationSharingOption(option)
+            self?.locationSharingRow.value = option.title
+        }
+        navigationController?.pushViewController(selectionVC, animated: true)
     }
 
 }

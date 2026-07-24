@@ -75,6 +75,11 @@ final class MyPageRow: UIControl {
         fatalError("init(coder:) has not been implemented — use init(icon:title:isCircularImage:accessoryView:accessoryHasOwnInteraction:)")
     }
 
+    func setAccessoryView(_ newAccessoryView: UIView) {
+        contentStack.arrangedSubviews.last?.removeFromSuperview()
+        contentStack.addArrangedSubview(newAccessoryView)
+    }
+
     private func setUp(accessoryView: UIView?, accessoryHasOwnInteraction: Bool) {
         let iconSize: CGFloat = 22
         iconView.widthAnchor.constraint(equalToConstant: iconSize).isActive = true
