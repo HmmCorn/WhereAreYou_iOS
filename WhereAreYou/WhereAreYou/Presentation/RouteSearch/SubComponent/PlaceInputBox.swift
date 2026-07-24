@@ -27,7 +27,8 @@ final class PlaceInputBox: UIView {
             title: "출발",
             background: .clear,
             tint: .placeholderText,
-            font: .body
+            font: .body,
+            edgeInsets: NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 0)
         )
         button.contentHorizontalAlignment = .leading
         return button
@@ -60,7 +61,8 @@ final class PlaceInputBox: UIView {
             title: "도착",
             background: .clear,
             tint: .placeholderText,
-            font: .body
+            font: .body,
+            edgeInsets: NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 0)
         )
         button.contentHorizontalAlignment = .leading
         return button
@@ -119,10 +121,14 @@ final class PlaceInputBox: UIView {
         departureRow.spacing = 12
         departureRow.alignment = .center
 
+        departureRow.setCustomSpacing(5, after: departureIcon)
+
         let arrivalRow = UIStackView(arrangedSubviews: [arrivalIcon, arrivalButton, arrivalClearButton])
         arrivalRow.axis = .horizontal
         arrivalRow.spacing = 12
         arrivalRow.alignment = .center
+
+        arrivalRow.setCustomSpacing(5, after: arrivalIcon)
 
         let mainStack = UIStackView(arrangedSubviews: [departureRow, separator, arrivalRow])
         mainStack.axis = .vertical
