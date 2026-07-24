@@ -47,12 +47,18 @@ final class SettingsRow: UIControl {
         return stack
     }()
 
-    init(icon: UIImage?, title: String, accessoryView: UIView? = nil) {
+    init(
+        icon: UIImage?,
+        title: String,
+        isCircularImage: Bool = false,
+        accessoryView: UIView? = nil
+    ) {
         super.init(frame: .zero)
 
         iconView.image = icon
+        iconView.contentMode = isCircularImage ? .scaleAspectFill : .scaleAspectFit
         iconView.tintColor = .label
-        iconView.contentMode = .scaleAspectFit
+        iconView.clipsToBounds = isCircularImage
         iconView.isUserInteractionEnabled = false
 
         titleLabel.text = title
@@ -66,7 +72,7 @@ final class SettingsRow: UIControl {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented — use init(icon:title:accessoryView:)")
+        fatalError("init(coder:) has not been implemented — use init(icon:title:isCircularImage:accessoryView:)")
     }
 
     override var isHighlighted: Bool {
@@ -77,6 +83,7 @@ final class SettingsRow: UIControl {
         let iconSize: CGFloat = 22
         iconView.widthAnchor.constraint(equalToConstant: iconSize).isActive = true
         iconView.heightAnchor.constraint(equalToConstant: iconSize).isActive = true
+        iconView.layer.cornerRadius = iconView.clipsToBounds ? iconSize / 2 : 0
 
         if let accessoryView {
             contentStack.removeArrangedSubview(defaultAccessoryView)
