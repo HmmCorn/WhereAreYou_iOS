@@ -57,15 +57,17 @@ final class RouteSearchViewModel {
     func fetchCurrentLocation() {
         getCurrentLocationUseCase.execute { [weak self] result in
             guard let self else { return }
-            if case .success(let coordinate) = result {
-                let place = Place(
-                    id: "current_location",
-                    name: "현재 위치",
-                    address: "",
-                    coordinate: coordinate,
-                    type: .other
-                )
-                self.setDeparture(place)
+            DispatchQueue.main.async {
+                if case .success(let coordinate) = result {
+                    let place = Place(
+                        id: "current_location",
+                        name: "현재 위치",
+                        address: "",
+                        coordinate: coordinate,
+                        type: .other
+                    )
+                    self.setDeparture(place)
+                }
             }
         }
     }
@@ -86,15 +88,17 @@ final class RouteSearchViewModel {
             transportType: selectedTransportType
         ) { [weak self] result in
             guard let self else { return }
-            self.isLoading = false
-            self.selectedRouteIndex = 0
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.selectedRouteIndex = 0
 
-            switch result {
-            case .success(let routes):
-                self.routes = routes
-            case .failure:
-                // TODO: 길찾기 API 확인 후 검색 실패 텍스트 설정 필요
-                self.routes = []
+                switch result {
+                case .success(let routes):
+                    self.routes = routes
+                case .failure:
+                    // TODO: 길찾기 API 확인 후 검색 실패 텍스트 설정 필요
+                    self.routes = []
+                }
             }
         }
     }
