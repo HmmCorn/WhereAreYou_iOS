@@ -409,7 +409,7 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Time picker
 
     private func presentTimePicker() {
-        let pickerViewController = DepartureTimePickerViewController(initialDate: viewModel.departureTime)
+        let pickerViewController = DatePickerSheetViewController(title: "출발 시간 설정")
         pickerViewController.onDateSelected = { [weak self] date in
             self?.viewModel.setDepartureTime(date)
         }
