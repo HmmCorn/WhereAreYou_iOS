@@ -36,6 +36,15 @@ final class SearchPlaceCard: UIView {
         return stack
     }()
 
+    private let emptyResultLabel: UILabel = {
+        let label = UILabel()
+        label.text = "장소를 검색해주세요."
+        label.font = .preferredFont(forTextStyle: .body)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        return label
+    }()
+
     private var resultDivider = {
         let divider = UIView()
         divider.backgroundColor = .separator
@@ -82,21 +91,28 @@ final class SearchPlaceCard: UIView {
         setUpResultScrollViewConstraints()
 
         resultDivider.isHidden = true
-        resultScrollView.isHidden = true
+        emptyResultLabel.isHidden = false
     }
 
     private func setUpResultScrollViewConstraints() {
         resultScrollView.translatesAutoresizingMaskIntoConstraints = false
         resultStack.translatesAutoresizingMaskIntoConstraints = false
+        emptyResultLabel.translatesAutoresizingMaskIntoConstraints = false
+
         resultScrollView.addSubview(resultStack)
+        resultScrollView.addSubview(emptyResultLabel)
 
         NSLayoutConstraint.activate([
             resultScrollView.heightAnchor.constraint(equalToConstant: 300),
+
             resultStack.topAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.topAnchor),
             resultStack.bottomAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.bottomAnchor),
             resultStack.leadingAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.leadingAnchor),
             resultStack.trailingAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.trailingAnchor),
-            resultStack.widthAnchor.constraint(equalTo: resultScrollView.frameLayoutGuide.widthAnchor)
+            resultStack.widthAnchor.constraint(equalTo: resultScrollView.frameLayoutGuide.widthAnchor),
+
+            emptyResultLabel.centerXAnchor.constraint(equalTo: resultScrollView.frameLayoutGuide.centerXAnchor),
+            emptyResultLabel.centerYAnchor.constraint(equalTo: resultScrollView.frameLayoutGuide.centerYAnchor),
         ])
     }
 
@@ -136,6 +152,10 @@ final class SearchPlaceCard: UIView {
         filterSection.configure(selected: selected)
     }
 
+    func updateEmptyResultMessage(hasSearched: Bool) {
+        emptyResultLabel.text = hasSearched ? "검색 결과가 존재하지 않습니다." : "장소를 검색해주세요."
+    }
+
     // MARK: - Result Cells
 
     private func rebuildResultCells() {
@@ -143,14 +163,13 @@ final class SearchPlaceCard: UIView {
         cells = []
 
         guard !places.isEmpty else {
-            // TODO: 장소 검색 API 확인 후 대체 텍스트 설정 필요
+            emptyResultLabel.isHidden = false
             resultDivider.isHidden = true
-            resultScrollView.isHidden = true
             return
         }
 
+        emptyResultLabel.isHidden = true
         resultDivider.isHidden = false
-        resultScrollView.isHidden = false
 
         cells = places.map { place in
             let cell = PlaceCell(place, buttonText: selectionButtonTitle)

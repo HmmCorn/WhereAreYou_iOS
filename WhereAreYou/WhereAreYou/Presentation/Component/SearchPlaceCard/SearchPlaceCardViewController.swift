@@ -148,6 +148,13 @@ final class SearchPlaceCardViewController: UIViewController {
                 self?.searchCard.configureSelectedFilters(filters)
             }
             .store(in: &cancellables)
+
+        viewModel.$hasSearched
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] hasSearched in
+                self?.searchCard.updateEmptyResultMessage(hasSearched: hasSearched)
+            }
+            .store(in: &cancellables)
     }
 
 }
