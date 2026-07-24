@@ -11,6 +11,14 @@ final class DepartureTimePickerViewController: UIViewController {
 
     var onDateSelected: ((Date) -> Void)?
 
+    private let headerLabel: UILabel = {
+        let label = UILabel()
+        label.text = "출발 시간 설정"
+        label.font = .preferredFont(forTextStyle: .headline)
+        label.textAlignment = .center
+        return label
+    }()
+
     private let datePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.datePickerMode = .dateAndTime
@@ -23,7 +31,8 @@ final class DepartureTimePickerViewController: UIViewController {
         title: "확인",
         background: .blue1,
         tint: .white,
-        font: .body
+        font: .body,
+        edgeInsets: NSDirectionalEdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0)
     )
 
     private let initialDate: Date
@@ -43,17 +52,26 @@ final class DepartureTimePickerViewController: UIViewController {
         datePicker.minimumDate = Date()
         datePicker.date = initialDate
 
-        let stack = UIStackView(arrangedSubviews: [datePicker, confirmButton])
-        stack.axis = .vertical
-        stack.spacing = 20
+        headerLabel.translatesAutoresizingMaskIntoConstraints = false
+        datePicker.translatesAutoresizingMaskIntoConstraints = false
+        confirmButton.translatesAutoresizingMaskIntoConstraints = false
 
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stack)
+        view.addSubview(headerLabel)
+        view.addSubview(datePicker)
+        view.addSubview(confirmButton)
 
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            headerLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
+            headerLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            headerLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+
+            datePicker.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 16),
+            datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+
+            confirmButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            confirmButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            confirmButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
 
         confirmButton.addAction(UIAction { [weak self] _ in
