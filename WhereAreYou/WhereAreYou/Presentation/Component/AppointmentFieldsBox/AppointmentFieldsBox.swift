@@ -51,7 +51,7 @@ final class AppointmentFieldsBox: UIView {
     }
 
     private func setUp() {
-        mapButton.addTarget(self, action: #selector(mapTapped), for: .touchUpInside)
+        mapButton.addAction(UIAction { [weak self] _ in self?.onMapButtonTap?() }, for: .touchUpInside)
         mapButton.widthAnchor.constraint(equalToConstant: 45).isActive = true
 
         let placeRowContent = UIStackView(arrangedSubviews: [placeRow, mapButton])
@@ -91,6 +91,5 @@ final class AppointmentFieldsBox: UIView {
         return stack
     }
 
-    @objc private func mapTapped() { onMapButtonTap?() }
 
 }

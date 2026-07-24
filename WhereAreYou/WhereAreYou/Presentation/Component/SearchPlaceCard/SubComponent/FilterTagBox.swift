@@ -110,17 +110,12 @@ final class FilterTagBox: UIView {
 
     private func setUpActions() {
         filters.values.forEach { capsule in
-            capsule.addTarget(self, action: #selector(filterTapped(_:)), for: .touchUpInside)
+            capsule.addAction(UIAction { [weak self] action in
+                guard let capsule = action.sender as? FilterCapsule else { return }
+                self?.onFilterTap?(capsule.placeType)
+            }, for: .touchUpInside)
         }
-        resetButton.addTarget(self, action: #selector(resetTapped), for: .touchUpInside)
-    }
-
-    @objc private func filterTapped(_ sender: FilterCapsule) {
-        onFilterTap?(sender.placeType)
-    }
-
-    @objc private func resetTapped() {
-        onResetTap?()
+        resetButton.addAction(UIAction { [weak self] _ in self?.onResetTap?() }, for: .touchUpInside)
     }
 
 }

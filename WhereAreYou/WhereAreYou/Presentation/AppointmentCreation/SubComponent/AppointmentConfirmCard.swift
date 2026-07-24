@@ -78,8 +78,8 @@ final class AppointmentConfirmCard: UIView {
         card.contentStack.addArrangedSubview(codeLabel)
         card.contentStack.addArrangedSubview(footerStack)
 
-        copyButton.addTarget(self, action: #selector(copyTapped), for: .touchUpInside)
-        confirmButton.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
+        copyButton.addAction(UIAction { [weak self] _ in self?.onCopyCodeTap?() }, for: .touchUpInside)
+        confirmButton.addAction(UIAction { [weak self] _ in self?.onConfirmTap?() }, for: .touchUpInside)
     }
 
     private func configure(with data: AppointmentInfo) {
@@ -88,8 +88,5 @@ final class AppointmentConfirmCard: UIView {
         placeRow.text = data.location?.title ?? "미정"
         codeLabel.text = "약속 코드 : \(data.code)"
     }
-
-    @objc private func copyTapped() { onCopyCodeTap?() }
-    @objc private func confirmTapped() { onConfirmTap?() }
 
 }

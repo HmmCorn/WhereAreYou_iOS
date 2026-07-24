@@ -102,8 +102,8 @@ final class AppointmentInfoCard: UIView {
         fieldsBox.onDateRowTap = { [weak self] in self?.onDateRowTap?() }
         fieldsBox.onPlaceRowTap = { [weak self] in self?.onPlaceRowTap?() }
         fieldsBox.onMapButtonTap = { [weak self] in self?.onMapButtonTap?() }
-        leaveButton.addTarget(self, action: #selector(leaveTapped), for: .touchUpInside)
-        copyButton.addTarget(self, action: #selector(copyTapped), for: .touchUpInside)
+        leaveButton.addAction(UIAction { [weak self] _ in self?.onLeaveTap?() }, for: .touchUpInside)
+        copyButton.addAction(UIAction { [weak self] _ in self?.onCopyCodeTap?() }, for: .touchUpInside)
 
         let dismissKeyboardGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         dismissKeyboardGesture.cancelsTouchesInView = false
@@ -124,8 +124,6 @@ final class AppointmentInfoCard: UIView {
         codeLabel.text = "약속 코드 : \(data.code)"
     }
 
-    @objc private func leaveTapped() { onLeaveTap?() }
-    @objc private func copyTapped() { onCopyCodeTap?() }
     @objc private func dismissKeyboard() { endEditing(true) }
 
 }

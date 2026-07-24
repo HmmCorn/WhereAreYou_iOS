@@ -68,10 +68,8 @@ final class ButtonRow: UIControl {
             stack.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
 
-        addTarget(self, action: #selector(tapped), for: .touchUpInside)
+        addAction(UIAction { [weak self] _ in self?.onTap?() }, for: .touchUpInside)
     }
-
-    @objc private func tapped() { onTap?() }
 
     private func updateHighlightAppearance() {
         UIView.animate(withDuration: 0.12) {

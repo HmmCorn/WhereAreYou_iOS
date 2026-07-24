@@ -47,7 +47,7 @@ final class AppointmentCreateCard: UIView {
         fieldsBox.onDateRowTap = { [weak self] in self?.onDateRowTap?() }
         fieldsBox.onPlaceRowTap = { [weak self] in self?.onPlaceRowTap?() }
         fieldsBox.onMapButtonTap = { [weak self] in self?.onMapButtonTap?() }
-        createButton.addTarget(self, action: #selector(createTapped), for: .touchUpInside)
+        createButton.addAction(UIAction { [weak self] _ in self?.onCreateTap?() }, for: .touchUpInside)
 
         let dismissKeyboardGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         dismissKeyboardGesture.cancelsTouchesInView = false
@@ -55,7 +55,6 @@ final class AppointmentCreateCard: UIView {
         addGestureRecognizer(dismissKeyboardGesture)
     }
 
-    @objc private func createTapped() { onCreateTap?() }
     @objc private func dismissKeyboard() { endEditing(true) }
 
     func setDateLabel(_ date: Date) {
