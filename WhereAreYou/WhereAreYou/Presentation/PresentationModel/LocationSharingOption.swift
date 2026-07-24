@@ -15,4 +15,12 @@ enum LocationSharingOption: CaseIterable {
     case onlyDuringAppointment
     case never
 
+    init(scope: LocationSharingScope) {
+        switch scope {
+        case .always: self = .always
+        case .onlyDuringAppointment: self = .onlyDuringAppointment
+        case .never: self = .never
+        }
+    }
+
 }
