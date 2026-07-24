@@ -35,8 +35,22 @@ final class AppointmentCreationViewModel {
 
     func create() {
         if appointmentTitle.isEmpty { appointmentTitle = "약속" }
-        // 약속 고유 코드 생성하고 use case 통해 서버에 신규 약속 업로드
-        // 약속 잘 저장되었다는 서버 응답 받고 hasCreated = true로
+
+        createAppointmentUseCase.execute(
+            title: appointmentTitle,
+            date: appointmentDate,
+            place: appointmentPlace
+        ) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let appointment):
+                self.id = appointment.id
+                self.code = appointment.code
+                self.hasCreated = true
+            case .failure:
+                break
+            }
+        }
     }
 
 }
