@@ -21,7 +21,6 @@ final class AppointmentCreateCard: UIView {
 
     init() {
         super.init(frame: .zero)
-        fieldsBox.name = "약속"
         setUp()
     }
 
