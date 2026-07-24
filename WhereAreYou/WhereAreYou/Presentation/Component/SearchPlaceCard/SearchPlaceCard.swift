@@ -39,7 +39,7 @@ final class SearchPlaceCard: UIView {
     private let emptyResultLabel: UILabel = {
         let label = UILabel()
         label.text = "장소를 검색해주세요."
-        label.font = .preferredFont(forTextStyle: .body)
+        label.font = .preferredFont(forTextStyle: .subheadline)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
         return label
