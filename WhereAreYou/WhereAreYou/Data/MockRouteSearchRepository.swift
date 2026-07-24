@@ -50,7 +50,7 @@ final class MockRouteSearchRepository: RouteSearchRepository {
                     arrivalTime: departureTime.addingTimeInterval(285 * 60),
                     step: [
                         RouteStep(departurePoint: departure, destination: parking, estimatedTime: 10, distance: 0.5, transportType: .walk),
-                        RouteStep(departurePoint: destination, destination: parking, estimatedTime: 260, distance: 280, transportType: .car),
+                        RouteStep(departurePoint: parking, destination: destination, estimatedTime: 260, distance: 280, transportType: .car),
                         RouteStep(departurePoint: parking, destination: destination, estimatedTime: 10, distance: 0.5, transportType: .walk)
                     ],
                     totalDistance: 281
@@ -60,7 +60,7 @@ final class MockRouteSearchRepository: RouteSearchRepository {
                     arrivalTime: departureTime.addingTimeInterval(285 * 60),
                     step: [
                         RouteStep(departurePoint: departure, destination: parking, estimatedTime: 10, distance: 0.5, transportType: .walk),
-                        RouteStep(departurePoint: destination, destination: parking, estimatedTime: 260, distance: 300, transportType: .car),
+                        RouteStep(departurePoint: parking, destination: destination, estimatedTime: 260, distance: 300, transportType: .car),
                         RouteStep(departurePoint: parking, destination: destination, estimatedTime: 10, distance: 0.8, transportType: .walk)
                     ],
                     totalDistance: 301.3

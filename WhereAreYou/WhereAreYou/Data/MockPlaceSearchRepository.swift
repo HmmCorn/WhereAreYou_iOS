@@ -17,12 +17,9 @@ final class MockPlaceSearchRepository: PlaceSearchRepository {
         let results: [Place]
 
         if trimmed.isEmpty {
-            results = Self.mockPlaces
+            results = []
         } else {
-            results = Self.mockPlaces.filter {
-                $0.name.localizedCaseInsensitiveContains(trimmed) ||
-                $0.address.localizedCaseInsensitiveContains(trimmed)
-            }
+            results = Self.mockPlaces
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
