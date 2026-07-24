@@ -1,5 +1,5 @@
 //
-//  SettingsRow.swift
+//  MyPageRow.swift
 //  WhereAreYou
 //
 //  Created by 김성훈 on 7/24/26.
@@ -9,9 +9,8 @@ import UIKit
 
 // MARK: - 마이페이지 설정 카드 내부의 행 하나
 //       - 아이콘 + (제목/현재값) + 우측 액세서리(기본은 chevron, 필요 시 외부에서 교체)
-//       - 액세서리로 UISwitch를 넣으면, 행을 탭했을 때는 반응하지 않고 스위치를 직접 눌러야만 반응
 
-final class SettingsRow: UIControl {
+final class MyPageRow: UIControl {
 
     var onTap: (() -> Void)?
 
@@ -42,7 +41,7 @@ final class SettingsRow: UIControl {
     private lazy var textStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
         stack.axis = .vertical
-        stack.spacing = 2
+        stack.spacing = 6
         stack.isUserInteractionEnabled = false
         return stack
     }()
@@ -51,7 +50,8 @@ final class SettingsRow: UIControl {
         icon: UIImage?,
         title: String,
         isCircularImage: Bool = false,
-        accessoryView: UIView? = nil
+        accessoryView: UIView? = nil,
+        accessoryHasOwnInteraction: Bool = false
     ) {
         super.init(frame: .zero)
 
@@ -65,21 +65,17 @@ final class SettingsRow: UIControl {
         titleLabel.font = .preferredFont(forTextStyle: .caption1)
         titleLabel.textColor = .secondaryLabel
 
-        valueLabel.font = .preferredFont(forTextStyle: .body)
+        valueLabel.font = .preferredFont(forTextStyle: .callout)
         valueLabel.textColor = .label
 
-        setUp(accessoryView: accessoryView)
+        setUp(accessoryView: accessoryView, accessoryHasOwnInteraction: accessoryHasOwnInteraction)
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented — use init(icon:title:isCircularImage:accessoryView:)")
+        fatalError("init(coder:) has not been implemented — use init(icon:title:isCircularImage:accessoryView:accessoryHasOwnInteraction:)")
     }
 
-    override var isHighlighted: Bool {
-        didSet { updateHighlightAppearance() }
-    }
-
-    private func setUp(accessoryView: UIView?) {
+    private func setUp(accessoryView: UIView?, accessoryHasOwnInteraction: Bool) {
         let iconSize: CGFloat = 22
         iconView.widthAnchor.constraint(equalToConstant: iconSize).isActive = true
         iconView.heightAnchor.constraint(equalToConstant: iconSize).isActive = true
@@ -89,12 +85,13 @@ final class SettingsRow: UIControl {
             contentStack.removeArrangedSubview(defaultAccessoryView)
             defaultAccessoryView.removeFromSuperview()
             contentStack.addArrangedSubview(accessoryView)
+            contentStack.isUserInteractionEnabled = accessoryHasOwnInteraction
         } else {
             defaultAccessoryView.widthAnchor.constraint(equalToConstant: 14).isActive = true
+            contentStack.isUserInteractionEnabled = false
         }
 
         contentStack.translatesAutoresizingMaskIntoConstraints = false
-        contentStack.isUserInteractionEnabled = true
         addSubview(contentStack)
 
         NSLayoutConstraint.activate([
@@ -106,12 +103,6 @@ final class SettingsRow: UIControl {
         ])
 
         addAction(UIAction { [weak self] _ in self?.onTap?() }, for: .touchUpInside)
-    }
-
-    private func updateHighlightAppearance() {
-        UIView.animate(withDuration: 0.12) {
-            self.backgroundColor = self.isHighlighted ? UIColor.systemGray6 : .clear
-        }
     }
 
 }
