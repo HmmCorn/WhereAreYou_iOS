@@ -21,7 +21,7 @@ final class AppointmentCreationViewController: UIViewController {
 
     private let creationCard = AppointmentCreateCard()
 
-    private let confirmCard: AppointmentConfirmCard? = nil
+    private var confirmCard: AppointmentConfirmCard?
 
     init(_ viewModel: AppointmentCreationViewModel) {
         self.viewModel = viewModel
@@ -99,7 +99,7 @@ final class AppointmentCreationViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] hasCreated in
                 guard let self, hasCreated else { return }
-                // set and show confirm card
+                self.showConfirmCard()
             }
             .store(in: &cancellables)
     }
@@ -108,6 +108,38 @@ final class AppointmentCreationViewController: UIViewController {
 
 
 extension AppointmentCreationViewController {
+
+    // MARK: - Confirm Card Transition
+
+    private func showConfirmCard() {
+        let info = viewModel.makeAppointmentInfo()
+        let card = AppointmentConfirmCard(data: info)
+        self.confirmCard = card
+
+        card.onCopyCodeTap = {
+            UIPasteboard.general.string = info.code
+        }
+        card.onConfirmTap = {
+            // TODO: 약속 화면으로 이동
+        }
+
+        view.addSubview(card)
+        NSLayoutConstraint.activate([
+            card.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor, constant: -50),
+            card.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 45),
+            card.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -45),
+        ])
+
+        card.transform = CGAffineTransform(translationX: view.bounds.width, y: 0)
+        card.alpha = 0
+
+        UIView.animate(withDuration: 0.45, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0.5) {
+            self.creationCard.transform = CGAffineTransform(translationX: -self.view.bounds.width, y: 0)
+            self.creationCard.alpha = 0
+            card.transform = .identity
+            card.alpha = 1
+        }
+    }
 
     // MARK: - Date Picker
 

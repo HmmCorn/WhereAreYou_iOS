@@ -10,14 +10,18 @@ import Combine
 
 final class AppointmentCreationViewModel {
 
-    private(set) var appointmentTitle: String
-    private(set) var code: String?
+    private let createAppointmentUseCase: CreateAppointmentUseCase
+
+    private var appointmentTitle: String
+    private var id: String?
+    private var code: String?
 
     @Published private(set) var appointmentDate: Date?
     @Published private(set) var appointmentPlace: Place?
     @Published private(set) var hasCreated: Bool = false
 
-    init() {
+    init(createAppointmentUseCase: CreateAppointmentUseCase) {
+        self.createAppointmentUseCase = createAppointmentUseCase
         appointmentTitle = "약속"
     }
 
@@ -51,6 +55,23 @@ final class AppointmentCreationViewModel {
                 break
             }
         }
+    }
+
+    func makeAppointmentInfo() -> AppointmentInfo {
+        AppointmentInfo(
+            id: id ?? "",
+            code: code ?? "",
+            title: appointmentTitle,
+            date: appointmentDate,
+            location: appointmentPlace.map {
+                AppointmentLocation(
+                    title: $0.name,
+                    address: $0.address,
+                    coordinate: $0.coordinate
+                )
+            },
+            participants: []
+        )
     }
 
 }
