@@ -58,6 +58,14 @@ final class AppointmentCreateCard: UIView {
     @objc private func createTapped() { onCreateTap?() }
     @objc private func dismissKeyboard() { endEditing(true) }
 
+    func setDateLabel(_ date: Date) {
+        fieldsBox.dateText = date.appointmentDateTimeText
+    }
+
+    func setPlaceLabel(_ place: Place) {
+        fieldsBox.placeText = place.name
+    }
+
 }
 
 extension AppointmentCreateCard: UIGestureRecognizerDelegate {

@@ -10,10 +10,11 @@ import Combine
 
 final class AppointmentCreationViewModel {
 
-    @Published private(set) var appointmentTitle: String
+    private(set) var appointmentTitle: String
+    private(set) var code: String?
+
     @Published private(set) var appointmentDate: Date?
     @Published private(set) var appointmentPlace: Place?
-    @Published private(set) var code: String?
     @Published private(set) var hasCreated: Bool = false
 
     init() {
