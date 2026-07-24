@@ -27,7 +27,7 @@ final class AppointmentFieldsBox: UIView {
         set { placeRow.text = newValue }
     }
 
-    private let nameField = TextFieldRow(icon: UIImage(systemName: "tag"), placeholder: "약속")
+    private let nameField = TextFieldRow(icon: UIImage(systemName: "tag"), placeholder: "약속 이름을 정해주세요.")
     private let dateRow = ButtonRow(icon: UIImage(systemName: "calendar"), placeholder: "날짜와 시간을 선택해주세요.")
     private let placeRow = ButtonRow(icon: UIImage(systemName: "location.circle"), placeholder: "장소를 선택해주세요.")
 
