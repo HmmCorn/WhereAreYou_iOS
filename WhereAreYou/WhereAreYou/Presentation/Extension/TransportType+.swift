@@ -14,7 +14,6 @@ extension TransportType {
         case .walk: return "걷기"
         case .car: return "자동차"
         case .transit: return "대중교통"
-        case .bicycle: return "자전거"
         }
     }
 
@@ -23,16 +22,14 @@ extension TransportType {
         case .walk: return "figure.walk"
         case .car: return "car"
         case .transit: return "bus"
-        case .bicycle: return "bicycle"
         }
     }
 
     var color: UIColor {
         switch self {
-        case .walk: return .systemBrown
+        case .walk: return .systemGreen
         case .car: return .systemIndigo
-        case .transit: return .systemGreen
-        case .bicycle: return .systemYellow
+        case .transit: return .systemYellow
         }
     }
 
