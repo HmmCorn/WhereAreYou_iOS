@@ -152,6 +152,12 @@ final class SearchPlaceCard: UIView {
         filterSection.configure(selected: selected)
     }
 
+    func setSearching(_ isSearching: Bool) {
+        if isSearching {
+            emptyResultLabel.isHidden = true
+        }
+    }
+
     func updateEmptyResultMessage(hasSearched: Bool) {
         emptyResultLabel.text = hasSearched ? "검색 결과가 존재하지 않습니다." : "장소를 검색해주세요."
     }

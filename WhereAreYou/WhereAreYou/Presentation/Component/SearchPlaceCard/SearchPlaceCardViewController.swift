@@ -150,6 +150,13 @@ final class SearchPlaceCardViewController: UIViewController {
             }
             .store(in: &cancellables)
 
+        viewModel.$isSearching
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isSearching in
+                self?.searchCard.setSearching(isSearching)
+            }
+            .store(in: &cancellables)
+
         viewModel.$hasSearched
             .receive(on: DispatchQueue.main)
             .sink { [weak self] hasSearched in
