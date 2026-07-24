@@ -65,7 +65,7 @@ final class SearchBar: UIView {
         searchButton.heightAnchor.constraint(equalToConstant: 22).isActive = true
 
         NSLayoutConstraint.activate([
-            stack.heightAnchor.constraint(greaterThanOrEqualToConstant: 38),
+            stack.heightAnchor.constraint(equalToConstant: 38),
             stack.leadingAnchor.constraint(equalTo: leadingAnchor),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor),
             stack.topAnchor.constraint(equalTo: topAnchor),
