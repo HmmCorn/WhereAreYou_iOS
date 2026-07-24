@@ -80,6 +80,10 @@ final class MyPageRow: UIControl {
         contentStack.addArrangedSubview(newAccessoryView)
     }
 
+    func setIcon(_ newIcon: UIImage?) {
+        iconView.image = newIcon
+    }
+
     private func setUp(accessoryView: UIView?, accessoryHasOwnInteraction: Bool) {
         let iconSize: CGFloat = 22
         iconView.widthAnchor.constraint(equalToConstant: iconSize).isActive = true

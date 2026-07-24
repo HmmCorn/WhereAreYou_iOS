@@ -41,6 +41,15 @@ final class MyPageViewModel: NSObject {
         loadDummyAppointmentNotifications()
     }
 
+    func setProfile(nickname: String, profileImageName: String) {
+        profile = MyPageProfile(
+            nickname: nickname,
+            profileImageName: profileImageName,
+            locationSharingOption: profile.locationSharingOption,
+            isNotificationEnabled: profile.isNotificationEnabled
+        )
+    }
+
     func requestLocationPermission() {
         locationManager.requestWhenInUseAuthorization()
     }

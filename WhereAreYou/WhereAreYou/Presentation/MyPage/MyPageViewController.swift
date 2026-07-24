@@ -47,7 +47,7 @@ final class MyPageViewController: UIViewController {
         return imageView
     }()
     private lazy var profileRow = MyPageRow(
-        icon: nil,
+        icon: UIImage(named: viewModel.profile.profileImageName) ?? UIImage(systemName: viewModel.profile.profileImageName),
         title: "닉네임",
         isCircularImage: true,
         accessoryView: profileEditIcon
@@ -159,8 +159,8 @@ final class MyPageViewController: UIViewController {
     }
 
     private func setUpActions() {
-        profileRow.onTap = {
-            print("프로필 편집 탭")
+        profileRow.onTap = { [weak self] in
+            self?.presentProfileEdit()
         }
         locationSharingRow.onTap = { [weak self] in
             self?.presentLocationSharingSelection()
@@ -188,6 +188,7 @@ final class MyPageViewController: UIViewController {
         let profile = viewModel.profile
 
         profileRow.value = profile.nickname
+        profileRow.setIcon(UIImage(named: profile.profileImageName) ?? UIImage(systemName: profile.profileImageName))
         locationSharingRow.value = profile.locationSharingOption.title
         locationPermissionRow.value = viewModel.locationPermissionState.title
         notificationSwitch.isOn = profile.isNotificationEnabled
@@ -198,6 +199,18 @@ final class MyPageViewController: UIViewController {
 
         inquiryRow.value = "어딘데 지원 정보"
         appInfoRow.value = "버전 정보"
+    }
+
+    private func presentProfileEdit() {
+        let editVC = ProfileEditViewController(
+            nickname: viewModel.profile.nickname,
+            profileImageName: viewModel.profile.profileImageName
+        )
+        editVC.onProfileSaved = { [weak self] nickname, profileImageName in
+            self?.viewModel.setProfile(nickname: nickname, profileImageName: profileImageName)
+            self?.reloadContent()
+        }
+        navigationController?.pushViewController(editVC, animated: true)
     }
 
     private func presentLocationSharingSelection() {
