@@ -18,7 +18,7 @@ final class AppointmentListViewController: UIViewController {
     private let viewModel = AppointmentListViewModel()
 
     private let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "Logo"))
+        let imageView = UIImageView(image: .logo)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
