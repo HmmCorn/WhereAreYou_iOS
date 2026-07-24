@@ -85,13 +85,14 @@ final class PastAppointmentListViewController: UIViewController {
         ])
     }
 
-    private func reloadCards() {
+    private func reloadCards(pastAppointments: [AppointmentListItem]? = nil) {
+        let pastAppointments = pastAppointments ?? viewModel.pastAppointments
+
         contentStack.arrangedSubviews.forEach {
             contentStack.removeArrangedSubview($0)
             $0.removeFromSuperview()
         }
 
-        let pastAppointments = viewModel.pastAppointments
         emptyLabel.isHidden = !pastAppointments.isEmpty
         scrollView.isHidden = pastAppointments.isEmpty
 
@@ -118,8 +119,9 @@ final class PastAppointmentListViewController: UIViewController {
             title: viewModel.notificationMenuTitle(for: item),
             image: UIImage(systemName: viewModel.notificationMenuIcon(for: item))
         ) { [weak self] _ in
-            self?.viewModel.toggleNotification(id: item.id)
-            self?.reloadCards()
+            guard let self else { return }
+            let updated = viewModel.toggleNotification(id: item.id)
+            reloadCards(pastAppointments: updated)
         }
 
         let leaveAction = UIAction(
@@ -127,16 +129,17 @@ final class PastAppointmentListViewController: UIViewController {
             image: UIImage(systemName: "rectangle.portrait.and.arrow.right"),
             attributes: .destructive
         ) { [weak self] _ in
-            self?.presentDeleteConfirmAlert(id: item.id, title: item.title)
+            self?.presentLeaveConfirmAlert(id: item.id, title: item.title)
         }
 
         return UIMenu(children: [notificationAction, leaveAction])
     }
 
-    private func presentDeleteConfirmAlert(id: String, title: String) {
+    private func presentLeaveConfirmAlert(id: String, title: String) {
         let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
-            self?.viewModel.delete(id: id)
-            self?.reloadCards()
+            guard let self else { return }
+            let updated = viewModel.leave(id: id)
+            reloadCards(pastAppointments: updated)
         }
         present(alert, animated: true)
     }

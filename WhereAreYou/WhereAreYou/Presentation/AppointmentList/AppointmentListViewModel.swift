@@ -20,7 +20,6 @@ final class AppointmentListViewModel {
         loadDummyData()
     }
 
-    @discardableResult
     func toggleNotification(id: String) -> (today: [AppointmentListItem], upcoming: [AppointmentListItem]) {
         todayAppointments = todayAppointments.map { toggledIfMatching(id: id, item: $0) }
         upcomingAppointments = upcomingAppointments.map { toggledIfMatching(id: id, item: $0) }
@@ -35,7 +34,6 @@ final class AppointmentListViewModel {
         item.isNotificationEnabled ? "bell.slash" : "bell"
     }
 
-    @discardableResult
     func leave(id: String) -> (today: [AppointmentListItem], upcoming: [AppointmentListItem]) {
         todayAppointments.removeAll { $0.id == id }
         upcomingAppointments.removeAll { $0.id == id }

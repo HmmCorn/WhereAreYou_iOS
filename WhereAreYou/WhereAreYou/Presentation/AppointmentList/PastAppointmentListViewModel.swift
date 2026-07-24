@@ -18,13 +18,6 @@ final class PastAppointmentListViewModel {
         loadDummyData()
     }
 
-    @discardableResult
-    func delete(id: String) -> [AppointmentListItem] {
-        pastAppointments.removeAll { $0.id == id }
-        return pastAppointments
-    }
-
-    @discardableResult
     func toggleNotification(id: String) -> [AppointmentListItem] {
         pastAppointments = pastAppointments.map { toggledIfMatching(id: id, item: $0) }
         return pastAppointments
@@ -36,6 +29,11 @@ final class PastAppointmentListViewModel {
 
     func notificationMenuIcon(for item: AppointmentListItem) -> String {
         item.isNotificationEnabled ? "bell.slash" : "bell"
+    }
+
+    func leave(id: String) -> [AppointmentListItem] {
+        pastAppointments.removeAll { $0.id == id }
+        return pastAppointments
     }
 
     private func toggledIfMatching(id: String, item: AppointmentListItem) -> AppointmentListItem {

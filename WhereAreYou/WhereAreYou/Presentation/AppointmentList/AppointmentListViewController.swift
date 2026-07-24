@@ -131,14 +131,18 @@ final class AppointmentListViewController: UIViewController {
         }, for: .touchUpInside)
     }
 
-    private func reloadCards() {
+    private func reloadCards(
+        today: [AppointmentListItem]? = nil,
+        upcoming: [AppointmentListItem]? = nil
+    ) {
+        let today = today ?? viewModel.todayAppointments
+        let upcoming = upcoming ?? viewModel.upcomingAppointments
+
         contentStack.arrangedSubviews.forEach {
             contentStack.removeArrangedSubview($0)
             $0.removeFromSuperview()
         }
 
-        let today = viewModel.todayAppointments
-        let upcoming = viewModel.upcomingAppointments
         let hasAnyAppointment = !today.isEmpty || !upcoming.isEmpty
 
         emptyLabel.isHidden = hasAnyAppointment
@@ -212,8 +216,9 @@ final class AppointmentListViewController: UIViewController {
             title: viewModel.notificationMenuTitle(for: item),
             image: UIImage(systemName: viewModel.notificationMenuIcon(for: item))
         ) { [weak self] _ in
-            self?.viewModel.toggleNotification(id: item.id)
-            self?.reloadCards()
+            guard let self else { return }
+            let (today, upcoming) = viewModel.toggleNotification(id: item.id)
+            reloadCards(today: today, upcoming: upcoming)
         }
 
         let leaveAction = UIAction(
@@ -229,8 +234,9 @@ final class AppointmentListViewController: UIViewController {
 
     private func presentLeaveConfirmAlert(id: String, title: String) {
         let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
-            self?.viewModel.leave(id: id)
-            self?.reloadCards()
+            guard let self else { return }
+            let (today, upcoming) = viewModel.leave(id: id)
+            reloadCards(today: today, upcoming: upcoming)
         }
         present(alert, animated: true)
     }
