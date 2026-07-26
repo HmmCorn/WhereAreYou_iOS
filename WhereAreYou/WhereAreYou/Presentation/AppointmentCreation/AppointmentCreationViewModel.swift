@@ -15,6 +15,7 @@ final class AppointmentCreationViewModel {
     private var appointmentTitle: String
     private var id: String?
     private var code: String?
+    private var isCreating = false
 
     @Published private(set) var appointmentDate: Date?
     @Published private(set) var appointmentPlace: Place?
@@ -38,6 +39,8 @@ final class AppointmentCreationViewModel {
     }
 
     func create() {
+        guard !isCreating, !hasCreated else { return }
+        isCreating = true
         if appointmentTitle.isEmpty { appointmentTitle = "약속" }
 
         createAppointmentUseCase.execute(
@@ -53,7 +56,7 @@ final class AppointmentCreationViewModel {
                 self.hasCreated = true
             case .failure:
                 // TODO: 서버 작업 후 실패 케이스 정리해 사용자에게 표시할 실패 텍스트 추가 예정
-                break
+                self.isCreating = false
             }
         }
     }
