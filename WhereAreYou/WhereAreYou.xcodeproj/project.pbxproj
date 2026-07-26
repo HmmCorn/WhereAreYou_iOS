@@ -148,6 +148,8 @@
 				DEVELOPMENT_TEAM = 2ZF894QLGK;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WhereAreYou/Core/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "약속이 진행되는 동안 상대방에게 실시간 위치를 공유하기 위해 위치 정보가 필요해요.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "약속 상대방과 위치를 공유하고 이동 경로를 안내하기 위해 위치 정보가 필요해요.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -184,6 +186,8 @@
 				DEVELOPMENT_TEAM = 2ZF894QLGK;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WhereAreYou/Core/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "약속이 진행되는 동안 상대방에게 실시간 위치를 공유하기 위해 위치 정보가 필요해요.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "약속 상대방과 위치를 공유하고 이동 경로를 안내하기 위해 위치 정보가 필요해요.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
