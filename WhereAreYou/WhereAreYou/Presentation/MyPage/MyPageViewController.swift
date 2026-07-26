@@ -194,7 +194,7 @@ final class MyPageViewController: UIViewController {
         notificationRow.value = profile.isNotificationEnabled ? "전체 알림 켜짐" : "전체 알림 꺼짐"
 
         let enabledCount = viewModel.appointmentNotifications.filter { $0.isNotificationEnabled }.count
-        appointmentNotificationRow.value = "(\(enabledCount)/\(viewModel.appointmentNotifications.count))약속 알림 켜짐"
+        appointmentNotificationRow.value = "\(enabledCount)개의 약속 알림 켜짐"
 
         inquiryRow.value = "어딘데 지원 정보"
         appInfoRow.value = "버전 정보"
