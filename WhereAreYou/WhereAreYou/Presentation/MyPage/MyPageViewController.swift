@@ -89,7 +89,6 @@ final class MyPageViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
-        reloadContent()
     }
 
     override func viewWillAppear(_ animated: Bool) {
