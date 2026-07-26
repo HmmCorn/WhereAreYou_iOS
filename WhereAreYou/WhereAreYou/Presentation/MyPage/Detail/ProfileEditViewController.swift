@@ -30,11 +30,21 @@ final class ProfileEditViewController: UIViewController {
     }
     private var nickname: String
 
+    private let previewImageContainer: UIView = {
+        let view = UIView()
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.25
+        view.layer.shadowRadius = 4
+        view.layer.shadowOffset = CGSize(width: 0, height: 4)
+        return view
+    }()
+
     private let previewImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.backgroundColor = .pointBackground
         imageView.tintColor = .blue2
+        imageView.clipsToBounds = true
         return imageView
     }()
 
@@ -42,9 +52,13 @@ final class ProfileEditViewController: UIViewController {
         let field = UITextField()
         field.font = .preferredFont(forTextStyle: .body)
         field.textAlignment = .center
-        field.layer.borderWidth = 1
-        field.layer.borderColor = UIColor.separator.cgColor
+        field.placeholder = "닉네임"
+        field.backgroundColor = .white
         field.layer.cornerRadius = 12
+        field.layer.shadowColor = UIColor.black.cgColor
+        field.layer.shadowOpacity = 0.15
+        field.layer.shadowRadius = 3
+        field.layer.shadowOffset = CGSize(width: 0, height: 2)
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
         field.leftViewMode = .always
         field.returnKeyType = .done
@@ -100,18 +114,28 @@ final class ProfileEditViewController: UIViewController {
     }
 
     private func setUpLayout() {
-        [previewImageView, nicknameField, collectionView, saveButton].forEach {
+        previewImageContainer.translatesAutoresizingMaskIntoConstraints = false
+        previewImageView.translatesAutoresizingMaskIntoConstraints = false
+        [nicknameField, collectionView, saveButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview($0)
         }
 
-        NSLayoutConstraint.activate([
-            previewImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
-            previewImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            previewImageView.widthAnchor.constraint(equalToConstant: Self.previewImageSize),
-            previewImageView.heightAnchor.constraint(equalToConstant: Self.previewImageSize),
+        view.addSubview(previewImageContainer)
+        previewImageContainer.addSubview(previewImageView)
+        [nicknameField, collectionView, saveButton].forEach { view.addSubview($0) }
 
-            nicknameField.topAnchor.constraint(equalTo: previewImageView.bottomAnchor, constant: 24),
+        NSLayoutConstraint.activate([
+            previewImageContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
+            previewImageContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            previewImageContainer.widthAnchor.constraint(equalToConstant: Self.previewImageSize),
+            previewImageContainer.heightAnchor.constraint(equalToConstant: Self.previewImageSize),
+
+            previewImageView.topAnchor.constraint(equalTo: previewImageContainer.topAnchor),
+            previewImageView.leadingAnchor.constraint(equalTo: previewImageContainer.leadingAnchor),
+            previewImageView.trailingAnchor.constraint(equalTo: previewImageContainer.trailingAnchor),
+            previewImageView.bottomAnchor.constraint(equalTo: previewImageContainer.bottomAnchor),
+
+            nicknameField.topAnchor.constraint(equalTo: previewImageContainer.bottomAnchor, constant: 24),
             nicknameField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             nicknameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             nicknameField.heightAnchor.constraint(equalToConstant: 40),
@@ -145,7 +169,8 @@ final class ProfileEditViewController: UIViewController {
         group.interItemSpacing = .flexible(0)
 
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = 12
+        section.interGroupSpacing = 20
+        section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4)
 
         return UICollectionViewCompositionalLayout(section: section)
     }
@@ -175,7 +200,6 @@ final class ProfileEditViewController: UIViewController {
     private func updatePreviewImage() {
         previewImageView.image = UIImage(named: selectedImageName) ?? UIImage(systemName: selectedImageName)
         previewImageView.layer.cornerRadius = Self.previewImageSize / 2
-        previewImageView.clipsToBounds = true
     }
 
     private func setUpActions() {
