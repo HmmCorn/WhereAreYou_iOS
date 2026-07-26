@@ -14,7 +14,7 @@ final class ProfileImageCell: UICollectionViewCell {
 
     private let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
         imageView.backgroundColor = .pointBackground
         return imageView
@@ -59,7 +59,7 @@ final class ProfileImageCell: UICollectionViewCell {
 
     private func updateSelectionAppearance() {
         imageView.layer.borderWidth = isSelected ? 3 : 0
-        imageView.layer.borderColor = UIColor.blue1.cgColor
+        imageView.layer.borderColor = UIColor.pointBlue.cgColor
     }
 
 }

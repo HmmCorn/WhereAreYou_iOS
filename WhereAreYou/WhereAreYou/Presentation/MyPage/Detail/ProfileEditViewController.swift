@@ -12,6 +12,7 @@ final class ProfileEditViewController: UIViewController {
     var onProfileSaved: ((_ nickname: String, _ profileImageName: String) -> Void)?
 
     private static let profileImageCellSize: CGFloat = 90
+    private static let previewImageSize: CGFloat = 96
 
     private static let availableProfileImageNames: [String] = {
         let assetImageNames = ["shark", "turtle"]
@@ -24,20 +25,23 @@ final class ProfileEditViewController: UIViewController {
         return assetImageNames + symbolImageNames
     }()
 
-    private var selectedImageName: String
+    private var selectedImageName: String {
+        didSet { updatePreviewImage() }
+    }
     private var nickname: String
 
-    private let nicknameLabel: UILabel = {
-        let label = UILabel()
-        label.text = "닉네임"
-        label.font = .preferredFont(forTextStyle: .footnote)
-        label.textColor = .secondaryLabel
-        return label
+    private let previewImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = .pointBackground
+        imageView.tintColor = .blue2
+        return imageView
     }()
 
     private let nicknameField: UITextField = {
         let field = UITextField()
         field.font = .preferredFont(forTextStyle: .body)
+        field.textAlignment = .center
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.separator.cgColor
         field.layer.cornerRadius = 12
@@ -45,14 +49,6 @@ final class ProfileEditViewController: UIViewController {
         field.leftViewMode = .always
         field.returnKeyType = .done
         return field
-    }()
-
-    private let profileImageSectionLabel: UILabel = {
-        let label = UILabel()
-        label.text = "프로필 사진"
-        label.font = .preferredFont(forTextStyle: .footnote)
-        label.textColor = .secondaryLabel
-        return label
     }()
 
     private lazy var collectionView: UICollectionView = {
@@ -95,6 +91,7 @@ final class ProfileEditViewController: UIViewController {
         setUpLayout()
         setUpActions()
         applySnapshot()
+        updatePreviewImage()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -103,24 +100,23 @@ final class ProfileEditViewController: UIViewController {
     }
 
     private func setUpLayout() {
-        [nicknameLabel, nicknameField, profileImageSectionLabel, collectionView, saveButton].forEach {
+        [previewImageView, nicknameField, collectionView, saveButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
 
         NSLayoutConstraint.activate([
-            nicknameLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            nicknameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            previewImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
+            previewImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            previewImageView.widthAnchor.constraint(equalToConstant: Self.previewImageSize),
+            previewImageView.heightAnchor.constraint(equalToConstant: Self.previewImageSize),
 
-            nicknameField.topAnchor.constraint(equalTo: nicknameLabel.bottomAnchor, constant: 6),
+            nicknameField.topAnchor.constraint(equalTo: previewImageView.bottomAnchor, constant: 24),
             nicknameField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             nicknameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             nicknameField.heightAnchor.constraint(equalToConstant: 40),
 
-            profileImageSectionLabel.topAnchor.constraint(equalTo: nicknameField.bottomAnchor, constant: 24),
-            profileImageSectionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-
-            collectionView.topAnchor.constraint(equalTo: profileImageSectionLabel.bottomAnchor, constant: 12),
+            collectionView.topAnchor.constraint(equalTo: nicknameField.bottomAnchor, constant: 24),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             collectionView.bottomAnchor.constraint(equalTo: saveButton.topAnchor, constant: -16),
@@ -174,6 +170,12 @@ final class ProfileEditViewController: UIViewController {
                 scrollPosition: []
             )
         }
+    }
+
+    private func updatePreviewImage() {
+        previewImageView.image = UIImage(named: selectedImageName) ?? UIImage(systemName: selectedImageName)
+        previewImageView.layer.cornerRadius = Self.previewImageSize / 2
+        previewImageView.clipsToBounds = true
     }
 
     private func setUpActions() {
