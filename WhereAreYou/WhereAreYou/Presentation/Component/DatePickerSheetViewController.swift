@@ -35,9 +35,11 @@ final class DatePickerSheetViewController: UIViewController {
     )
 
     private let viewTitle: String
+    private let initialDate: Date?
 
-    init(title: String) {
+    init(title: String, initialDate: Date? = nil) {
         self.viewTitle = title
+        self.initialDate = initialDate
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -49,7 +51,7 @@ final class DatePickerSheetViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         datePicker.minimumDate = Date()
-        datePicker.date = Date()
+        datePicker.date = initialDate ?? Date()
 
         headerLabel.text = viewTitle
 

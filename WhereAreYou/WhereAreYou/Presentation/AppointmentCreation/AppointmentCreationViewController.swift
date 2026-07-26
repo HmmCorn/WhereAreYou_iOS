@@ -144,7 +144,10 @@ extension AppointmentCreationViewController {
     // MARK: - Date Picker
 
     private func presentDatePicker() {
-        let pickerViewController = DatePickerSheetViewController(title: "약속 날짜/시간 설정")
+        let pickerViewController = DatePickerSheetViewController(
+            title: "약속 날짜/시간 설정",
+            initialDate: viewModel.appointmentDate
+        )
         pickerViewController.onDateSelected = { [weak self] date in
             self?.viewModel.setDate(date)
         }
