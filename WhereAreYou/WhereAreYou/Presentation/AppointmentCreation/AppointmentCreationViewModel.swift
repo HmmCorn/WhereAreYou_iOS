@@ -49,14 +49,17 @@ final class AppointmentCreationViewModel {
             place: appointmentPlace
         ) { [weak self] result in
             guard let self else { return }
-            switch result {
-            case .success(let appointment):
-                self.id = appointment.id
-                self.code = appointment.code
-                self.hasCreated = true
-            case .failure:
-                // TODO: 서버 작업 후 실패 케이스 정리해 사용자에게 표시할 실패 텍스트 추가 예정
+            DispatchQueue.main.async {
                 self.isCreating = false
+                switch result {
+                case .success(let appointment):
+                    self.id = appointment.id
+                    self.code = appointment.code
+                    self.hasCreated = true
+                case .failure:
+                    // TODO: 서버 작업 후 실패 케이스 정리해 사용자에게 표시할 실패 텍스트 추가 예정
+                    break
+                }
             }
         }
     }
