@@ -222,7 +222,10 @@ final class MyPageViewController: UIViewController {
     }
 
     private func presentAppointmentNotificationList() {
-        let listVC = AppointmentNotificationListViewController(viewModel: viewModel)
+        let listVC = AppointmentNotificationListViewController(
+            fetchItems: { [weak self] in self?.viewModel.appointmentNotifications ?? [] },
+            onToggle: { [weak self] id in self?.viewModel.toggleNotification(id: id) }
+        )
         navigationController?.pushViewController(listVC, animated: true)
     }
 

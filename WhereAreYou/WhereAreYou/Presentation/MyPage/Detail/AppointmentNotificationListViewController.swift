@@ -11,7 +11,8 @@ final class AppointmentNotificationListViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel: MyPageViewModel
+    private let fetchItems: () -> [AppointmentListItem]
+    private let onToggle: (String) -> Void
 
     private let scrollView = UIScrollView()
 
@@ -32,13 +33,14 @@ final class AppointmentNotificationListViewController: UIViewController {
         return label
     }()
 
-    init(viewModel: MyPageViewModel) {
-        self.viewModel = viewModel
+    init(fetchItems: @escaping () -> [AppointmentListItem], onToggle: @escaping (String) -> Void) {
+        self.fetchItems = fetchItems
+        self.onToggle = onToggle
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
+        fatalError("init(coder:) has not been implemented — use init(fetchItems:onToggle:)")
     }
 
     override func viewDidLoad() {
@@ -81,7 +83,7 @@ final class AppointmentNotificationListViewController: UIViewController {
     }
 
     private func reloadCards() {
-        let items = viewModel.appointmentNotifications
+        let items = fetchItems()
 
         contentStack.arrangedSubviews.forEach {
             contentStack.removeArrangedSubview($0)
@@ -97,7 +99,8 @@ final class AppointmentNotificationListViewController: UIViewController {
     private func addCard(for item: AppointmentListItem) {
         let card = AppointmentNotificationCard(item: item)
         card.onNotificationToggle = { [weak self] _ in
-            self?.viewModel.toggleNotification(id: item.id)
+            self?.onToggle(item.id)
+            self?.reloadCards()
         }
         contentStack.addArrangedSubview(card)
     }
