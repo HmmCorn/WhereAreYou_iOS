@@ -5,12 +5,13 @@
 //  Created by 김성훈 on 7/25/26.
 //
 
+import Combine
 import CoreLocation
 
 // MARK: - 마이페이지 화면(탭)의 데이터
 //       - profile: 프로필 카드에 표시할 사용자 정보
 //       - appointmentNotifications: 약속별 알림 화면에서 쓸 약속 목록
-//       - locationPermissionState: CLLocationManager의 실제 권한 상태를 그때그때 조회해서 변환
+//       - locationPermissionState: CLLocationManager의 실제 권한 상태를 Presentation 타입으로 변환해 발행
 //         (지금은 이 ViewModel이 CLLocationManager와 변환 로직을 함께 들고 있지만,
 //          추후 Data 계층(Repository)으로 위치 권한 조회를 옮길 때 이 변환도 함께 옮겨짐을 예상)
 
@@ -19,7 +20,7 @@ final class MyPageViewModel: NSObject {
     private(set) var profile: MyPageProfile
     private(set) var appointmentNotifications: [AppointmentListItem] = []
 
-    var onLocationPermissionChanged: (() -> Void)?
+    @Published private(set) var locationPermissionState: LocationPermissionState = .notDetermined
 
     private let locationManager = CLLocationManager()
 
@@ -27,6 +28,7 @@ final class MyPageViewModel: NSObject {
         self.profile = profile ?? Self.makeDummyProfile()
         super.init()
         locationManager.delegate = self
+        locationPermissionState = Self.convert(locationManager.authorizationStatus)
         loadDummyAppointmentNotifications()
     }
 
@@ -143,17 +145,6 @@ extension MyPageViewModel {
         case shouldOpenSettings
     }
 
-    var locationPermissionState: LocationPermissionState {
-        switch locationManager.authorizationStatus {
-        case .notDetermined: return .notDetermined
-        case .denied: return .denied
-        case .restricted: return .restricted
-        case .authorizedAlways: return .authorizedAlways
-        case .authorizedWhenInUse: return .authorizedWhenInUse
-        @unknown default: return .notDetermined
-        }
-    }
-
     func requestLocationPermission() {
         locationManager.requestWhenInUseAuthorization()
     }
@@ -166,6 +157,17 @@ extension MyPageViewModel {
         return .shouldOpenSettings
     }
 
+    static func convert(_ status: CLAuthorizationStatus) -> LocationPermissionState {
+        switch status {
+        case .notDetermined: return .notDetermined
+        case .denied: return .denied
+        case .restricted: return .restricted
+        case .authorizedAlways: return .authorizedAlways
+        case .authorizedWhenInUse: return .authorizedWhenInUse
+        @unknown default: return .notDetermined
+        }
+    }
+
 }
 
 // MARK: - CLLocationManagerDelegate
@@ -173,7 +175,7 @@ extension MyPageViewModel {
 extension MyPageViewModel: CLLocationManagerDelegate {
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        onLocationPermissionChanged?()
+        locationPermissionState = Self.convert(manager.authorizationStatus)
     }
 
 }

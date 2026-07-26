@@ -5,11 +5,13 @@
 //  Created by 김성훈 on 7/25/26.
 //
 
+import Combine
 import UIKit
 
 final class LocationPermissionViewController: UIViewController {
 
     private let viewModel: MyPageViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     private let card = MyPageCardView()
 
@@ -57,19 +59,12 @@ final class LocationPermissionViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
-        reloadContent()
-
-        viewModel.onLocationPermissionChanged = { [weak self] in
-            DispatchQueue.main.async {
-                self?.reloadContent()
-            }
-        }
+        bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: animated)
-        reloadContent()
     }
 
     private func setUpLayout() {
@@ -107,15 +102,22 @@ final class LocationPermissionViewController: UIViewController {
         }, for: .touchUpInside)
     }
 
+    private func bindViewModel() {
+        viewModel.$locationPermissionState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.reloadContent(with: state)
+            }
+            .store(in: &cancellables)
+    }
+
     private func handleButtonTap() {
         guard viewModel.handlePermissionAction() == .shouldOpenSettings else { return }
         guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(settingsURL)
     }
 
-    private func reloadContent() {
-        let state = viewModel.locationPermissionState
-
+    private func reloadContent(with state: LocationPermissionState) {
         statusTitleLabel.text = state.title
         statusDescriptionLabel.text = state.description
         statusIcon.image = UIImage(systemName: state.iconName)
