@@ -28,6 +28,14 @@ final class AppointmentCreateCard: UIView {
         fatalError("init(coder:) has not been implemented — use init()")
     }
 
+    func setDateLabel(_ date: Date) {
+        fieldsBox.dateText = date.appointmentDateTimeText
+    }
+
+    func setPlaceLabel(_ place: Place) {
+        fieldsBox.placeText = place.name
+    }
+
     private func setUp() {
         translatesAutoresizingMaskIntoConstraints = false
         card.translatesAutoresizingMaskIntoConstraints = false
@@ -56,14 +64,6 @@ final class AppointmentCreateCard: UIView {
     }
 
     @objc private func dismissKeyboard() { endEditing(true) }
-
-    func setDateLabel(_ date: Date) {
-        fieldsBox.dateText = date.appointmentDateTimeText
-    }
-
-    func setPlaceLabel(_ place: Place) {
-        fieldsBox.placeText = place.name
-    }
 
 }
 
