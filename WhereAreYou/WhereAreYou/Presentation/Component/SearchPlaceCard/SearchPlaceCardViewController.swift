@@ -11,8 +11,11 @@ import Combine
 final class SearchPlaceCardViewController: UIViewController {
 
     enum Style {
+        /// plain: 제목과 dimmed가 없는 카드 형태
         case plain
+        /// dimmed: 제목과 dimmed가 있는 카드 형태
         case dimmed(title: String)
+        /// onlyHeader: dimmed는 없고, 제목이 있는 카드 형태
         case onlyHeader(title: String)
     }
 
