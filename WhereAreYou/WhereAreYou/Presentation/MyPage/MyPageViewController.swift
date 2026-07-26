@@ -81,7 +81,6 @@ final class MyPageViewController: UIViewController {
     // MARK: - 기타 카드
 
     private let etcCard = MyPageCardView()
-    private let inquiryRow = MyPageRow(icon: UIImage(systemName: "questionmark.circle"), title: "문의 및 도움말")
     private let appInfoRow = MyPageRow(icon: UIImage(systemName: "info.circle"), title: "앱 정보")
 
     override func viewDidLoad() {
@@ -109,7 +108,7 @@ final class MyPageViewController: UIViewController {
         setUpCard(profileCard, rows: [profileRow])
         setUpCard(locationCard, rows: [locationSharingRow, locationPermissionRow])
         setUpCard(notificationCard, rows: [notificationRow, appointmentNotificationRow])
-        setUpCard(etcCard, rows: [inquiryRow, appInfoRow])
+        setUpCard(etcCard, rows: [appInfoRow])
 
         [profileCard, locationCard, notificationCard, etcCard].forEach {
             contentStack.addArrangedSubview($0)
@@ -170,9 +169,6 @@ final class MyPageViewController: UIViewController {
         appointmentNotificationRow.onTap = { [weak self] in
             self?.presentAppointmentNotificationList()
         }
-        inquiryRow.onTap = {
-            print("문의 및 도움말 탭")
-        }
         appInfoRow.onTap = {
             print("앱 정보 탭")
         }
@@ -196,7 +192,6 @@ final class MyPageViewController: UIViewController {
         let enabledCount = viewModel.appointmentNotifications.filter { $0.isNotificationEnabled }.count
         appointmentNotificationRow.value = "\(enabledCount)개의 약속 알림 켜짐"
 
-        inquiryRow.value = "어딘데 지원 정보"
         appInfoRow.value = "버전 정보"
     }
 
