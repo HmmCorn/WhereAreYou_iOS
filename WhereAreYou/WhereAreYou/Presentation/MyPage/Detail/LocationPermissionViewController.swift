@@ -108,12 +108,9 @@ final class LocationPermissionViewController: UIViewController {
     }
 
     private func handleButtonTap() {
-        if viewModel.locationPermissionState == .notDetermined {
-            viewModel.requestLocationPermission()
-        } else {
-            guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
-            UIApplication.shared.open(settingsURL)
-        }
+        guard viewModel.handlePermissionAction() == .shouldOpenSettings else { return }
+        guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(settingsURL)
     }
 
     private func reloadContent() {

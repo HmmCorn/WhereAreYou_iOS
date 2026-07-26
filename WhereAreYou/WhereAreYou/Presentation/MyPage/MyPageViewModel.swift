@@ -23,17 +23,6 @@ final class MyPageViewModel: NSObject {
 
     private let locationManager = CLLocationManager()
 
-    var locationPermissionState: LocationPermissionState {
-        switch locationManager.authorizationStatus {
-        case .notDetermined: return .notDetermined
-        case .denied: return .denied
-        case .restricted: return .restricted
-        case .authorizedAlways: return .authorizedAlways
-        case .authorizedWhenInUse: return .authorizedWhenInUse
-        @unknown default: return .notDetermined
-        }
-    }
-
     init(profile: MyPageProfile? = nil) {
         self.profile = profile ?? Self.makeDummyProfile()
         super.init()
@@ -41,29 +30,18 @@ final class MyPageViewModel: NSObject {
         loadDummyAppointmentNotifications()
     }
 
+}
+
+// MARK: - 프로필
+
+extension MyPageViewModel {
+
     func setProfile(nickname: String, profileImageName: String) {
         profile = MyPageProfile(
             nickname: nickname,
             profileImageName: profileImageName,
             locationSharingOption: profile.locationSharingOption,
             isNotificationEnabled: profile.isNotificationEnabled
-        )
-    }
-
-    func requestLocationPermission() {
-        locationManager.requestWhenInUseAuthorization()
-    }
-
-    func toggleNotification(id: String) {
-        guard let index = appointmentNotifications.firstIndex(where: { $0.id == id }) else { return }
-        let item = appointmentNotifications[index]
-        appointmentNotifications[index] = AppointmentListItem(
-            id: item.id,
-            title: item.title,
-            participantCount: item.participantCount,
-            location: item.location,
-            date: item.date,
-            isNotificationEnabled: !item.isNotificationEnabled
         )
     }
 
@@ -91,6 +69,25 @@ final class MyPageViewModel: NSObject {
             profileImageName: "shark",
             locationSharingOption: .onlyDuringAppointment,
             isNotificationEnabled: true
+        )
+    }
+
+}
+
+// MARK: - 약속별 알림
+
+extension MyPageViewModel {
+
+    func toggleNotification(id: String) {
+        guard let index = appointmentNotifications.firstIndex(where: { $0.id == id }) else { return }
+        let item = appointmentNotifications[index]
+        appointmentNotifications[index] = AppointmentListItem(
+            id: item.id,
+            title: item.title,
+            participantCount: item.participantCount,
+            location: item.location,
+            date: item.date,
+            isNotificationEnabled: !item.isNotificationEnabled
         )
     }
 
@@ -133,6 +130,40 @@ final class MyPageViewModel: NSObject {
                 isNotificationEnabled: true
             )
         ]
+    }
+
+}
+
+// MARK: - 위치 권한
+
+extension MyPageViewModel {
+
+    enum LocationPermissionAction {
+        case requested
+        case shouldOpenSettings
+    }
+
+    var locationPermissionState: LocationPermissionState {
+        switch locationManager.authorizationStatus {
+        case .notDetermined: return .notDetermined
+        case .denied: return .denied
+        case .restricted: return .restricted
+        case .authorizedAlways: return .authorizedAlways
+        case .authorizedWhenInUse: return .authorizedWhenInUse
+        @unknown default: return .notDetermined
+        }
+    }
+
+    func requestLocationPermission() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+
+    func handlePermissionAction() -> LocationPermissionAction {
+        if locationPermissionState == .notDetermined {
+            requestLocationPermission()
+            return .requested
+        }
+        return .shouldOpenSettings
     }
 
 }
