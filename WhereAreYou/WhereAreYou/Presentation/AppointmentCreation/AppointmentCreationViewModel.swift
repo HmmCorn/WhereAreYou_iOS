@@ -52,6 +52,7 @@ final class AppointmentCreationViewModel {
                 self.code = appointment.code
                 self.hasCreated = true
             case .failure:
+                // TODO: 서버 작업 후 실패 케이스 정리해 사용자에게 표시할 실패 텍스트 추가 예정
                 break
             }
         }
