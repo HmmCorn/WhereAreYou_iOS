@@ -12,6 +12,7 @@ final class SearchPlaceCardViewModel {
 
     @Published private(set) var filteredPlaces: [Place] = []
     @Published private(set) var selectedFilters: [PlaceType] = []
+    @Published private(set) var isSearching = false
     @Published private(set) var hasSearched = false
 
     private var allPlaces: [Place] = []
@@ -22,10 +23,12 @@ final class SearchPlaceCardViewModel {
     }
 
     func search(keyword: String) {
-        hasSearched = true
+        isSearching = true
         searchPlacesUseCase.execute(keyword: keyword) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
+                self.isSearching = false
+                self.hasSearched = true
                 if case .success(let places) = result {
                     self.allPlaces = places
                     self.applyFilter()

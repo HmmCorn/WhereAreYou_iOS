@@ -118,10 +118,8 @@ final class CardContainerView: UIView {
         let button = UIButton(type: .close)
         button.setImage(UIImage(systemName: "xmark"), for: .normal)
         button.tintColor = .label
-        button.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
+        button.addAction(UIAction { [weak self] _ in self?.onClose?() }, for: .touchUpInside)
         return button
     }
-
-    @objc private func closeTapped() { onClose?() }
 
 }

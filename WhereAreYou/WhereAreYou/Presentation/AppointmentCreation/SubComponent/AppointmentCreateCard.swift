@@ -21,12 +21,19 @@ final class AppointmentCreateCard: UIView {
 
     init() {
         super.init(frame: .zero)
-        fieldsBox.name = "약속"
         setUp()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented — use init()")
+    }
+
+    func setDateLabel(_ date: Date) {
+        fieldsBox.dateText = date.appointmentDateTimeText
+    }
+
+    func setPlaceLabel(_ place: Place) {
+        fieldsBox.placeText = place.name
     }
 
     private func setUp() {
@@ -48,7 +55,7 @@ final class AppointmentCreateCard: UIView {
         fieldsBox.onDateRowTap = { [weak self] in self?.onDateRowTap?() }
         fieldsBox.onPlaceRowTap = { [weak self] in self?.onPlaceRowTap?() }
         fieldsBox.onMapButtonTap = { [weak self] in self?.onMapButtonTap?() }
-        createButton.addTarget(self, action: #selector(createTapped), for: .touchUpInside)
+        createButton.addAction(UIAction { [weak self] _ in self?.onCreateTap?() }, for: .touchUpInside)
 
         let dismissKeyboardGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         dismissKeyboardGesture.cancelsTouchesInView = false
@@ -56,7 +63,6 @@ final class AppointmentCreateCard: UIView {
         addGestureRecognizer(dismissKeyboardGesture)
     }
 
-    @objc private func createTapped() { onCreateTap?() }
     @objc private func dismissKeyboard() { endEditing(true) }
 
 }

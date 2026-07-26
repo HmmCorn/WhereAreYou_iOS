@@ -57,9 +57,9 @@ final class TextFieldRow: UIView {
             stack.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
 
-        textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
+        textField.addAction(UIAction { [weak self] _ in
+            self?.onTextChanged?(self?.textField.text ?? "")
+        }, for: .editingChanged)
     }
-
-    @objc private func textChanged() { onTextChanged?(textField.text ?? "") }
     
 }

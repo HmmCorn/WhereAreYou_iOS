@@ -79,9 +79,7 @@ final class PlaceCell: UIView {
     // MARK: - Actions
 
     private func setUpActions() {
-        selectionButton.addTarget(self, action: #selector(selectionButtonTapped), for: .touchUpInside)
+        selectionButton.addAction(UIAction { [weak self] _ in self?.onButtonTap?() }, for: .touchUpInside)
     }
-
-    @objc private func selectionButtonTapped() { onButtonTap?() }
 
 }

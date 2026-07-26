@@ -65,7 +65,7 @@ final class SearchBar: UIView {
         searchButton.heightAnchor.constraint(equalToConstant: 22).isActive = true
 
         NSLayoutConstraint.activate([
-            stack.heightAnchor.constraint(greaterThanOrEqualToConstant: 38),
+            stack.heightAnchor.constraint(equalToConstant: 38),
             stack.leadingAnchor.constraint(equalTo: leadingAnchor),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor),
             stack.topAnchor.constraint(equalTo: topAnchor),
@@ -76,14 +76,13 @@ final class SearchBar: UIView {
     // MARK: - Actions
 
     private func setUpActions() {
-        textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
-        searchButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
-    }
-
-    @objc private func textChanged() { onTextChanged?(textField.text ?? "" ) }
-    @objc private func searchTapped() {
-        onSearchTap?()
-        endEditing(true)
+        textField.addAction(UIAction { [weak self] _ in
+            self?.onTextChanged?(self?.textField.text ?? "")
+        }, for: .editingChanged)
+        searchButton.addAction(UIAction { [weak self] _ in
+            self?.onSearchTap?()
+            self?.endEditing(true)
+        }, for: .touchUpInside)
     }
 
 }

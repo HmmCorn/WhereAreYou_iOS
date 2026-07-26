@@ -1,5 +1,5 @@
 //
-//  DepartureTimePickerViewController.swift
+//  DatePickerSheetViewController.swift
 //  WhereAreYou
 //
 //  Created by 이상유 on 2026-07-22.
@@ -7,13 +7,12 @@
 
 import UIKit
 
-final class DepartureTimePickerViewController: UIViewController {
+final class DatePickerSheetViewController: UIViewController {
 
     var onDateSelected: ((Date) -> Void)?
 
     private let headerLabel: UILabel = {
         let label = UILabel()
-        label.text = "출발 시간 설정"
         label.font = .preferredFont(forTextStyle: .headline)
         label.textAlignment = .center
         return label
@@ -35,9 +34,11 @@ final class DepartureTimePickerViewController: UIViewController {
         edgeInsets: NSDirectionalEdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0)
     )
 
-    private let initialDate: Date
+    private let viewTitle: String
+    private let initialDate: Date?
 
-    init(initialDate: Date) {
+    init(title: String, initialDate: Date? = nil) {
+        self.viewTitle = title
         self.initialDate = initialDate
         super.init(nibName: nil, bundle: nil)
     }
@@ -50,7 +51,9 @@ final class DepartureTimePickerViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         datePicker.minimumDate = Date()
-        datePicker.date = initialDate
+        datePicker.date = initialDate ?? Date()
+
+        headerLabel.text = viewTitle
 
         headerLabel.translatesAutoresizingMaskIntoConstraints = false
         datePicker.translatesAutoresizingMaskIntoConstraints = false

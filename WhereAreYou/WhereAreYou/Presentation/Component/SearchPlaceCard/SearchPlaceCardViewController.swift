@@ -11,8 +11,12 @@ import Combine
 final class SearchPlaceCardViewController: UIViewController {
 
     enum Style {
+        /// plain: 제목과 dimmed가 없는 카드 형태
         case plain
+        /// dimmed: 제목과 dimmed가 있는 카드 형태
         case dimmed(title: String)
+        /// onlyHeader: dimmed는 없고, 제목이 있는 카드 형태
+        case onlyHeader(title: String)
     }
 
     var onPlaceSelected: ((Place) -> Void)?
@@ -31,7 +35,7 @@ final class SearchPlaceCardViewController: UIViewController {
         switch style {
         case .plain:
             self.searchCard = SearchPlaceCard(selectionButtonTitle: selectionButtonTitle)
-        case .dimmed(let title):
+        case .dimmed(let title), .onlyHeader(let title):
             self.searchCard = SearchPlaceCard(
                 selectionButtonTitle: selectionButtonTitle,
                 headerStyle: .titleWithCloseButton(title)
@@ -86,7 +90,7 @@ final class SearchPlaceCardViewController: UIViewController {
                 searchCard.heightAnchor.constraint(lessThanOrEqualTo: view.heightAnchor, multiplier: 0.7),
             ])
 
-        case .plain:
+        case .plain, .onlyHeader:
             NSLayoutConstraint.activate([
                 searchCard.topAnchor.constraint(equalTo: view.topAnchor),
                 searchCard.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -146,6 +150,13 @@ final class SearchPlaceCardViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] filters in
                 self?.searchCard.configureSelectedFilters(filters)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$isSearching
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isSearching in
+                self?.searchCard.setSearching(isSearching)
             }
             .store(in: &cancellables)
 

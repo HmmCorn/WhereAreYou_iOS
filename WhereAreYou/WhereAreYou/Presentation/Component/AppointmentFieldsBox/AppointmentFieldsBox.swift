@@ -27,7 +27,7 @@ final class AppointmentFieldsBox: UIView {
         set { placeRow.text = newValue }
     }
 
-    private let nameField = TextFieldRow(icon: UIImage(systemName: "tag"), placeholder: "약속")
+    private let nameField = TextFieldRow(icon: UIImage(systemName: "tag"), placeholder: "약속 이름을 정해주세요.")
     private let dateRow = ButtonRow(icon: UIImage(systemName: "calendar"), placeholder: "날짜와 시간을 선택해주세요.")
     private let placeRow = ButtonRow(icon: UIImage(systemName: "location.circle"), placeholder: "장소를 선택해주세요.")
 
@@ -51,7 +51,7 @@ final class AppointmentFieldsBox: UIView {
     }
 
     private func setUp() {
-        mapButton.addTarget(self, action: #selector(mapTapped), for: .touchUpInside)
+        mapButton.addAction(UIAction { [weak self] _ in self?.onMapButtonTap?() }, for: .touchUpInside)
         mapButton.widthAnchor.constraint(equalToConstant: 45).isActive = true
 
         let placeRowContent = UIStackView(arrangedSubviews: [placeRow, mapButton])
@@ -91,6 +91,5 @@ final class AppointmentFieldsBox: UIView {
         return stack
     }
 
-    @objc private func mapTapped() { onMapButtonTap?() }
 
 }

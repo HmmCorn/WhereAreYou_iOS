@@ -102,8 +102,11 @@ final class SearchPlaceCard: UIView {
         resultScrollView.addSubview(resultStack)
         resultScrollView.addSubview(emptyResultLabel)
 
+        let expandHeight = resultScrollView.heightAnchor.constraint(equalToConstant: 300)
+        expandHeight.priority = .defaultLow
+
         NSLayoutConstraint.activate([
-            resultScrollView.heightAnchor.constraint(equalToConstant: 300),
+            expandHeight,
 
             resultStack.topAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.topAnchor),
             resultStack.bottomAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.bottomAnchor),
@@ -150,6 +153,14 @@ final class SearchPlaceCard: UIView {
 
     func configureSelectedFilters(_ selected: [PlaceType]) {
         filterSection.configure(selected: selected)
+    }
+
+    func setSearching(_ isSearching: Bool) {
+        if isSearching {
+            emptyResultLabel.isHidden = true
+        } else if places.isEmpty {
+            emptyResultLabel.isHidden = false
+        }
     }
 
     func updateEmptyResultMessage(hasSearched: Bool) {
