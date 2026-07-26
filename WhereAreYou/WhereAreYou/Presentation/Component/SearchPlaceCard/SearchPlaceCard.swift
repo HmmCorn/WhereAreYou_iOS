@@ -158,6 +158,8 @@ final class SearchPlaceCard: UIView {
     func setSearching(_ isSearching: Bool) {
         if isSearching {
             emptyResultLabel.isHidden = true
+        } else if places.isEmpty {
+            emptyResultLabel.isHidden = false
         }
     }
 
