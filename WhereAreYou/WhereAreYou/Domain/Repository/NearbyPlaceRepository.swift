@@ -9,6 +9,7 @@ protocol NearbyPlaceRepository {
 
     func fetchNearbyPlace(
         coordinate: Coordinate,
+        radiusKm: Double,
         completion: @escaping (Result<Place?, Error>) -> Void
     )
 

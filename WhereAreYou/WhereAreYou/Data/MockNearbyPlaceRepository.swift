@@ -9,15 +9,13 @@ import Foundation
 
 final class MockNearbyPlaceRepository: NearbyPlaceRepository {
 
-    /// 이 거리(km) 이내에 있는 장소만 근처 장소로 인정
-    private static let maximumDistanceKm = 0.05
-
     func fetchNearbyPlace(
         coordinate: Coordinate,
+        radiusKm: Double,
         completion: @escaping (Result<Place?, Error>) -> Void
     ) {
         let nearest = Self.mockPlaces
-            .filter { $0.coordinate.distance(to: coordinate) <= Self.maximumDistanceKm }
+            .filter { $0.coordinate.distance(to: coordinate) <= radiusKm }
             .min { $0.coordinate.distance(to: coordinate) < $1.coordinate.distance(to: coordinate) }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
