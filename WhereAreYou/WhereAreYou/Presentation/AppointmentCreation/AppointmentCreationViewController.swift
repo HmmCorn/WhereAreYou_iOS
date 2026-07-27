@@ -192,7 +192,7 @@ extension AppointmentCreationViewController {
     private func presentPlaceMapSelection() {
         let placeSelectionViewModel = PlaceSelectionViewModel(
             getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: MockLocationRepository()
+                repository: CoreLocationRepository()
             ),
             getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
                 repository: MockNearbyPlaceRepository()
