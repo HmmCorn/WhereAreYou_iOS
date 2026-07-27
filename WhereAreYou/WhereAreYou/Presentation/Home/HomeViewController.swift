@@ -166,8 +166,8 @@ final class HomeViewController: UIViewController {
     }
 
     private func setUpActions() {
-        createButton.addAction(UIAction { _ in
-            print("약속 만들기 탭")
+        createButton.addAction(UIAction { [weak self] _ in
+            self?.presentAppointmentCreation()
         }, for: .touchUpInside)
 
         joinButton.addAction(UIAction { [weak self] _ in
@@ -192,6 +192,18 @@ final class HomeViewController: UIViewController {
                 equalTo: firstCard.heightAnchor, constant: 32
             ).isActive = true
         }
+    }
+
+    // MARK: - Appointment Creation
+
+    private func presentAppointmentCreation() {
+        let viewModel = AppointmentCreationViewModel(
+            createAppointmentUseCase: CreateAppointmentUseCase(
+                repository: MockAppointmentCreationRepository()
+            )
+        )
+        let viewController = AppointmentCreationViewController(viewModel)
+        navigationController?.pushViewController(viewController, animated: true)
     }
 
     // MARK: - Join sheet
