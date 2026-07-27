@@ -197,10 +197,10 @@ extension AppointmentCreationViewController {
         }
 
         let navigationController = UINavigationController(rootViewController: placeSelectionViewController)
+        navigationController.isModalInPresentation = true
 
         if let sheet = navigationController.sheetPresentationController {
             sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
         }
 
         present(navigationController, animated: true)

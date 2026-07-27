@@ -11,6 +11,8 @@ final class PlaceSelectionViewController: UIViewController {
 
     var onPlaceConfirmed: ((Place) -> Void)?
 
+    // MARK: - Header
+
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "장소 선택"
@@ -26,6 +28,22 @@ final class PlaceSelectionViewController: UIViewController {
         label.textColor = .secondaryLabel
         label.textAlignment = .center
         return label
+    }()
+
+    private lazy var closeButton: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: "xmark")
+        config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(
+            pointSize: 17, weight: .medium
+        )
+        config.baseForegroundColor = .secondaryLabel
+        config.background.backgroundColor = .secondarySystemFill
+        config.background.cornerRadius = 22
+        config.cornerStyle = .fixed
+
+        let button = UIButton(configuration: config)
+        button.addAction(UIAction { [weak self] _ in self?.closeTapped() }, for: .touchUpInside)
+        return button
     }()
 
     // MARK: - Map (placeholder)
@@ -119,6 +137,7 @@ final class PlaceSelectionViewController: UIViewController {
         button.configuration?.cornerStyle = .fixed
         button.configuration?.background.cornerRadius = 12
         button.heightAnchor.constraint(equalToConstant: 37).isActive = true
+        button.addAction(UIAction { [weak self] _ in self?.confirmTapped() }, for: .touchUpInside)
         return button
     }()
 
@@ -138,10 +157,29 @@ final class PlaceSelectionViewController: UIViewController {
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
+    // MARK: - Action
+
+    private func closeTapped() {
+        presentingViewController?.dismiss(animated: true)
+    }
+
+    private func confirmTapped() {
+        // TODO: ViewModel 도입 후 실제 선택된 Place로 교체
+        let place = Place(
+            id: "temp",
+            name: placeNameLabel.text ?? "",
+            address: placeAddressLabel.text ?? "",
+            coordinate: Coordinate(latitude: 0, longitude: 0),
+            type: .other
+        )
+        onPlaceConfirmed?(place)
+        presentingViewController?.dismiss(animated: true)
+    }
+
     // MARK: - Layout
 
     private func setUpLayout() {
-        [titleLabel, subtitleLabel, mapPlaceholderView].forEach {
+        [titleLabel, subtitleLabel, closeButton, mapPlaceholderView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
@@ -149,6 +187,11 @@ final class PlaceSelectionViewController: UIViewController {
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 30),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+
+            closeButton.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
+            closeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            closeButton.widthAnchor.constraint(equalToConstant: 44),
+            closeButton.heightAnchor.constraint(equalToConstant: 44),
 
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
             subtitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
