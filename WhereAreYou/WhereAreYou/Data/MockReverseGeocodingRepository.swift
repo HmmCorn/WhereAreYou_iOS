@@ -13,11 +13,11 @@ final class MockReverseGeocodingRepository: ReverseGeocodingRepository {
         coordinate: Coordinate,
         completion: @escaping (Result<Place, Error>) -> Void
     ) {
-        let address = Self.mockAddress(near: coordinate)
+        let (roadName, fullAddress) = Self.mockAddress(near: coordinate)
         let place = Place(
             id: "address_\(coordinate.latitude)_\(coordinate.longitude)",
-            name: address,
-            address: "",
+            name: roadName,
+            address: fullAddress,
             coordinate: coordinate,
             type: .other
         )
@@ -28,8 +28,8 @@ final class MockReverseGeocodingRepository: ReverseGeocodingRepository {
     }
 
     /// 실제 API의 도로명주소 응답 형태를 흉내낸 더미 주소 생성
-    /// 좌표와 가장 가까운 지역 기준점을 찾아 그 지역명 + 임의의 상세 지번을 붙임
-    private static func mockAddress(near coordinate: Coordinate) -> String {
+    /// 좌표와 가장 가까운 지역 기준점을 찾아, 도로명(요약)과 도로명+지번(상세) 주소를 함께 반환
+    private static func mockAddress(near coordinate: Coordinate) -> (roadName: String, fullAddress: String) {
         let regionAnchors: [(name: String, coordinate: Coordinate)] = [
             ("서울 강남구 테헤란로", Coordinate(latitude: 37.4979, longitude: 127.0276)),
             ("서울 마포구 양화로", Coordinate(latitude: 37.5571, longitude: 126.9236)),
@@ -47,7 +47,7 @@ final class MockReverseGeocodingRepository: ReverseGeocodingRepository {
 
         let roadName = nearest?.name ?? "알 수 없는 지역"
         let lotNumber = Int.random(in: 1...200)
-        return "\(roadName) \(lotNumber)"
+        return (roadName, "\(roadName) \(lotNumber)")
     }
 
 }
