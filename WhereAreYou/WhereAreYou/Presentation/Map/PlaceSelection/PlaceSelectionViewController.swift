@@ -6,10 +6,23 @@
 //
 
 import UIKit
+import Combine
 
 final class PlaceSelectionViewController: UIViewController {
 
     var onPlaceConfirmed: ((Place) -> Void)?
+
+    private let viewModel: PlaceSelectionViewModel
+    private var cancellables = Set<AnyCancellable>()
+
+    init(viewModel: PlaceSelectionViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     // MARK: - Header
 
@@ -70,7 +83,6 @@ final class PlaceSelectionViewController: UIViewController {
         let label = UILabel()
         label.font = .boldPreferredFont(forTextStyle: .callout)
         label.textColor = .label
-        label.text = "스타벅스 강남역점"
         return label
     }()
 
@@ -78,7 +90,6 @@ final class PlaceSelectionViewController: UIViewController {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .caption1)
         label.textColor = .secondaryLabel
-        label.text = "서울 강남구 테헤란로 124 1층"
         return label
     }()
 
@@ -86,7 +97,6 @@ final class PlaceSelectionViewController: UIViewController {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .caption1)
         label.textColor = .secondaryLabel
-        label.text = "0.3km"
         return label
     }()
 
@@ -145,6 +155,8 @@ final class PlaceSelectionViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpLayout()
+        bindViewModel()
+        viewModel.fetchCurrentLocation()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -157,6 +169,45 @@ final class PlaceSelectionViewController: UIViewController {
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
+    // MARK: - ViewModel Binding
+
+    private func bindViewModel() {
+        viewModel.$isFetchingNearbyPlace
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isFetching in
+                guard let self else { return }
+                if isFetching {
+                    self.placeNameLabel.text = "장소를 찾는 중..."
+                    self.placeAddressLabel.text = " "
+                    self.placeDistanceLabel.text = " "
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.$nearbyPlace
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] place in
+                self?.placeNameLabel.text = place?.name ?? "장소를 불러오지 못했습니다"
+                self?.placeAddressLabel.text = place?.address ?? " "
+            }
+            .store(in: &cancellables)
+
+        viewModel.$distanceText
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in
+                self?.placeDistanceLabel.text = text
+            }
+            .store(in: &cancellables)
+
+        viewModel.$isFetchingNearbyPlace
+            .combineLatest(viewModel.$nearbyPlace)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isFetching, place in
+                self?.confirmButton.isEnabled = !isFetching && place != nil
+            }
+            .store(in: &cancellables)
+    }
+
     // MARK: - Action
 
     private func closeTapped() {
@@ -164,14 +215,7 @@ final class PlaceSelectionViewController: UIViewController {
     }
 
     private func confirmTapped() {
-        // TODO: ViewModel 도입 후 실제 선택된 Place로 교체
-        let place = Place(
-            id: "temp",
-            name: placeNameLabel.text ?? "",
-            address: placeAddressLabel.text ?? "",
-            coordinate: Coordinate(latitude: 0, longitude: 0),
-            type: .other
-        )
+        guard let place = viewModel.nearbyPlace else { return }
         onPlaceConfirmed?(place)
         presentingViewController?.dismiss(animated: true)
     }

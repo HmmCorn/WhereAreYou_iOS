@@ -190,7 +190,18 @@ extension AppointmentCreationViewController {
     // MARK: - Place Map Selection
 
     private func presentPlaceMapSelection() {
-        let placeSelectionViewController = PlaceSelectionViewController()
+        let placeSelectionViewModel = PlaceSelectionViewModel(
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: MockLocationRepository()
+            ),
+            getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
+                repository: MockNearbyPlaceRepository()
+            ),
+            reverseGeocodeUseCase: ReverseGeocodeUseCase(
+                repository: MockReverseGeocodingRepository()
+            )
+        )
+        let placeSelectionViewController = PlaceSelectionViewController(viewModel: placeSelectionViewModel)
 
         placeSelectionViewController.onPlaceConfirmed = { [weak self] place in
             self?.viewModel.setPlace(place)

@@ -33,13 +33,17 @@ final class PlaceSelectionViewModel {
     private let getCurrentLocationUseCase: GetCurrentLocationUseCase
     /// 좌표 기준 근처 장소 조회를 위임하는 UseCase
     private let getNearbyPlaceUseCase: GetNearbyPlaceUseCase
+    /// POI가 없을 때 좌표를 주소로 변환(fallback)하는 UseCase
+    private let reverseGeocodeUseCase: ReverseGeocodeUseCase
 
     init(
         getCurrentLocationUseCase: GetCurrentLocationUseCase,
-        getNearbyPlaceUseCase: GetNearbyPlaceUseCase
+        getNearbyPlaceUseCase: GetNearbyPlaceUseCase,
+        reverseGeocodeUseCase: ReverseGeocodeUseCase
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
         self.getNearbyPlaceUseCase = getNearbyPlaceUseCase
+        self.reverseGeocodeUseCase = reverseGeocodeUseCase
         bindCenterCoordinate()
     }
 
@@ -76,6 +80,22 @@ final class PlaceSelectionViewModel {
     private func fetchNearbyPlace(at coordinate: Coordinate) {
         isFetchingNearbyPlace = true
         getNearbyPlaceUseCase.execute(coordinate: coordinate) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let place) where place != nil:
+                    self.isFetchingNearbyPlace = false
+                    self.nearbyPlace = place
+                    self.updateDistanceText(for: place)
+                case .success, .failure:
+                    self.fetchAddressFallback(at: coordinate)
+                }
+            }
+        }
+    }
+
+    private func fetchAddressFallback(at coordinate: Coordinate) {
+        reverseGeocodeUseCase.execute(coordinate: coordinate) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 self.isFetchingNearbyPlace = false
