@@ -30,10 +30,12 @@ final class CoreLocationRepository: NSObject, LocationRepository {
             locationManager.requestWhenInUseAuthorization()
         case .denied, .restricted:
             completion(.failure(LocationError.permissionDenied))
+            self.completion = nil
         case .authorizedWhenInUse, .authorizedAlways:
             locationManager.requestLocation()
         @unknown default:
             completion(.failure(LocationError.unableToFetch))
+            self.completion = nil
         }
     }
 
@@ -47,6 +49,7 @@ extension CoreLocationRepository: CLLocationManagerDelegate {
             manager.requestLocation()
         case .denied, .restricted:
             completion?(.failure(LocationError.permissionDenied))
+            completion = nil
         case .notDetermined:
             break
         @unknown default:
@@ -57,15 +60,18 @@ extension CoreLocationRepository: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else {
             completion?(.failure(LocationError.unableToFetch))
+            completion = nil
             return
         }
         completion?(.success(
             Coordinate(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
         ))
+        completion = nil
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         completion?(.failure(error))
+        completion = nil
     }
 
 }
