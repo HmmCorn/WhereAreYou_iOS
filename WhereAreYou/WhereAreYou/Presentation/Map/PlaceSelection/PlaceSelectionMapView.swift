@@ -13,7 +13,7 @@ final class PlaceSelectionMapView: NMFNaverMapView {
     var onCameraIdle: ((Coordinate) -> Void)?
 
     private let centerPinImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(systemName: "mappin.and.ellipse"))
+        let imageView = UIImageView(image: .pin)
         imageView.tintColor = .customRed
         imageView.contentMode = .scaleAspectFit
         return imageView
