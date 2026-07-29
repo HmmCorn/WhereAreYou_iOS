@@ -7,7 +7,6 @@
 
 import UIKit
 import Combine
-import NMapsMap
 
 final class PlaceSelectionViewController: UIViewController {
 
@@ -64,19 +63,7 @@ final class PlaceSelectionViewController: UIViewController {
 
     // MARK: - Map
 
-    private let naverMapView: NMFNaverMapView = {
-        let mapView = NMFNaverMapView()
-        mapView.showZoomControls = true
-        mapView.showLocationButton = true
-        return mapView
-    }()
-
-    private let centerPinImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(systemName: "mappin.and.ellipse"))
-        imageView.tintColor = .customRed
-        imageView.contentMode = .scaleAspectFit
-        return imageView
-    }()
+    private let naverMapView = PlaceSelectionMapView(frame: .zero)
 
     // MARK: - Bottom Card
 
@@ -166,7 +153,9 @@ final class PlaceSelectionViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpLayout()
-        naverMapView.mapView.addCameraDelegate(delegate: self)
+        naverMapView.onCameraIdle = { [weak self] coordinate in
+            self?.viewModel.setCenterCoordinate(coordinate)
+        }
         bindViewModel()
         viewModel.fetchCurrentLocation()
     }
@@ -190,11 +179,7 @@ final class PlaceSelectionViewController: UIViewController {
             .sink { [weak self] coordinate in
                 guard let self, !self.isInitialCameraMoveHandled else { return }
                 self.isInitialCameraMoveHandled = true
-                let cameraPosition = NMFCameraPosition(
-                    NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude),
-                    zoom: 16
-                )
-                self.naverMapView.mapView.moveCamera(NMFCameraUpdate(position: cameraPosition))
+                self.naverMapView.moveCamera(to: coordinate)
             }
             .store(in: &cancellables)
 
@@ -272,19 +257,6 @@ final class PlaceSelectionViewController: UIViewController {
         ])
 
         setUpBottomCard()
-        setUpCenterPin()
-    }
-
-    private func setUpCenterPin() {
-        centerPinImageView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(centerPinImageView)
-
-        NSLayoutConstraint.activate([
-            centerPinImageView.centerXAnchor.constraint(equalTo: naverMapView.centerXAnchor),
-            centerPinImageView.bottomAnchor.constraint(equalTo: naverMapView.centerYAnchor),
-            centerPinImageView.widthAnchor.constraint(equalToConstant: 32),
-            centerPinImageView.heightAnchor.constraint(equalToConstant: 32),
-        ])
     }
 
     private func setUpBottomCard() {
@@ -320,21 +292,6 @@ final class PlaceSelectionViewController: UIViewController {
             contentStack.trailingAnchor.constraint(equalTo: bottomCard.trailingAnchor, constant: -31),
             contentStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
         ])
-    }
-
-}
-
-// MARK: - NMFMapViewCameraDelegate
-
-extension PlaceSelectionViewController: NMFMapViewCameraDelegate {
-
-    func mapViewCameraIdle(_ mapView: NMFMapView) {
-        let pinPoint = centerPinImageView.convert(
-            CGPoint(x: centerPinImageView.bounds.midX, y: centerPinImageView.bounds.maxY),
-            to: naverMapView.mapView
-        )
-        let coordinate = naverMapView.mapView.projection.latlng(from: pinPoint)
-        viewModel.setCenterCoordinate(Coordinate(latitude: coordinate.lat, longitude: coordinate.lng))
     }
 
 }
