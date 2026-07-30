@@ -70,8 +70,8 @@ final class AppointmentCreationViewController: UIViewController {
         creationCard.onPlaceRowTap = { [weak self] in
             self?.presentPlaceSearch()
         }
-        creationCard.onMapButtonTap = {
-            // TODO: 지도 화면 작업 후 연결
+        creationCard.onMapButtonTap = { [weak self] in
+            self?.presentPlaceMapSelection()
         }
         creationCard.onCreateTap = { [weak self] in
             self?.viewModel.create()
@@ -185,6 +185,34 @@ extension AppointmentCreationViewController {
         }
 
         present(searchPlaceViewController, animated: true)
+    }
+
+    // MARK: - Place Map Selection
+
+    private func presentPlaceMapSelection() {
+        let placeSelectionViewModel = PlaceSelectionViewModel(
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: CoreLocationRepository()
+            ),
+            getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
+                nearbyPlaceRepository: MockNearbyPlaceRepository(),
+                reverseGeocodingRepository: MockReverseGeocodingRepository()
+            )
+        )
+        let placeSelectionViewController = PlaceSelectionViewController(viewModel: placeSelectionViewModel)
+
+        placeSelectionViewController.onPlaceConfirmed = { [weak self] place in
+            self?.viewModel.setPlace(place)
+        }
+
+        let navigationController = UINavigationController(rootViewController: placeSelectionViewController)
+        navigationController.isModalInPresentation = true
+
+        if let sheet = navigationController.sheetPresentationController {
+            sheet.detents = [.large()]
+        }
+
+        present(navigationController, animated: true)
     }
 
 }
