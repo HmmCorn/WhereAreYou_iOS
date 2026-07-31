@@ -40,8 +40,8 @@ final class AppointmentRouteInfoView: UIView {
     }()
 
     private let departureTimeSummary = SummaryColumnView(title: "출발 시간")
-    private let arrivalTimeSummary = SummaryColumnView(title: "도착 예정", subText: "예정")
-    private let remainingTimeSummary = SummaryColumnView(title: "남은 시간", subText: "남음")
+    private let arrivalTimeSummary = SummaryColumnView(title: "도착 예정")
+    private let remainingTimeSummary = SummaryColumnView(title: "남은 시간")
 
     private let stepLabelsStack: UIStackView = {
         let stack = UIStackView()
@@ -115,8 +115,9 @@ final class AppointmentRouteInfoView: UIView {
         departureTimeSummary.subLabel.text = elapsedText
     }
 
-    func setArrival(timeText: String?) {
+    func setArrival(timeText: String?, remainingText: String?) {
         arrivalTimeSummary.valueLabel.text = timeText
+        arrivalTimeSummary.subLabel.text = remainingText
     }
 
     func setRemaining(timeText: String?) {

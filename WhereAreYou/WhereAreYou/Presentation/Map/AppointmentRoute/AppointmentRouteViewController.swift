@@ -109,16 +109,23 @@ final class AppointmentRouteViewController: UIViewController {
             }
             .store(in: &cancellables)
 
-        Publishers.CombineLatest(viewModel.$myDepartureTimeText, viewModel.$myElapsedTimeText)
+        viewModel.$myDepartureTimeText
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] timeText, elapsedText in
-                self?.infoView.setDeparture(timeText: timeText, elapsedText: elapsedText)
+            .sink { [weak self] text in
+                guard let self else { return }
+                self.infoView.setDeparture(timeText: text, elapsedText: self.viewModel.myElapsedTimeText)
             }
             .store(in: &cancellables)
 
         viewModel.$myArrivalTimeText
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in self?.infoView.setArrival(timeText: text) }
+            .sink { [weak self] text in
+                guard let self else { return }
+                self.infoView.setArrival(
+                    timeText: text,
+                    remainingText: self.viewModel.myRemainingTimeText.map { "\($0) 남음" }
+                )
+            }
             .store(in: &cancellables)
 
         viewModel.$myRemainingTimeText
