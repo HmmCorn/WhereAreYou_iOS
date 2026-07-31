@@ -75,21 +75,27 @@ final class AppointmentRouteViewController: UIViewController {
 
     private let placeNameLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldPreferredFont(forTextStyle: .callout)
+        label.font = .boldPreferredFont(forTextStyle: .caption1)
         return label
     }()
 
-    private lazy var changeRouteButton: UIButton = {
-        var config = UIButton.Configuration.filled()
-        var attributedTitle = AttributedString("목적지와 경로 변경")
-        attributedTitle.font = .preferredFont(forTextStyle: .caption1)
-        config.attributedTitle = attributedTitle
-        config.baseBackgroundColor = UIColor.blue2.withAlphaComponent(0.2)
-        config.baseForegroundColor = .black
-        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
-        config.cornerStyle = .capsule
+    private let placeIconImageView: UIImageView = {
+        let imageView = UIImageView(image: .pin)
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.widthAnchor.constraint(equalToConstant: 18).isActive = true
+        imageView.heightAnchor.constraint(equalToConstant: 18).isActive = true
+        return imageView
+    }()
 
-        let button = UIButton(configuration: config)
+    private lazy var changeRouteButton: UIButton = {
+        let button = UIButton.filled(
+            title: "경로 변경",
+            background: UIColor.blue1,
+            tint: .white,
+            font: .caption2,
+            edgeInsets: NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
+        )
         button.addAction(UIAction { [weak self] _ in self?.viewModel.changeRouteTapped() }, for: .touchUpInside)
         return button
     }()
@@ -266,7 +272,12 @@ final class AppointmentRouteViewController: UIViewController {
             infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor),
         ])
 
-        let destinationRow = UIStackView(arrangedSubviews: [placeNameLabel, UIView(), changeRouteButton])
+        let placeTitleStack = UIStackView(arrangedSubviews: [placeIconImageView, placeNameLabel])
+        placeTitleStack.axis = .horizontal
+        placeTitleStack.spacing = 6
+        placeTitleStack.alignment = .center
+
+        let destinationRow = UIStackView(arrangedSubviews: [placeTitleStack, UIView(), changeRouteButton])
         destinationRow.axis = .horizontal
         destinationRow.alignment = .center
 
@@ -295,7 +306,7 @@ final class AppointmentRouteViewController: UIViewController {
         infoContainer.addSubview(contentStack)
 
         NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: infoContainer.topAnchor, constant: 20),
+            contentStack.topAnchor.constraint(equalTo: infoContainer.topAnchor, constant: 16),
             contentStack.leadingAnchor.constraint(equalTo: infoContainer.leadingAnchor, constant: 20),
             contentStack.trailingAnchor.constraint(equalTo: infoContainer.trailingAnchor, constant: -20),
             contentStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8),
