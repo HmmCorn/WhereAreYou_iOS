@@ -27,7 +27,7 @@ final class AppointmentRouteViewController: UIViewController {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "참여자 위치"
+        label.text = "참여자 이동 경로"
         label.font = .preferredFont(forTextStyle: .headline)
         label.textAlignment = .center
         return label
@@ -61,90 +61,9 @@ final class AppointmentRouteViewController: UIViewController {
 
     private let mapView = AppointmentRouteMapView(frame: .zero)
 
-    // MARK: - Info Area
+    // MARK: - Info
 
-    private let infoContainer: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemBackground
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.25
-        view.layer.shadowRadius = 10
-        view.layer.shadowOffset = CGSize(width: 0, height: -4)
-        return view
-    }()
-
-    private let placeNameLabel: UILabel = {
-        let label = UILabel()
-        label.font = .boldPreferredFont(forTextStyle: .caption1)
-        return label
-    }()
-
-    private let placeIconImageView: UIImageView = {
-        let imageView = UIImageView(image: .pin)
-        imageView.contentMode = .scaleAspectFit
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.widthAnchor.constraint(equalToConstant: 18).isActive = true
-        imageView.heightAnchor.constraint(equalToConstant: 18).isActive = true
-        return imageView
-    }()
-
-    private lazy var changeRouteButton: UIButton = {
-        let button = UIButton.filled(
-            title: "경로 변경",
-            background: UIColor.blue1,
-            tint: .white,
-            font: .caption2,
-            edgeInsets: NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
-        )
-        button.addAction(UIAction { [weak self] _ in self?.viewModel.changeRouteTapped() }, for: .touchUpInside)
-        return button
-    }()
-
-    private let departureTimeSummary = SummaryColumnView(title: "출발 시간")
-    private let arrivalTimeSummary = SummaryColumnView(title: "도착 예정", subText: "예정")
-    private let remainingTimeSummary = SummaryColumnView(title: "남은 시간", subText: "남음")
-
-    private let stepLabelsStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 4
-        stack.distribution = .fill
-        stack.alignment = .center
-        return stack
-    }()
-
-    private let stepBarsStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 4
-        stack.distribution = .fill
-        return stack
-    }()
-
-    private lazy var stepsStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [stepLabelsStack, stepBarsStack])
-        stack.axis = .vertical
-        stack.spacing = 4
-        return stack
-    }()
-
-    private var stepBarWidthConstraints: [NSLayoutConstraint] = []
-    private var stepMinWidths: [CGFloat] = []
-    private var stepRatios: [CGFloat] = []
-    private var lastLaidOutStepBarsWidth: CGFloat = -1
-
-    private let participantsStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.spacing = 14
-        return stack
-    }()
-
-    private let participantsScrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.showsVerticalScrollIndicator = false
-        return scrollView
-    }()
+    private let infoView = AppointmentRouteInfoView(frame: .zero)
 
     // MARK: - Lifecycle
 
@@ -156,36 +75,16 @@ final class AppointmentRouteViewController: UIViewController {
         viewModel.fetchAppointmentDetail()
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        layOutStepBarsIfNeeded()
-    }
-
-    private func layOutStepBarsIfNeeded() {
-        guard !stepMinWidths.isEmpty else { return }
-
-        let availableWidth = stepBarsStack.bounds.width
-        guard availableWidth > 0, availableWidth != lastLaidOutStepBarsWidth else { return }
-        lastLaidOutStepBarsWidth = availableWidth
-
-        let spacing = stepBarsStack.spacing * CGFloat(stepMinWidths.count - 1)
-        let minWidthTotal = stepMinWidths.reduce(0, +)
-        let extraSpace = max(availableWidth - spacing - minWidthTotal, 0)
-
-        for (index, minWidth) in stepMinWidths.enumerated() {
-            let extra = extraSpace * stepRatios[index]
-            stepBarWidthConstraints[index].constant = minWidth + extra
-        }
-    }
-
     // MARK: - ViewModel Binding
 
     private func bindViewModel() {
+        infoView.onChangeRouteTap = { [weak self] in self?.viewModel.changeRouteTapped() }
+
         viewModel.$placeName
             .receive(on: DispatchQueue.main)
             .sink { [weak self] name in
                 self?.subtitleLabel.text = name.map { "목적지: \($0)" }
-                self?.placeNameLabel.text = name
+                self?.infoView.setPlaceName(name)
             }
             .store(in: &cancellables)
 
@@ -206,37 +105,30 @@ final class AppointmentRouteViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] participants in
                 self?.mapView.setParticipants(participants)
+                self?.infoView.setParticipants(participants)
             }
             .store(in: &cancellables)
 
-        viewModel.$myDepartureTimeText
+        Publishers.CombineLatest(viewModel.$myDepartureTimeText, viewModel.$myElapsedTimeText)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in self?.departureTimeSummary.valueLabel.text = text }
-            .store(in: &cancellables)
-
-        viewModel.$myElapsedTimeText
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in self?.departureTimeSummary.subLabel.text = text }
+            .sink { [weak self] timeText, elapsedText in
+                self?.infoView.setDeparture(timeText: timeText, elapsedText: elapsedText)
+            }
             .store(in: &cancellables)
 
         viewModel.$myArrivalTimeText
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in self?.arrivalTimeSummary.valueLabel.text = text }
+            .sink { [weak self] text in self?.infoView.setArrival(timeText: text) }
             .store(in: &cancellables)
 
         viewModel.$myRemainingTimeText
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in self?.remainingTimeSummary.valueLabel.text = text }
+            .sink { [weak self] text in self?.infoView.setRemaining(timeText: text) }
             .store(in: &cancellables)
 
         viewModel.$mySteps
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] steps in self?.updateSteps(steps) }
-            .store(in: &cancellables)
-
-        viewModel.$participants
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] participants in self?.updateParticipantRows(participants) }
+            .sink { [weak self] steps in self?.infoView.setSteps(steps) }
             .store(in: &cancellables)
     }
 
@@ -246,79 +138,10 @@ final class AppointmentRouteViewController: UIViewController {
         presentingViewController?.dismiss(animated: true)
     }
 
-    // MARK: - Info Content Update
-
-    private func updateSteps(_ steps: [RouteStep]) {
-        stepLabelsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        stepBarsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        stepBarWidthConstraints.forEach { $0.isActive = false }
-        stepBarWidthConstraints = []
-        stepMinWidths = []
-        stepRatios = []
-        lastLaidOutStepBarsWidth = -1
-
-        guard !steps.isEmpty else { return }
-
-        let totalTime = max(steps.reduce(0) { $0 + $1.estimatedTime }, 1)
-
-        for step in steps {
-            let icon = UIImageView(image: UIImage(systemName: step.transportType.icon))
-            icon.tintColor = step.transportType.color
-            icon.contentMode = .scaleAspectFit
-            icon.translatesAutoresizingMaskIntoConstraints = false
-            icon.widthAnchor.constraint(equalToConstant: 14).isActive = true
-            icon.heightAnchor.constraint(equalToConstant: 14).isActive = true
-
-            let label = UILabel()
-            label.text = "\(Int(step.estimatedTime))분"
-            label.font = .preferredFont(forTextStyle: .caption2)
-            label.textColor = .secondaryLabel
-
-            let labelStack = UIStackView(arrangedSubviews: [icon, label])
-            labelStack.axis = .horizontal
-            labelStack.spacing = 4
-            labelStack.alignment = .center
-            stepLabelsStack.addArrangedSubview(labelStack)
-
-            let bar = UIView()
-            bar.backgroundColor = step.transportType.color
-            bar.layer.cornerRadius = 2
-            bar.heightAnchor.constraint(equalToConstant: 4).isActive = true
-            stepBarsStack.addArrangedSubview(bar)
-
-            let widthConstraint = bar.widthAnchor.constraint(equalToConstant: 0)
-            widthConstraint.isActive = true
-            stepBarWidthConstraints.append(widthConstraint)
-
-            labelStack.widthAnchor.constraint(equalTo: bar.widthAnchor).isActive = true
-
-            let minWidth = labelStack.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).width
-            stepMinWidths.append(minWidth)
-            stepRatios.append(CGFloat(step.estimatedTime / totalTime))
-        }
-
-        view.setNeedsLayout()
-    }
-
-    private func updateParticipantRows(_ participants: [AppointmentRouteParticipant]) {
-        participantsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        let others = participants.filter { !$0.isMe }
-        for (index, participant) in others.enumerated() {
-            if index > 0 {
-                let divider = Self.makeHorizontalDivider()
-                participantsStack.addArrangedSubview(divider)
-                participantsStack.setCustomSpacing(8, after: divider)
-            }
-            let row = ParticipantRouteRow(participant: participant)
-            participantsStack.addArrangedSubview(row)
-            participantsStack.setCustomSpacing(6, after: row)
-        }
-    }
-
     // MARK: - Layout
 
     private func setUpLayout() {
-        [titleLabel, subtitleLabel, closeButton, mapView].forEach {
+        [titleLabel, subtitleLabel, closeButton, mapView, infoView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
@@ -338,161 +161,13 @@ final class AppointmentRouteViewController: UIViewController {
             mapView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 12),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
+            infoView.topAnchor.constraint(equalTo: mapView.bottomAnchor),
+            infoView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            infoView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            infoView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            infoView.heightAnchor.constraint(equalTo: mapView.heightAnchor, multiplier: 5.5 / 4.5),
         ])
-
-        setUpInfoContainer()
-    }
-
-    private func setUpInfoContainer() {
-        infoContainer.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(infoContainer)
-
-        NSLayoutConstraint.activate([
-            infoContainer.topAnchor.constraint(equalTo: mapView.bottomAnchor),
-            infoContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            infoContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            infoContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor, multiplier: 5.5 / 4.5),
-        ])
-
-        let placeTitleStack = UIStackView(arrangedSubviews: [placeIconImageView, placeNameLabel])
-        placeTitleStack.axis = .horizontal
-        placeTitleStack.spacing = 6
-        placeTitleStack.alignment = .center
-
-        let destinationRow = UIStackView(arrangedSubviews: [placeTitleStack, UIView(), changeRouteButton])
-        destinationRow.axis = .horizontal
-        destinationRow.alignment = .center
-
-        let horizontalDivider = UIView()
-        horizontalDivider.backgroundColor = .separator
-        horizontalDivider.translatesAutoresizingMaskIntoConstraints = false
-        horizontalDivider.heightAnchor.constraint(equalToConstant: 1).isActive = true
-
-        let summaryRow = UIStackView(arrangedSubviews: [
-            departureTimeSummary, Self.makeVerticalDivider(), arrivalTimeSummary,
-            Self.makeVerticalDivider(), remainingTimeSummary,
-        ])
-        summaryRow.axis = .horizontal
-        summaryRow.alignment = .fill
-
-        NSLayoutConstraint.activate([
-            arrivalTimeSummary.widthAnchor.constraint(equalTo: departureTimeSummary.widthAnchor),
-            remainingTimeSummary.widthAnchor.constraint(equalTo: departureTimeSummary.widthAnchor),
-        ])
-
-        participantsScrollView.addSubview(participantsStack)
-        participantsStack.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            participantsStack.topAnchor.constraint(equalTo: participantsScrollView.topAnchor),
-            participantsStack.leadingAnchor.constraint(equalTo: participantsScrollView.leadingAnchor),
-            participantsStack.trailingAnchor.constraint(equalTo: participantsScrollView.trailingAnchor),
-            participantsStack.bottomAnchor.constraint(equalTo: participantsScrollView.bottomAnchor),
-            participantsStack.widthAnchor.constraint(equalTo: participantsScrollView.widthAnchor),
-        ])
-
-        let routeSummaryCard = UIView()
-        routeSummaryCard.backgroundColor = .systemBackground
-        routeSummaryCard.layer.cornerRadius = 14
-        routeSummaryCard.layer.shadowColor = UIColor.black.cgColor
-        routeSummaryCard.layer.shadowOpacity = 0.25
-        routeSummaryCard.layer.shadowRadius = 2
-        routeSummaryCard.layer.shadowOffset = CGSize(width: 0, height: 4)
-
-        let routeSummaryStack = UIStackView(arrangedSubviews: [
-            destinationRow, horizontalDivider, summaryRow, stepsStack,
-        ])
-        routeSummaryStack.axis = .vertical
-        routeSummaryStack.spacing = 10
-        routeSummaryStack.translatesAutoresizingMaskIntoConstraints = false
-        routeSummaryCard.addSubview(routeSummaryStack)
-
-        NSLayoutConstraint.activate([
-            routeSummaryStack.topAnchor.constraint(equalTo: routeSummaryCard.topAnchor, constant: 14),
-            routeSummaryStack.leadingAnchor.constraint(equalTo: routeSummaryCard.leadingAnchor, constant: 14),
-            routeSummaryStack.trailingAnchor.constraint(equalTo: routeSummaryCard.trailingAnchor, constant: -14),
-            routeSummaryStack.bottomAnchor.constraint(equalTo: routeSummaryCard.bottomAnchor, constant: -14),
-        ])
-
-        let contentStack = UIStackView(arrangedSubviews: [
-            routeSummaryCard, participantsScrollView,
-        ])
-        contentStack.axis = .vertical
-        contentStack.spacing = 10
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        infoContainer.addSubview(contentStack)
-
-        NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: infoContainer.topAnchor, constant: 4),
-            contentStack.leadingAnchor.constraint(equalTo: infoContainer.leadingAnchor, constant: 20),
-            contentStack.trailingAnchor.constraint(equalTo: infoContainer.trailingAnchor, constant: -20),
-            contentStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8),
-        ])
-    }
-
-    private static func makeVerticalDivider() -> UIView {
-        let divider = UIView()
-        divider.backgroundColor = .separator
-        divider.translatesAutoresizingMaskIntoConstraints = false
-        divider.widthAnchor.constraint(equalToConstant: 1).isActive = true
-        return divider
-    }
-
-    private static func makeHorizontalDivider() -> UIView {
-        let divider = UIView()
-        divider.backgroundColor = .separator
-        divider.translatesAutoresizingMaskIntoConstraints = false
-        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        return divider
-    }
-
-}
-
-/// info 영역 요약 행(출발/도착/남은시간)의 세로 컬럼 한 칸
-private final class SummaryColumnView: UIView {
-
-    let valueLabel: UILabel = {
-        let label = UILabel()
-        label.font = .boldPreferredFont(forTextStyle: .callout)
-        label.textAlignment = .center
-        return label
-    }()
-
-    let subLabel: UILabel = {
-        let label = UILabel()
-        label.font = .preferredFont(forTextStyle: .caption2)
-        label.textColor = .secondaryLabel
-        label.textAlignment = .center
-        return label
-    }()
-
-    init(title: String, subText: String? = nil) {
-        super.init(frame: .zero)
-
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.font = .preferredFont(forTextStyle: .caption1)
-        titleLabel.textColor = .secondaryLabel
-        titleLabel.textAlignment = .center
-
-        subLabel.text = subText
-
-        let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel, subLabel])
-        stack.axis = .vertical
-        stack.spacing = 2
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(stack)
-
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: topAnchor),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 
 }
