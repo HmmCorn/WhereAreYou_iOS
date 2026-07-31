@@ -7,8 +7,121 @@
 
 import UIKit
 
-/// 약속 경로 화면의 info 영역(목적지/요약/소요시간 바/참여자 리스트) 전체를 담당하는 뷰
+/// 약속 경로 화면의 info 영역을 담당하는 뷰
 final class AppointmentRouteInfoView: UIView {
+
+    var onChangeRouteTap: (() -> Void)? {
+        get { routeSummaryCard.onChangeRouteTap }
+        set { routeSummaryCard.onChangeRouteTap = newValue }
+    }
+
+    private let routeSummaryCard = RouteSummaryCardView()
+
+    private let participantsStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 14
+        return stack
+    }()
+
+    private let participantsScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsVerticalScrollIndicator = false
+        return scrollView
+    }()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .systemBackground
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.25
+        layer.shadowRadius = 10
+        layer.shadowOffset = CGSize(width: 0, height: -4)
+        setUpLayout()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Public
+
+    func setPlaceName(_ name: String?) {
+        routeSummaryCard.setPlaceName(name)
+    }
+
+    func setDeparture(timeText: String?, elapsedText: String?) {
+        routeSummaryCard.setDeparture(timeText: timeText, elapsedText: elapsedText)
+    }
+
+    func setArrival(timeText: String?, remainingText: String?) {
+        routeSummaryCard.setArrival(timeText: timeText, remainingText: remainingText)
+    }
+
+    func setRemaining(timeText: String?) {
+        routeSummaryCard.setRemaining(timeText: timeText)
+    }
+
+    func setSteps(_ steps: [RouteStep]) {
+        routeSummaryCard.setSteps(steps)
+    }
+
+    func setParticipants(_ participants: [AppointmentRouteParticipant]) {
+        participantsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let others = participants.filter { !$0.isMe }
+        for (index, participant) in others.enumerated() {
+            if index > 0 {
+                let divider = Self.makeHorizontalDivider()
+                participantsStack.addArrangedSubview(divider)
+                participantsStack.setCustomSpacing(8, after: divider)
+            }
+            let row = ParticipantRouteRow(participant: participant)
+            participantsStack.addArrangedSubview(row)
+            participantsStack.setCustomSpacing(6, after: row)
+        }
+    }
+
+    // MARK: - Layout
+
+    private func setUpLayout() {
+        participantsScrollView.addSubview(participantsStack)
+        participantsStack.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            participantsStack.topAnchor.constraint(equalTo: participantsScrollView.topAnchor),
+            participantsStack.leadingAnchor.constraint(equalTo: participantsScrollView.leadingAnchor),
+            participantsStack.trailingAnchor.constraint(equalTo: participantsScrollView.trailingAnchor),
+            participantsStack.bottomAnchor.constraint(equalTo: participantsScrollView.bottomAnchor),
+            participantsStack.widthAnchor.constraint(equalTo: participantsScrollView.widthAnchor),
+        ])
+
+        let contentStack = UIStackView(arrangedSubviews: [
+            routeSummaryCard, participantsScrollView,
+        ])
+        contentStack.axis = .vertical
+        contentStack.spacing = 10
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(contentStack)
+
+        NSLayoutConstraint.activate([
+            contentStack.topAnchor.constraint(equalTo: topAnchor, constant: 4),
+            contentStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            contentStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            contentStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+        ])
+    }
+
+    private static func makeHorizontalDivider() -> UIView {
+        let divider = UIView()
+        divider.backgroundColor = .separator
+        divider.translatesAutoresizingMaskIntoConstraints = false
+        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        return divider
+    }
+
+}
+
+/// 목적지/경로변경/요약/소요시간 바를 담은 카드
+private final class RouteSummaryCardView: UIView {
 
     var onChangeRouteTap: (() -> Void)?
 
@@ -72,26 +185,14 @@ final class AppointmentRouteInfoView: UIView {
     private var stepRatios: [CGFloat] = []
     private var lastLaidOutStepBarsWidth: CGFloat = -1
 
-    private let participantsStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.spacing = 14
-        return stack
-    }()
-
-    private let participantsScrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.showsVerticalScrollIndicator = false
-        return scrollView
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init() {
+        super.init(frame: .zero)
         backgroundColor = .systemBackground
+        layer.cornerRadius = 14
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOpacity = 0.25
-        layer.shadowRadius = 10
-        layer.shadowOffset = CGSize(width: 0, height: -4)
+        layer.shadowRadius = 2
+        layer.shadowOffset = CGSize(width: 0, height: 4)
         setUpLayout()
     }
 
@@ -176,21 +277,6 @@ final class AppointmentRouteInfoView: UIView {
         setNeedsLayout()
     }
 
-    func setParticipants(_ participants: [AppointmentRouteParticipant]) {
-        participantsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        let others = participants.filter { !$0.isMe }
-        for (index, participant) in others.enumerated() {
-            if index > 0 {
-                let divider = Self.makeHorizontalDivider()
-                participantsStack.addArrangedSubview(divider)
-                participantsStack.setCustomSpacing(8, after: divider)
-            }
-            let row = ParticipantRouteRow(participant: participant)
-            participantsStack.addArrangedSubview(row)
-            participantsStack.setCustomSpacing(6, after: row)
-        }
-    }
-
     // MARK: - Step Bar Layout
 
     private func layOutStepBarsIfNeeded() {
@@ -239,41 +325,8 @@ final class AppointmentRouteInfoView: UIView {
             remainingTimeSummary.widthAnchor.constraint(equalTo: departureTimeSummary.widthAnchor),
         ])
 
-        participantsScrollView.addSubview(participantsStack)
-        participantsStack.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            participantsStack.topAnchor.constraint(equalTo: participantsScrollView.topAnchor),
-            participantsStack.leadingAnchor.constraint(equalTo: participantsScrollView.leadingAnchor),
-            participantsStack.trailingAnchor.constraint(equalTo: participantsScrollView.trailingAnchor),
-            participantsStack.bottomAnchor.constraint(equalTo: participantsScrollView.bottomAnchor),
-            participantsStack.widthAnchor.constraint(equalTo: participantsScrollView.widthAnchor),
-        ])
-
-        let routeSummaryCard = UIView()
-        routeSummaryCard.backgroundColor = .systemBackground
-        routeSummaryCard.layer.cornerRadius = 14
-        routeSummaryCard.layer.shadowColor = UIColor.black.cgColor
-        routeSummaryCard.layer.shadowOpacity = 0.25
-        routeSummaryCard.layer.shadowRadius = 2
-        routeSummaryCard.layer.shadowOffset = CGSize(width: 0, height: 4)
-
-        let routeSummaryStack = UIStackView(arrangedSubviews: [
-            destinationRow, horizontalDivider, summaryRow, stepsStack,
-        ])
-        routeSummaryStack.axis = .vertical
-        routeSummaryStack.spacing = 10
-        routeSummaryStack.translatesAutoresizingMaskIntoConstraints = false
-        routeSummaryCard.addSubview(routeSummaryStack)
-
-        NSLayoutConstraint.activate([
-            routeSummaryStack.topAnchor.constraint(equalTo: routeSummaryCard.topAnchor, constant: 14),
-            routeSummaryStack.leadingAnchor.constraint(equalTo: routeSummaryCard.leadingAnchor, constant: 14),
-            routeSummaryStack.trailingAnchor.constraint(equalTo: routeSummaryCard.trailingAnchor, constant: -14),
-            routeSummaryStack.bottomAnchor.constraint(equalTo: routeSummaryCard.bottomAnchor, constant: -14),
-        ])
-
         let contentStack = UIStackView(arrangedSubviews: [
-            routeSummaryCard, participantsScrollView,
+            destinationRow, horizontalDivider, summaryRow, stepsStack,
         ])
         contentStack.axis = .vertical
         contentStack.spacing = 10
@@ -281,10 +334,10 @@ final class AppointmentRouteInfoView: UIView {
         addSubview(contentStack)
 
         NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: topAnchor, constant: 4),
-            contentStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-            contentStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
-            contentStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+            contentStack.topAnchor.constraint(equalTo: topAnchor, constant: 14),
+            contentStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            contentStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+            contentStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14),
         ])
     }
 
@@ -293,14 +346,6 @@ final class AppointmentRouteInfoView: UIView {
         divider.backgroundColor = .separator
         divider.translatesAutoresizingMaskIntoConstraints = false
         divider.widthAnchor.constraint(equalToConstant: 1).isActive = true
-        return divider
-    }
-
-    private static func makeHorizontalDivider() -> UIView {
-        let divider = UIView()
-        divider.backgroundColor = .separator
-        divider.translatesAutoresizingMaskIntoConstraints = false
-        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
         return divider
     }
 
