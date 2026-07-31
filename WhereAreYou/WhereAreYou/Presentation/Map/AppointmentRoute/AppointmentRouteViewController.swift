@@ -274,7 +274,7 @@ final class AppointmentRouteViewController: UIViewController {
             infoContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             infoContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             infoContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor),
+            infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor, multiplier: 5.5 / 4.5),
         ])
 
         let placeTitleStack = UIStackView(arrangedSubviews: [placeIconImageView, placeNameLabel])
