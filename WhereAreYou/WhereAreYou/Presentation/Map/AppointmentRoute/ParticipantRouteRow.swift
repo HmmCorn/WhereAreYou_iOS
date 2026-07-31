@@ -10,6 +10,7 @@ import UIKit
 /// info 영역 참여자 리스트의 가로형 한 줄
 final class ParticipantRouteRow: UIView {
 
+    /// info 영역 참여자 프로필 이미지 지름
     private static let avatarDiameter: CGFloat = 40
 
     init(participant: AppointmentRouteParticipant) {
@@ -23,7 +24,7 @@ final class ParticipantRouteRow: UIView {
 
     private func setUp(participant: AppointmentRouteParticipant) {
         let avatarContainer = UIView()
-        avatarContainer.backgroundColor = .pointBackground
+        avatarContainer.backgroundColor = .systemBackground
         avatarContainer.clipsToBounds = true
         avatarContainer.layer.cornerRadius = Self.avatarDiameter / 2
         avatarContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -90,7 +91,9 @@ final class ParticipantRouteRow: UIView {
         arrivalColumn.spacing = 2
         arrivalColumn.alignment = .center
 
-        let mainStack = UIStackView(arrangedSubviews: [avatarContainer, nameColumn, UIView(), transportStack, arrivalColumn])
+        let mainStack = UIStackView(arrangedSubviews: [
+            avatarContainer, nameColumn, UIView(), transportStack, arrivalColumn
+        ])
         mainStack.axis = .horizontal
         mainStack.spacing = 10
         mainStack.alignment = .center
