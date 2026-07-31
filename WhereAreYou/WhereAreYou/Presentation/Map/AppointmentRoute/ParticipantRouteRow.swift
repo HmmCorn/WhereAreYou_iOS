@@ -22,14 +22,26 @@ final class ParticipantRouteRow: UIView {
     }
 
     private func setUp(participant: AppointmentRouteParticipant) {
+        let avatarContainer = UIView()
+        avatarContainer.backgroundColor = .pointBackground
+        avatarContainer.clipsToBounds = true
+        avatarContainer.layer.cornerRadius = Self.avatarDiameter / 2
+        avatarContainer.translatesAutoresizingMaskIntoConstraints = false
+        avatarContainer.widthAnchor.constraint(equalToConstant: Self.avatarDiameter).isActive = true
+        avatarContainer.heightAnchor.constraint(equalToConstant: Self.avatarDiameter).isActive = true
+
+        let avatarInset = Self.avatarDiameter * 0.15
         let avatar = UIImageView(image: UIImage(named: participant.profileImageURL.host ?? ""))
-        avatar.backgroundColor = .pointBackground
-        avatar.contentMode = .scaleAspectFill
-        avatar.clipsToBounds = true
-        avatar.layer.cornerRadius = Self.avatarDiameter / 2
+        avatar.contentMode = .scaleAspectFit
         avatar.translatesAutoresizingMaskIntoConstraints = false
-        avatar.widthAnchor.constraint(equalToConstant: Self.avatarDiameter).isActive = true
-        avatar.heightAnchor.constraint(equalToConstant: Self.avatarDiameter).isActive = true
+        avatarContainer.addSubview(avatar)
+
+        NSLayoutConstraint.activate([
+            avatar.topAnchor.constraint(equalTo: avatarContainer.topAnchor, constant: avatarInset),
+            avatar.leadingAnchor.constraint(equalTo: avatarContainer.leadingAnchor, constant: avatarInset),
+            avatar.trailingAnchor.constraint(equalTo: avatarContainer.trailingAnchor, constant: -avatarInset),
+            avatar.bottomAnchor.constraint(equalTo: avatarContainer.bottomAnchor, constant: -avatarInset),
+        ])
 
         let nameLabel = UILabel()
         nameLabel.text = participant.nickname
@@ -78,7 +90,7 @@ final class ParticipantRouteRow: UIView {
         arrivalColumn.spacing = 2
         arrivalColumn.alignment = .center
 
-        let mainStack = UIStackView(arrangedSubviews: [avatar, nameColumn, UIView(), transportStack, arrivalColumn])
+        let mainStack = UIStackView(arrangedSubviews: [avatarContainer, nameColumn, UIView(), transportStack, arrivalColumn])
         mainStack.axis = .horizontal
         mainStack.spacing = 10
         mainStack.alignment = .center

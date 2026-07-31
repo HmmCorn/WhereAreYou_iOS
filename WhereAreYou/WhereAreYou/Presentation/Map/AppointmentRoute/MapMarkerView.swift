@@ -110,14 +110,20 @@ enum MapMarkerView {
     private static func makeIconView(kind: Kind, size: CGSize) -> UIView {
         switch kind {
         case .participant(let profileImage, let tintColor):
+            let circleView = UIView()
+            circleView.backgroundColor = .pointBackground
+            circleView.clipsToBounds = true
+            circleView.layer.cornerRadius = size.width / 2
+            circleView.layer.borderWidth = 2.5
+            circleView.layer.borderColor = tintColor.cgColor
+
+            let inset = size.width * 0.15
             let avatar = UIImageView(image: profileImage)
-            avatar.backgroundColor = .pointBackground
-            avatar.contentMode = .scaleAspectFill
-            avatar.clipsToBounds = true
-            avatar.layer.cornerRadius = size.width / 2
-            avatar.layer.borderWidth = 2.5
-            avatar.layer.borderColor = tintColor.cgColor
-            return avatar
+            avatar.contentMode = .scaleAspectFit
+            avatar.frame = CGRect(x: inset, y: inset, width: size.width - inset * 2, height: size.height - inset * 2)
+            circleView.addSubview(avatar)
+
+            return circleView
 
         case .place:
             let pinImageView = UIImageView(image: .pin)
