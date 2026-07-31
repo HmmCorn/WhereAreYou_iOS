@@ -15,33 +15,7 @@ enum MapMarkerView {
         case place
     }
 
-    /// 하단 그림자가 잘리지 않도록 캔버스에 추가로 확보하는 여백
-    private static let shadowMargin: CGFloat = 8
-    /// 아이콘과 이름 배경 사이 간격
-    private static let nameSpacing: CGFloat = 0
-    /// 이름 배경 높이
-    private static let nameBackgroundHeight: CGFloat = 22
-
-    private static func iconSize(for kind: Kind) -> CGSize {
-        switch kind {
-        case .participant: return CGSize(width: 40, height: 40)
-        case .place: return CGSize(width: 42, height: 42)
-        }
-    }
-
-    private static func contentWidth(for kind: Kind) -> CGFloat {
-        switch kind {
-        case .participant: return 44
-        case .place: return 100
-        }
-    }
-
-    private static func nameFont(for kind: Kind) -> UIFont {
-        switch kind {
-        case .participant: return .boldPreferredFont(forTextStyle: .caption2)
-        case .place: return .boldPreferredFont(forTextStyle: .caption1)
-        }
-    }
+    // MARK: - Public
 
     static func size(for kind: Kind) -> CGSize {
         let iconHeight = iconSize(for: kind).height
@@ -68,7 +42,47 @@ enum MapMarkerView {
         }
     }
 
-    private static func makeContainer(kind: Kind, name: String, size: CGSize) -> UIView {
+}
+
+// MARK: - Private
+
+private extension MapMarkerView {
+
+    // MARK: - Constants
+
+    /// 하단 그림자가 잘리지 않도록 캔버스에 추가로 확보하는 여백
+    static let shadowMargin: CGFloat = 8
+    /// 아이콘과 이름 배경 사이 간격
+    static let nameSpacing: CGFloat = 0
+    /// 이름 배경 높이
+    static let nameBackgroundHeight: CGFloat = 22
+
+    // MARK: - Helpers
+
+    static func iconSize(for kind: Kind) -> CGSize {
+        switch kind {
+        case .participant: return CGSize(width: 40, height: 40)
+        case .place: return CGSize(width: 42, height: 42)
+        }
+    }
+
+    static func contentWidth(for kind: Kind) -> CGFloat {
+        switch kind {
+        case .participant: return 44
+        case .place: return 100
+        }
+    }
+
+    static func nameFont(for kind: Kind) -> UIFont {
+        switch kind {
+        case .participant: return .boldPreferredFont(forTextStyle: .caption2)
+        case .place: return .boldPreferredFont(forTextStyle: .caption1)
+        }
+    }
+
+    // MARK: - View Building
+
+    static func makeContainer(kind: Kind, name: String, size: CGSize) -> UIView {
         let container = UIView(frame: CGRect(origin: .zero, size: size))
         let iconSize = iconSize(for: kind)
 
@@ -107,7 +121,7 @@ enum MapMarkerView {
         return container
     }
 
-    private static func makeIconView(kind: Kind, size: CGSize) -> UIView {
+    static func makeIconView(kind: Kind, size: CGSize) -> UIView {
         switch kind {
         case .participant(let profileImage, let tintColor):
             let circleView = UIView()
@@ -120,7 +134,12 @@ enum MapMarkerView {
             let inset = size.width * 0.15
             let avatar = UIImageView(image: profileImage)
             avatar.contentMode = .scaleAspectFit
-            avatar.frame = CGRect(x: inset, y: inset, width: size.width - inset * 2, height: size.height - inset * 2)
+            avatar.frame = CGRect(
+                x: inset,
+                y: inset,
+                width: size.width - inset * 2,
+                height: size.height - inset * 2
+            )
             circleView.addSubview(avatar)
 
             return circleView
