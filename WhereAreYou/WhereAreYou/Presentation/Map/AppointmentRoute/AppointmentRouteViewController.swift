@@ -298,7 +298,7 @@ final class AppointmentRouteViewController: UIViewController {
             contentStack.topAnchor.constraint(equalTo: infoContainer.topAnchor, constant: 20),
             contentStack.leadingAnchor.constraint(equalTo: infoContainer.leadingAnchor, constant: 20),
             contentStack.trailingAnchor.constraint(equalTo: infoContainer.trailingAnchor, constant: -20),
-            contentStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
+            contentStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8),
         ])
     }
 
