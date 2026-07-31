@@ -41,15 +41,14 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     func setPlaceMarker(coordinate: Coordinate, name: String) {
         placeMarker?.mapView = nil
 
+        let kind = MapMarkerView.Kind.place
+        let markerImage = MapMarkerView.renderImage(kind: kind, name: name)
+
         let marker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
-        marker.iconImage = NMFOverlayImage(image: .pin)
-        marker.iconTintColor = .customRed
-        marker.width = 32
-        marker.height = 32
-        marker.anchor = ParticipantMarkerView.anchor
-        marker.captionText = name
-        marker.captionColor = .label
-        marker.captionHaloColor = .systemBackground
+        marker.iconImage = NMFOverlayImage(image: markerImage)
+        marker.width = MapMarkerView.size(for: kind).width
+        marker.height = MapMarkerView.size(for: kind).height
+        marker.anchor = MapMarkerView.anchor(for: kind)
         marker.mapView = mapView
 
         placeMarker = marker
@@ -83,17 +82,17 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private func addMarker(for participant: AppointmentRouteParticipant, color: UIColor) {
         guard let position = participant.path.first else { return }
 
-        let markerImage = ParticipantMarkerView.renderImage(
+        let kind = MapMarkerView.Kind.participant(
             profileImage: UIImage(named: participant.profileImageURL.host ?? ""),
-            nickname: participant.nickname,
             tintColor: color
         )
+        let markerImage = MapMarkerView.renderImage(kind: kind, name: participant.nickname)
 
         let marker = NMFMarker(position: NMGLatLng(lat: position.latitude, lng: position.longitude))
         marker.iconImage = NMFOverlayImage(image: markerImage)
-        marker.width = ParticipantMarkerView.size.width
-        marker.height = ParticipantMarkerView.size.height
-        marker.anchor = CGPoint(x: 0.5, y: 1.0)
+        marker.width = MapMarkerView.size(for: kind).width
+        marker.height = MapMarkerView.size(for: kind).height
+        marker.anchor = MapMarkerView.anchor(for: kind)
         marker.mapView = mapView
 
         participantMarkers.append(marker)
