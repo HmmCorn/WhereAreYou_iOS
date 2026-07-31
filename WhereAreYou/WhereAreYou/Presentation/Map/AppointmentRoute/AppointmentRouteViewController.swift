@@ -352,7 +352,7 @@ final class AppointmentRouteViewController: UIViewController {
             infoContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             infoContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             infoContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor, multiplier: 6.0 / 4.0),
+            infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor, multiplier: 5.5 / 4.5),
         ])
 
         let placeTitleStack = UIStackView(arrangedSubviews: [placeIconImageView, placeNameLabel])
@@ -391,8 +391,31 @@ final class AppointmentRouteViewController: UIViewController {
             participantsStack.widthAnchor.constraint(equalTo: participantsScrollView.widthAnchor),
         ])
 
+        let routeSummaryCard = UIView()
+        routeSummaryCard.backgroundColor = .systemBackground
+        routeSummaryCard.layer.cornerRadius = 14
+        routeSummaryCard.layer.shadowColor = UIColor.black.cgColor
+        routeSummaryCard.layer.shadowOpacity = 0.25
+        routeSummaryCard.layer.shadowRadius = 2
+        routeSummaryCard.layer.shadowOffset = CGSize(width: 0, height: 4)
+
+        let routeSummaryStack = UIStackView(arrangedSubviews: [
+            destinationRow, horizontalDivider, summaryRow, stepsStack,
+        ])
+        routeSummaryStack.axis = .vertical
+        routeSummaryStack.spacing = 10
+        routeSummaryStack.translatesAutoresizingMaskIntoConstraints = false
+        routeSummaryCard.addSubview(routeSummaryStack)
+
+        NSLayoutConstraint.activate([
+            routeSummaryStack.topAnchor.constraint(equalTo: routeSummaryCard.topAnchor, constant: 14),
+            routeSummaryStack.leadingAnchor.constraint(equalTo: routeSummaryCard.leadingAnchor, constant: 14),
+            routeSummaryStack.trailingAnchor.constraint(equalTo: routeSummaryCard.trailingAnchor, constant: -14),
+            routeSummaryStack.bottomAnchor.constraint(equalTo: routeSummaryCard.bottomAnchor, constant: -14),
+        ])
+
         let contentStack = UIStackView(arrangedSubviews: [
-            destinationRow, horizontalDivider, summaryRow, stepsStack, participantsScrollView,
+            routeSummaryCard, participantsScrollView,
         ])
         contentStack.axis = .vertical
         contentStack.spacing = 10
@@ -400,7 +423,7 @@ final class AppointmentRouteViewController: UIViewController {
         infoContainer.addSubview(contentStack)
 
         NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: infoContainer.topAnchor, constant: 16),
+            contentStack.topAnchor.constraint(equalTo: infoContainer.topAnchor, constant: 4),
             contentStack.leadingAnchor.constraint(equalTo: infoContainer.leadingAnchor, constant: 20),
             contentStack.trailingAnchor.constraint(equalTo: infoContainer.trailingAnchor, constant: -20),
             contentStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8),
