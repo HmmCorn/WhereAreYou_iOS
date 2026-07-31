@@ -104,13 +104,34 @@ final class AppointmentRouteViewController: UIViewController {
     private let arrivalTimeSummary = SummaryColumnView(title: "도착 예정", subText: "예정")
     private let remainingTimeSummary = SummaryColumnView(title: "남은 시간", subText: "남음")
 
-    private let stepsStack: UIStackView = {
+    private let stepLabelsStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.spacing = 12
+        stack.spacing = 4
+        stack.distribution = .fill
         stack.alignment = .center
         return stack
     }()
+
+    private let stepBarsStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 4
+        stack.distribution = .fill
+        return stack
+    }()
+
+    private lazy var stepsStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [stepLabelsStack, stepBarsStack])
+        stack.axis = .vertical
+        stack.spacing = 4
+        return stack
+    }()
+
+    private var stepBarWidthConstraints: [NSLayoutConstraint] = []
+    private var stepMinWidths: [CGFloat] = []
+    private var stepRatios: [CGFloat] = []
+    private var lastLaidOutStepBarsWidth: CGFloat = -1
 
     private let participantsStack: UIStackView = {
         let stack = UIStackView()
@@ -133,6 +154,28 @@ final class AppointmentRouteViewController: UIViewController {
         setUpLayout()
         bindViewModel()
         viewModel.fetchAppointmentDetail()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        layOutStepBarsIfNeeded()
+    }
+
+    private func layOutStepBarsIfNeeded() {
+        guard !stepMinWidths.isEmpty else { return }
+
+        let availableWidth = stepBarsStack.bounds.width
+        guard availableWidth > 0, availableWidth != lastLaidOutStepBarsWidth else { return }
+        lastLaidOutStepBarsWidth = availableWidth
+
+        let spacing = stepBarsStack.spacing * CGFloat(stepMinWidths.count - 1)
+        let minWidthTotal = stepMinWidths.reduce(0, +)
+        let extraSpace = max(availableWidth - spacing - minWidthTotal, 0)
+
+        for (index, minWidth) in stepMinWidths.enumerated() {
+            let extra = extraSpace * stepRatios[index]
+            stepBarWidthConstraints[index].constant = minWidth + extra
+        }
     }
 
     // MARK: - ViewModel Binding
@@ -206,7 +249,18 @@ final class AppointmentRouteViewController: UIViewController {
     // MARK: - Info Content Update
 
     private func updateSteps(_ steps: [RouteStep]) {
-        stepsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        stepLabelsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        stepBarsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        stepBarWidthConstraints.forEach { $0.isActive = false }
+        stepBarWidthConstraints = []
+        stepMinWidths = []
+        stepRatios = []
+        lastLaidOutStepBarsWidth = -1
+
+        guard !steps.isEmpty else { return }
+
+        let totalTime = max(steps.reduce(0) { $0 + $1.estimatedTime }, 1)
+
         for step in steps {
             let icon = UIImageView(image: UIImage(systemName: step.transportType.icon))
             icon.tintColor = step.transportType.color
@@ -217,16 +271,33 @@ final class AppointmentRouteViewController: UIViewController {
 
             let label = UILabel()
             label.text = "\(Int(step.estimatedTime))분"
-            label.font = .preferredFont(forTextStyle: .caption1)
+            label.font = .preferredFont(forTextStyle: .caption2)
             label.textColor = .secondaryLabel
 
-            let stepStack = UIStackView(arrangedSubviews: [icon, label])
-            stepStack.axis = .horizontal
-            stepStack.spacing = 4
-            stepStack.alignment = .center
+            let labelStack = UIStackView(arrangedSubviews: [icon, label])
+            labelStack.axis = .horizontal
+            labelStack.spacing = 4
+            labelStack.alignment = .center
+            stepLabelsStack.addArrangedSubview(labelStack)
 
-            stepsStack.addArrangedSubview(stepStack)
+            let bar = UIView()
+            bar.backgroundColor = step.transportType.color
+            bar.layer.cornerRadius = 2
+            bar.heightAnchor.constraint(equalToConstant: 4).isActive = true
+            stepBarsStack.addArrangedSubview(bar)
+
+            let widthConstraint = bar.widthAnchor.constraint(equalToConstant: 0)
+            widthConstraint.isActive = true
+            stepBarWidthConstraints.append(widthConstraint)
+
+            labelStack.widthAnchor.constraint(equalTo: bar.widthAnchor).isActive = true
+
+            let minWidth = labelStack.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).width
+            stepMinWidths.append(minWidth)
+            stepRatios.append(CGFloat(step.estimatedTime / totalTime))
         }
+
+        view.setNeedsLayout()
     }
 
     private func updateParticipantRows(_ participants: [AppointmentRouteParticipant]) {
@@ -281,7 +352,7 @@ final class AppointmentRouteViewController: UIViewController {
             infoContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             infoContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             infoContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor, multiplier: 5.5 / 4.5),
+            infoContainer.heightAnchor.constraint(equalTo: mapView.heightAnchor, multiplier: 6.0 / 4.0),
         ])
 
         let placeTitleStack = UIStackView(arrangedSubviews: [placeIconImageView, placeNameLabel])

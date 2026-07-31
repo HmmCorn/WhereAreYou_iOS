@@ -94,11 +94,10 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
         ]
 
         let routes: [String: Route] = [
-            currentUserId: makeRoute(
+            currentUserId: makeMultiStepRoute(
                 to: place, departureTime: now.addingTimeInterval(-45 * 60),
                 arrivalTime: now.addingTimeInterval(13 * 60),
-                start: Coordinate(latitude: 37.4930, longitude: 127.0180),
-                transportType: .car
+                start: Coordinate(latitude: 37.4930, longitude: 127.0180)
             ),
             "user_minji": makeRoute(
                 to: place, departureTime: now.addingTimeInterval(-40 * 60),
@@ -189,6 +188,61 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
                 longitude: start.longitude + (end.longitude - start.longitude) * ratio
             )
         }
+    }
+
+    /// 나의 경로를 걷기 → 자동차 → 대중교통 → 걷기 4단계로 구성한 mock
+    /// stepsStack 다중 스텝 렌더링 확인용
+    private static func makeMultiStepRoute(
+        to destination: Place,
+        departureTime: Date,
+        arrivalTime: Date,
+        start: Coordinate
+    ) -> Route {
+        let totalMinutes = arrivalTime.timeIntervalSince(departureTime) / 60
+        let ratios: [(TransportType, Double)] = [
+            (.walk, 0.1),
+            (.car, 0.35),
+            (.transit, 0.4),
+            (.walk, 0.15),
+        ]
+
+        let waypointRatios: [Double] = [0] + ratios.reduce(into: []) { result, item in
+            result.append((result.last ?? 0) + item.1)
+        }
+
+        let waypoints = waypointRatios.map { ratio in
+            Coordinate(
+                latitude: start.latitude + (destination.coordinate.latitude - start.latitude) * ratio,
+                longitude: start.longitude + (destination.coordinate.longitude - start.longitude) * ratio
+            )
+        }
+
+        let places = waypoints.enumerated().map { index, coordinate in
+            index == waypoints.count - 1
+                ? destination
+                : Place(id: "waypoint_\(index)_\(UUID().uuidString)", name: "경유지", address: "", coordinate: coordinate, type: .other)
+        }
+
+        let steps = ratios.enumerated().map { index, item -> RouteStep in
+            let (transportType, ratio) = item
+            let from = places[index]
+            let to = places[index + 1]
+            return RouteStep(
+                departurePoint: from,
+                destination: to,
+                estimatedTime: totalMinutes * ratio,
+                distance: from.coordinate.distance(to: to.coordinate),
+                transportType: transportType,
+                path: interpolatedPath(from: from.coordinate, to: to.coordinate, segments: 3)
+            )
+        }
+
+        return Route(
+            departureTime: departureTime,
+            arrivalTime: arrivalTime,
+            step: steps,
+            totalDistance: steps.reduce(0) { $0 + $1.distance }
+        )
     }
 
 }
