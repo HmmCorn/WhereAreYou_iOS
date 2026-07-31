@@ -46,7 +46,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         marker.iconTintColor = .customRed
         marker.width = 32
         marker.height = 32
-        marker.anchor = CGPoint(x: 0.5, y: 1.0)
+        marker.anchor = ParticipantMarkerView.anchor
         marker.captionText = name
         marker.captionColor = .label
         marker.captionHaloColor = .systemBackground
