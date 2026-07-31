@@ -7,25 +7,29 @@
 
 import UIKit
 
-/// info 영역 참여자 리스트의 가로형 한 줄 (색상닷 + 이름 + 출발시간 + 이동수단 + 도착예정시간)
+/// info 영역 참여자 리스트의 가로형 한 줄
 final class ParticipantRouteRow: UIView {
 
-    init(participant: AppointmentRouteParticipant, color: UIColor) {
+    private static let avatarDiameter: CGFloat = 40
+
+    init(participant: AppointmentRouteParticipant) {
         super.init(frame: .zero)
-        setUp(participant: participant, color: color)
+        setUp(participant: participant)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func setUp(participant: AppointmentRouteParticipant, color: UIColor) {
-        let dot = UIView()
-        dot.backgroundColor = color
-        dot.layer.cornerRadius = 4
-        dot.translatesAutoresizingMaskIntoConstraints = false
-        dot.widthAnchor.constraint(equalToConstant: 8).isActive = true
-        dot.heightAnchor.constraint(equalToConstant: 8).isActive = true
+    private func setUp(participant: AppointmentRouteParticipant) {
+        let avatar = UIImageView(image: UIImage(named: participant.profileImageURL.host ?? ""))
+        avatar.backgroundColor = .pointBackground
+        avatar.contentMode = .scaleAspectFill
+        avatar.clipsToBounds = true
+        avatar.layer.cornerRadius = Self.avatarDiameter / 2
+        avatar.translatesAutoresizingMaskIntoConstraints = false
+        avatar.widthAnchor.constraint(equalToConstant: Self.avatarDiameter).isActive = true
+        avatar.heightAnchor.constraint(equalToConstant: Self.avatarDiameter).isActive = true
 
         let nameLabel = UILabel()
         nameLabel.text = participant.nickname
@@ -36,15 +40,10 @@ final class ParticipantRouteRow: UIView {
         departureLabel.font = .preferredFont(forTextStyle: .caption1)
         departureLabel.textColor = .secondaryLabel
 
-        let leadingStack = UIStackView(arrangedSubviews: [dot, nameLabel])
-        leadingStack.axis = .horizontal
-        leadingStack.spacing = 6
-        leadingStack.alignment = .center
-
-        let leadingColumn = UIStackView(arrangedSubviews: [leadingStack, departureLabel])
-        leadingColumn.axis = .vertical
-        leadingColumn.spacing = 2
-        leadingColumn.alignment = .leading
+        let nameColumn = UIStackView(arrangedSubviews: [nameLabel, departureLabel])
+        nameColumn.axis = .vertical
+        nameColumn.spacing = 2
+        nameColumn.alignment = .leading
 
         let transportIcon = UIImageView(image: UIImage(systemName: participant.transportType.icon))
         transportIcon.tintColor = participant.transportType.color
@@ -56,7 +55,7 @@ final class ParticipantRouteRow: UIView {
         let transportLabel = UILabel()
         transportLabel.text = participant.transportType.name
         transportLabel.font = .preferredFont(forTextStyle: .caption1)
-        transportLabel.textColor = .secondaryLabel
+        transportLabel.textColor = participant.transportType.color
 
         let transportStack = UIStackView(arrangedSubviews: [transportIcon, transportLabel])
         transportStack.axis = .horizontal
@@ -68,13 +67,20 @@ final class ParticipantRouteRow: UIView {
         arrivalLabel.font = .boldPreferredFont(forTextStyle: .subheadline)
         arrivalLabel.textAlignment = .right
 
-        let trailingColumn = UIStackView(arrangedSubviews: [transportStack, arrivalLabel])
-        trailingColumn.axis = .vertical
-        trailingColumn.spacing = 2
-        trailingColumn.alignment = .trailing
+        let arrivalCaptionLabel = UILabel()
+        arrivalCaptionLabel.text = "도착 예정"
+        arrivalCaptionLabel.font = .preferredFont(forTextStyle: .caption2)
+        arrivalCaptionLabel.textColor = .secondaryLabel
+        arrivalCaptionLabel.textAlignment = .right
 
-        let mainStack = UIStackView(arrangedSubviews: [leadingColumn, UIView(), trailingColumn])
+        let arrivalColumn = UIStackView(arrangedSubviews: [arrivalLabel, arrivalCaptionLabel])
+        arrivalColumn.axis = .vertical
+        arrivalColumn.spacing = 2
+        arrivalColumn.alignment = .trailing
+
+        let mainStack = UIStackView(arrangedSubviews: [avatar, nameColumn, UIView(), transportStack, arrivalColumn])
         mainStack.axis = .horizontal
+        mainStack.spacing = 10
         mainStack.alignment = .center
         mainStack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(mainStack)

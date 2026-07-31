@@ -231,9 +231,8 @@ final class AppointmentRouteViewController: UIViewController {
 
     private func updateParticipantRows(_ participants: [AppointmentRouteParticipant]) {
         participantsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        let colors = UIColor.participantColors(count: participants.count)
-        for (index, participant) in participants.enumerated() where !participant.isMe {
-            participantsStack.addArrangedSubview(ParticipantRouteRow(participant: participant, color: colors[index]))
+        for participant in participants where !participant.isMe {
+            participantsStack.addArrangedSubview(ParticipantRouteRow(participant: participant))
         }
     }
 
@@ -370,7 +369,7 @@ private final class SummaryColumnView: UIView {
 
         let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel, subLabel])
         stack.axis = .vertical
-        stack.spacing = 4
+        stack.spacing = 2
         stack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stack)
 
