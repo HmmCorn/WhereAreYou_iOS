@@ -101,8 +101,8 @@ final class AppointmentRouteViewController: UIViewController {
     }()
 
     private let departureTimeSummary = SummaryColumnView(title: "출발 시간")
-    private let arrivalTimeSummary = SummaryColumnView(title: "도착 예정")
-    private let remainingTimeSummary = SummaryColumnView(title: "남은 시간")
+    private let arrivalTimeSummary = SummaryColumnView(title: "도착 예정", subText: "예정")
+    private let remainingTimeSummary = SummaryColumnView(title: "남은 시간", subText: "남음")
 
     private let stepsStack: UIStackView = {
         let stack = UIStackView()
@@ -169,6 +169,11 @@ final class AppointmentRouteViewController: UIViewController {
         viewModel.$myDepartureTimeText
             .receive(on: DispatchQueue.main)
             .sink { [weak self] text in self?.departureTimeSummary.valueLabel.text = text }
+            .store(in: &cancellables)
+
+        viewModel.$myElapsedTimeText
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] text in self?.departureTimeSummary.subLabel.text = text }
             .store(in: &cancellables)
 
         viewModel.$myArrivalTimeText
@@ -281,11 +286,22 @@ final class AppointmentRouteViewController: UIViewController {
         destinationRow.axis = .horizontal
         destinationRow.alignment = .center
 
+        let horizontalDivider = UIView()
+        horizontalDivider.backgroundColor = .separator
+        horizontalDivider.translatesAutoresizingMaskIntoConstraints = false
+        horizontalDivider.heightAnchor.constraint(equalToConstant: 1).isActive = true
+
         let summaryRow = UIStackView(arrangedSubviews: [
-            departureTimeSummary, arrivalTimeSummary, remainingTimeSummary,
+            departureTimeSummary, Self.makeVerticalDivider(), arrivalTimeSummary,
+            Self.makeVerticalDivider(), remainingTimeSummary,
         ])
         summaryRow.axis = .horizontal
-        summaryRow.distribution = .fillEqually
+        summaryRow.alignment = .fill
+
+        NSLayoutConstraint.activate([
+            arrivalTimeSummary.widthAnchor.constraint(equalTo: departureTimeSummary.widthAnchor),
+            remainingTimeSummary.widthAnchor.constraint(equalTo: departureTimeSummary.widthAnchor),
+        ])
 
         participantsScrollView.addSubview(participantsStack)
         participantsStack.translatesAutoresizingMaskIntoConstraints = false
@@ -298,10 +314,10 @@ final class AppointmentRouteViewController: UIViewController {
         ])
 
         let contentStack = UIStackView(arrangedSubviews: [
-            destinationRow, summaryRow, stepsStack, participantsScrollView,
+            destinationRow, horizontalDivider, summaryRow, stepsStack, participantsScrollView,
         ])
         contentStack.axis = .vertical
-        contentStack.spacing = 16
+        contentStack.spacing = 10
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         infoContainer.addSubview(contentStack)
 
@@ -313,8 +329,17 @@ final class AppointmentRouteViewController: UIViewController {
         ])
     }
 
+    private static func makeVerticalDivider() -> UIView {
+        let divider = UIView()
+        divider.backgroundColor = .separator
+        divider.translatesAutoresizingMaskIntoConstraints = false
+        divider.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        return divider
+    }
+
 }
 
+/// info 영역 요약 행(출발/도착/남은시간)의 세로 컬럼 한 칸
 private final class SummaryColumnView: UIView {
 
     let valueLabel: UILabel = {
@@ -324,7 +349,15 @@ private final class SummaryColumnView: UIView {
         return label
     }()
 
-    init(title: String) {
+    let subLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .caption2)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        return label
+    }()
+
+    init(title: String, subText: String? = nil) {
         super.init(frame: .zero)
 
         let titleLabel = UILabel()
@@ -333,7 +366,9 @@ private final class SummaryColumnView: UIView {
         titleLabel.textColor = .secondaryLabel
         titleLabel.textAlignment = .center
 
-        let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+        subLabel.text = subText
+
+        let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel, subLabel])
         stack.axis = .vertical
         stack.spacing = 4
         stack.translatesAutoresizingMaskIntoConstraints = false

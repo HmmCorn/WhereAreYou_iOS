@@ -22,6 +22,8 @@ final class AppointmentRouteViewModel {
     @Published private(set) var myArrivalTimeText: String?
     /// 나의 경로 남은 시간 텍스트
     @Published private(set) var myRemainingTimeText: String?
+    /// 나의 경로 출발 후 경과 시간 텍스트
+    @Published private(set) var myElapsedTimeText: String?
     /// 나의 경로를 구성하는 이동수단별 구간 목록
     @Published private(set) var mySteps: [RouteStep] = []
     /// 약속 정보 조회 중 여부
@@ -82,14 +84,20 @@ final class AppointmentRouteViewModel {
         if let myRoute = appointment.routes[currentUserId] {
             myDepartureTimeText = myRoute.departureTime.koreanTimeString
             myArrivalTimeText = myRoute.arrivalTime.koreanTimeString
-            myRemainingTimeText = Self.remainingTimeText(until: myRoute.arrivalTime)
+            myRemainingTimeText = Self.minutesText(until: myRoute.arrivalTime)
+            myElapsedTimeText = Self.elapsedTimeText(since: myRoute.departureTime)
             mySteps = myRoute.step
         }
     }
 
-    private static func remainingTimeText(until arrivalTime: Date) -> String {
-        let minutes = max(0, Int(arrivalTime.timeIntervalSinceNow / 60))
-        return "약 \(minutes)분 남음"
+    private static func minutesText(until date: Date) -> String {
+        let minutes = max(0, Int(date.timeIntervalSinceNow / 60))
+        return "\(minutes)분"
+    }
+
+    private static func elapsedTimeText(since departureTime: Date) -> String {
+        let minutes = max(0, Int(-departureTime.timeIntervalSinceNow / 60))
+        return "\(minutes)분 전"
     }
 
 }
