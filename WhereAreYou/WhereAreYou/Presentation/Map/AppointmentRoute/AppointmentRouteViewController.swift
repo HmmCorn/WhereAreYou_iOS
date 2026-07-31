@@ -231,8 +231,16 @@ final class AppointmentRouteViewController: UIViewController {
 
     private func updateParticipantRows(_ participants: [AppointmentRouteParticipant]) {
         participantsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        for participant in participants where !participant.isMe {
-            participantsStack.addArrangedSubview(ParticipantRouteRow(participant: participant))
+        let others = participants.filter { !$0.isMe }
+        for (index, participant) in others.enumerated() {
+            if index > 0 {
+                let divider = Self.makeHorizontalDivider()
+                participantsStack.addArrangedSubview(divider)
+                participantsStack.setCustomSpacing(8, after: divider)
+            }
+            let row = ParticipantRouteRow(participant: participant)
+            participantsStack.addArrangedSubview(row)
+            participantsStack.setCustomSpacing(6, after: row)
         }
     }
 
@@ -333,6 +341,14 @@ final class AppointmentRouteViewController: UIViewController {
         divider.backgroundColor = .separator
         divider.translatesAutoresizingMaskIntoConstraints = false
         divider.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        return divider
+    }
+
+    private static func makeHorizontalDivider() -> UIView {
+        let divider = UIView()
+        divider.backgroundColor = .separator
+        divider.translatesAutoresizingMaskIntoConstraints = false
+        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
         return divider
     }
 
