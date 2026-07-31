@@ -65,18 +65,18 @@ final class ParticipantRouteRow: UIView {
         let arrivalLabel = UILabel()
         arrivalLabel.text = participant.arrivalTimeText
         arrivalLabel.font = .boldPreferredFont(forTextStyle: .subheadline)
-        arrivalLabel.textAlignment = .right
+        arrivalLabel.textAlignment = .center
 
         let arrivalCaptionLabel = UILabel()
         arrivalCaptionLabel.text = "도착 예정"
         arrivalCaptionLabel.font = .preferredFont(forTextStyle: .caption2)
         arrivalCaptionLabel.textColor = .secondaryLabel
-        arrivalCaptionLabel.textAlignment = .right
+        arrivalCaptionLabel.textAlignment = .center
 
         let arrivalColumn = UIStackView(arrangedSubviews: [arrivalLabel, arrivalCaptionLabel])
         arrivalColumn.axis = .vertical
         arrivalColumn.spacing = 2
-        arrivalColumn.alignment = .trailing
+        arrivalColumn.alignment = .center
 
         let mainStack = UIStackView(arrangedSubviews: [avatar, nameColumn, UIView(), transportStack, arrivalColumn])
         mainStack.axis = .horizontal
