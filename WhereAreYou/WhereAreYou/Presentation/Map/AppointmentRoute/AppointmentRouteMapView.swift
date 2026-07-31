@@ -24,11 +24,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         setUp()
     }
 
-    private func setUp() {
-        showLocationButton = true
-        showScaleBar = true
-        showZoomControls = true
-    }
+    // MARK: - Public
 
     func moveCamera(to coordinate: Coordinate, zoomLevel: Double = 15) {
         let cameraPosition = NMFCameraPosition(
@@ -64,7 +60,23 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         }
     }
 
-    private func addPolyline(for participant: AppointmentRouteParticipant, color: UIColor) {
+}
+
+// MARK: - Private
+
+private extension AppointmentRouteMapView {
+
+    // MARK: - Setup
+
+    func setUp() {
+        showLocationButton = true
+        showScaleBar = false
+        showZoomControls = true
+    }
+
+    // MARK: - Overlay Building
+
+    func addPolyline(for participant: AppointmentRouteParticipant, color: UIColor) {
         guard participant.path.count >= 2 else { return }
 
         let points = participant.path.map { NMGLatLng(lat: $0.latitude, lng: $0.longitude) }
@@ -79,7 +91,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         participantPolylines.append(overlay)
     }
 
-    private func addMarker(for participant: AppointmentRouteParticipant, color: UIColor) {
+    func addMarker(for participant: AppointmentRouteParticipant, color: UIColor) {
         guard let position = participant.path.first else { return }
 
         let kind = MapMarkerView.Kind.participant(
@@ -98,7 +110,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         participantMarkers.append(marker)
     }
 
-    private func clearParticipantOverlays() {
+    func clearParticipantOverlays() {
         participantMarkers.forEach { $0.mapView = nil }
         participantMarkers.removeAll()
         participantPolylines.forEach { $0.mapView = nil }
