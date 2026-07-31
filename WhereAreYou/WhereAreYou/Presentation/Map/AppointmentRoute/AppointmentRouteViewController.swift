@@ -220,9 +220,9 @@ final class AppointmentRouteViewController: UIViewController {
 
     private func updateParticipantRows(_ participants: [AppointmentRouteParticipant]) {
         participantsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let colors = UIColor.participantColors(count: participants.count)
         for (index, participant) in participants.enumerated() where !participant.isMe {
-            let color = UIColor.participantColor(at: index)
-            participantsStack.addArrangedSubview(ParticipantRouteRow(participant: participant, color: color))
+            participantsStack.addArrangedSubview(ParticipantRouteRow(participant: participant, color: colors[index]))
         }
     }
 

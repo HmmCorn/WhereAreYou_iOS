@@ -57,10 +57,10 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     func setParticipants(_ participants: [AppointmentRouteParticipant]) {
         clearParticipantOverlays()
 
+        let colors = UIColor.participantColors(count: participants.count)
         for (index, participant) in participants.enumerated() {
-            let color = UIColor.participantColor(at: index)
-            addPolyline(for: participant, color: color)
-            addMarker(for: participant, color: color)
+            addPolyline(for: participant, color: colors[index])
+            addMarker(for: participant, color: colors[index])
         }
     }
 
@@ -72,7 +72,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
 
         overlay.width = 3
         overlay.color = color
-        overlay.pattern = [6, 6]
+        overlay.pattern = [6, 4]
         overlay.capType = .round
         overlay.mapView = mapView
 

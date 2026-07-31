@@ -9,20 +9,18 @@ import UIKit
 
 extension UIColor {
 
-    /// 참여자 구분용 색상 팔레트
-    /// TODO: 디자인 확정되면 전용 컬러셋으로 교체
-    static let participantPalette: [UIColor] = (0..<16).map { index in
-        UIColor(
-            hue: CGFloat(index) / 16,
-            saturation: 0.55,
-            brightness: 0.85,
-            alpha: 1
-        )
-    }
+    /// 참여자 수(count)만큼 hue를 균등 분할해 서로 가장 멀리 떨어진 색상을 만듦
+    static func participantColors(count: Int) -> [UIColor] {
+        guard count > 0 else { return [] }
 
-    /// participants 배열 내 순번(index) 기준으로 팔레트를 순환 배정
-    static func participantColor(at index: Int) -> UIColor {
-        participantPalette[index % participantPalette.count]
+        return (0..<count).map { index in
+            UIColor(
+                hue: CGFloat(index) / CGFloat(count),
+                saturation: 0.8,
+                brightness: 0.75,
+                alpha: 1
+            )
+        }
     }
 
 }
