@@ -27,7 +27,7 @@ final class AppointmentRouteViewController: UIViewController {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "실시간 위치"
+        label.text = "참여자 위치"
         label.font = .preferredFont(forTextStyle: .headline)
         label.textAlignment = .center
         return label
@@ -135,7 +135,7 @@ final class AppointmentRouteViewController: UIViewController {
         viewModel.$placeName
             .receive(on: DispatchQueue.main)
             .sink { [weak self] name in
-                self?.subtitleLabel.text = name
+                self?.subtitleLabel.text = name.map { "목적지: \($0)" }
                 self?.placeNameLabel.text = name
             }
             .store(in: &cancellables)
