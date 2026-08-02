@@ -65,11 +65,12 @@ class ChatBubbleBase: UIView {
         case .text:
             break
         case .locationShare:
+            bubbleLabel.font = .boldPreferredFont(forTextStyle: .footnote)
             actionButton = makeMapButton()
             bubbleContentStack.addArrangedSubview(actionButton!)
         case .placeShare(let placeName, let placeAddress):
-            bubbleLabel.text = placeName
-            bubbleLabel.font = .preferredFont(forTextStyle: .headline)
+            bubbleLabel.text = "📌 " + placeName
+            bubbleLabel.font = .boldPreferredFont(forTextStyle: .callout)
             addressLabel = UILabel()
             addressLabel?.text = placeAddress
             addressLabel?.font = .preferredFont(forTextStyle: .caption1)
