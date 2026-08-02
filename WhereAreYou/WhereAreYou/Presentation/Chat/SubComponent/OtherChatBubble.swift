@@ -34,6 +34,7 @@ final class OtherChatBubble: ChatBubbleBase {
         bubbleRow.alignment = .bottom
         bubbleRow.spacing = 4
 
+        /// showProfile=true: 프로필(이미지+이름) 행 위, 메시지 행 아래 — leading 정렬
         if showProfile {
             let avatarView = makeAvatarView(imageName: item.senderProfileImage)
 

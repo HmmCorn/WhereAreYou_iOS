@@ -71,6 +71,7 @@ final class ChatViewModel {
 
 private extension ChatViewModel {
 
+    /// 내 메시지는 오른쪽, 타인 메시지는 왼쪽 — 발신자가 바뀌면 프로필 표시, 같은 발신자·같은 분(minute)이면 마지막에만 시간 표시
     func buildDisplayItems(from messages: [Chat]) -> [ChatDisplayItem] {
         var items: [ChatDisplayItem] = []
 
@@ -100,6 +101,7 @@ private extension ChatViewModel {
         return items
     }
 
+    /// 같은 발신자가 같은 분(minute) 안에 연속 전송한 경우 마지막 메시지에만 시간 표시
     func shouldShowTime(at index: Int, in messages: [Chat]) -> Bool {
         guard index + 1 < messages.count else { return true }
         let current = messages[index]
@@ -108,6 +110,7 @@ private extension ChatViewModel {
         return !Calendar.current.isDate(current.sentAt, equalTo: next.sentAt, toGranularity: .minute)
     }
 
+    /// 직전 메시지와 발신자가 다르면 프로필(이미지+이름) 표시
     func shouldShowProfile(at index: Int, in messages: [Chat]) -> Bool {
         guard index > 0 else { return true }
         let current = messages[index]

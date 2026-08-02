@@ -11,6 +11,8 @@ import Combine
 final class ChatViewController: UIViewController {
 
     // MARK: - Spacing
+    /// 나<->친구 간 전환: 20pt / 친구<->친구(다른 사람) 전환: 10pt
+    /// 동일 발신자, 분 단위 구분: 10pt / 동일 발신자, 같은 분: 5pt
 
     private static let horizontalPadding: CGFloat = 16
     private static let differentSenderSpacing: CGFloat = 20
@@ -336,6 +338,7 @@ final class ChatViewController: UIViewController {
         scrollToBottom(animated: false)
     }
 
+    /// 발신자·시간 조합에 따라 메시지 간 세로 간격 결정
     private func calculateSpacing(current: ChatDisplayItem, next: ChatDisplayItem) -> CGFloat {
         if current.senderID != next.senderID {
             if current.isMe != next.isMe {
@@ -375,6 +378,7 @@ extension ChatViewController: UITextFieldDelegate {
 
 extension ChatViewController: UIGestureRecognizerDelegate {
 
+    /// 입력 바 영역 안의 터치는 키보드 dismiss에서 제외
     func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer,
         shouldReceive touch: UITouch
