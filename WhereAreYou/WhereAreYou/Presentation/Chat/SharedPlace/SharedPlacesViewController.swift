@@ -151,12 +151,8 @@ final class SharedPlacesViewController: UIViewController {
         }
     }
 
-    /// 투표 수 내림차순 정렬 후, 동일 투표 수에 대해 시간 정렬 적용
     private func sortedPlaces() -> [SharedPlace] {
         sharedPlaces.sorted { a, b in
-            if a.voters.count != b.voters.count {
-                return a.voters.count > b.voters.count
-            }
             switch sortOrder {
             case .newest: return a.sharedAt > b.sharedAt
             case .oldest: return a.sharedAt < b.sharedAt
