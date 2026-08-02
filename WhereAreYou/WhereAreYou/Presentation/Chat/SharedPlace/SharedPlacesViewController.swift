@@ -28,7 +28,6 @@ final class SharedPlacesViewController: UIViewController {
     private let sortStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.alignment = .leading
         stack.spacing = 8
         return stack
     }()
@@ -110,12 +109,7 @@ final class SharedPlacesViewController: UIViewController {
         resultScrollView.addSubview(resultStack)
         resultScrollView.addSubview(emptyLabel)
 
-        let expandHeight = resultScrollView.heightAnchor.constraint(equalToConstant: 300)
-        expandHeight.priority = .defaultLow
-
         NSLayoutConstraint.activate([
-            expandHeight,
-
             resultStack.topAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.topAnchor),
             resultStack.bottomAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.bottomAnchor),
             resultStack.leadingAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.leadingAnchor),
