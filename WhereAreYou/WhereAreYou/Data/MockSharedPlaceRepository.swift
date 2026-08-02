@@ -12,6 +12,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
     private static let currentUserID = "me"
 
     private var sharedPlaces: [String: [SharedPlace]] = [:]
+    private var initialized: Set<String> = []
 
     private static let currentUser = User(
         id: currentUserID,
@@ -33,10 +34,25 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
         appointmentsNotification: [:]
     )
 
+    private static let user3 = User(
+        id: "user3",
+        nickname: "홍길동",
+        profileImage: URL(string: "turtle")!,
+        defaultTransportMode: .transit,
+        locationSharingScope: .onlyDuringAppointment,
+        isNotificationEnabled: true,
+        appointmentsNotification: [:]
+    )
+
     func fetchSharedPlaces(
         appointmentID: String,
         completion: @escaping (Result<[SharedPlace], Error>) -> Void
     ) {
+        if !initialized.contains(appointmentID) {
+            sharedPlaces[appointmentID] = Self.makeMockSharedPlaces()
+            initialized.insert(appointmentID)
+        }
+
         let result = sharedPlaces[appointmentID] ?? []
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             completion(.success(result))
@@ -48,6 +64,11 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
         place: Place,
         completion: @escaping (Result<SharedPlace, Error>) -> Void
     ) {
+        if !initialized.contains(appointmentID) {
+            sharedPlaces[appointmentID] = Self.makeMockSharedPlaces()
+            initialized.insert(appointmentID)
+        }
+
         let shared = SharedPlace(
             id: "sp_\(place.id)_\(Date().timeIntervalSince1970)",
             place: place,
@@ -56,9 +77,6 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
             voters: []
         )
 
-        if sharedPlaces[appointmentID] == nil {
-            sharedPlaces[appointmentID] = []
-        }
         sharedPlaces[appointmentID]?.append(shared)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -92,6 +110,39 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             completion(.success(place))
         }
+    }
+
+    /// 강남역(user2 공유, user2+user3 투표), 홍대입구역(user3 공유, user3 투표)
+    private static func makeMockSharedPlaces() -> [SharedPlace] {
+        let now = Date()
+
+        let gangnam = SharedPlace(
+            id: "sp_gangnam",
+            place: Place(
+                id: "gangnam", name: "강남역",
+                address: "서울 강남구 강남대로 396",
+                coordinate: Coordinate(latitude: 37.4979, longitude: 127.0276),
+                type: .subway
+            ),
+            sharedBy: user2,
+            sharedAt: Calendar.current.date(byAdding: .minute, value: -54, to: now)!,
+            voters: [user2, user3]
+        )
+
+        let hongdae = SharedPlace(
+            id: "sp_hongdae",
+            place: Place(
+                id: "hongdae", name: "홍대입구역",
+                address: "서울 마포구 양화로 160",
+                coordinate: Coordinate(latitude: 37.5571, longitude: 126.9236),
+                type: .subway
+            ),
+            sharedBy: user3,
+            sharedAt: Calendar.current.date(byAdding: .minute, value: -52, to: now)!,
+            voters: [user3]
+        )
+
+        return [gangnam, hongdae]
     }
 
 }

@@ -133,6 +133,20 @@ final class MockChatRepository: ChatRepository {
         appointmentsNotification: [:]
     )
 
+    private static let gangnamPlace = Place(
+        id: "gangnam", name: "강남역",
+        address: "서울 강남구 강남대로 396",
+        coordinate: Coordinate(latitude: 37.4979, longitude: 127.0276),
+        type: .subway
+    )
+
+    private static let hongdaePlace = Place(
+        id: "hongdae", name: "홍대입구역",
+        address: "서울 마포구 양화로 160",
+        coordinate: Coordinate(latitude: 37.5571, longitude: 126.9236),
+        type: .subway
+    )
+
     private static func makeMockMessages(appointmentID: String) -> [Chat] {
         let calendar = Calendar.current
         let now = Date()
@@ -173,6 +187,36 @@ final class MockChatRepository: ChatRepository {
                 id: "6", appointmentID: appointmentID,
                 sender: currentUser, text: "저는 2시에 출발할 예정이에요",
                 sentAt: calendar.date(byAdding: .minute, value: 3, to: baseDate)!,
+                contentType: .text
+            ),
+            Chat(
+                id: "7", appointmentID: appointmentID,
+                sender: user2, text: "위치를 공유했어요",
+                sentAt: calendar.date(byAdding: .minute, value: 5, to: baseDate)!,
+                contentType: .locationShare(Coordinate(latitude: 37.5100, longitude: 127.0300))
+            ),
+            Chat(
+                id: "8", appointmentID: appointmentID,
+                sender: user2, text: "강남역 장소를 공유했어요",
+                sentAt: calendar.date(byAdding: .minute, value: 6, to: baseDate)!,
+                contentType: .placeShare(gangnamPlace)
+            ),
+            Chat(
+                id: "9", appointmentID: appointmentID,
+                sender: user3, text: "위치를 공유했어요",
+                sentAt: calendar.date(byAdding: .minute, value: 7, to: baseDate)!,
+                contentType: .locationShare(Coordinate(latitude: 37.5500, longitude: 126.9200))
+            ),
+            Chat(
+                id: "10", appointmentID: appointmentID,
+                sender: user3, text: "홍대입구역 장소를 공유했어요",
+                sentAt: calendar.date(byAdding: .minute, value: 8, to: baseDate)!,
+                contentType: .placeShare(hongdaePlace)
+            ),
+            Chat(
+                id: "11", appointmentID: appointmentID,
+                sender: user3, text: "홍대 쪽이 중간이라 좋을 것 같아요!",
+                sentAt: calendar.date(byAdding: .minute, value: 8, to: baseDate)!,
                 contentType: .text
             ),
         ]
