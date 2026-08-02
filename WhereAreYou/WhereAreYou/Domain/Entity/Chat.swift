@@ -13,4 +13,5 @@ struct Chat {
     let sender: User
     let text: String
     let sentAt: Date
+    let contentType: ChatContentType
 }
