@@ -62,7 +62,7 @@ final class MockChatRepository: ChatRepository {
             id: "\(nextID)",
             appointmentID: appointmentID,
             sender: Self.currentUser,
-            text: "위치를 공유했어요",
+            text: "📌 위치를 공유했어요",
             sentAt: Date(),
             contentType: .locationShare(coordinate)
         )
@@ -191,7 +191,7 @@ final class MockChatRepository: ChatRepository {
             ),
             Chat(
                 id: "7", appointmentID: appointmentID,
-                sender: user2, text: "위치를 공유했어요",
+                sender: user2, text: "📌 위치를 공유했어요",
                 sentAt: calendar.date(byAdding: .minute, value: 5, to: baseDate)!,
                 contentType: .locationShare(Coordinate(latitude: 37.5100, longitude: 127.0300))
             ),
@@ -203,7 +203,7 @@ final class MockChatRepository: ChatRepository {
             ),
             Chat(
                 id: "9", appointmentID: appointmentID,
-                sender: user3, text: "위치를 공유했어요",
+                sender: user3, text: "📌 위치를 공유했어요",
                 sentAt: calendar.date(byAdding: .minute, value: 7, to: baseDate)!,
                 contentType: .locationShare(Coordinate(latitude: 37.5500, longitude: 126.9200))
             ),
