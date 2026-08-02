@@ -18,6 +18,11 @@ final class OtherChatBubble: ChatBubbleBase {
         bubbleContainer.backgroundColor = .systemGray3
         bubbleLabel.textColor = .label
 
+        if let actionButton {
+            actionButton.tintColor = .label
+            addressLabel?.textColor = .label
+        }
+
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
         addSubview(container)

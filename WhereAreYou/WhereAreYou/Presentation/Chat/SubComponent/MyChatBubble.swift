@@ -16,6 +16,11 @@ final class MyChatBubble: ChatBubbleBase {
         bubbleContainer.backgroundColor = .blue2.withAlphaComponent(0.8)
         bubbleLabel.textColor = .white
 
+        if let actionButton {
+            actionButton.tintColor = .white
+            addressLabel?.textColor = .white
+        }
+
         let rowStack = UIStackView(arrangedSubviews: [timeLabel, bubbleContainer])
         rowStack.axis = .horizontal
         rowStack.alignment = .bottom

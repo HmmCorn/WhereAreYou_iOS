@@ -22,6 +22,13 @@ class ChatBubbleBase: UIView {
         return label
     }()
 
+    private let bubbleContentStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+        return stack
+    }()
+
     let timeLabel: UILabel = {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .caption2)
@@ -31,6 +38,10 @@ class ChatBubbleBase: UIView {
         return label
     }()
 
+    /// contentType에 따라 생성되는 액션 버튼 — 서브클래스에서 tintColor 등 설정
+    private(set) var actionButton: UIButton?
+    private(set) var addressLabel: UILabel?
+
     init(item: ChatBubbleItem) {
         super.init(frame: .zero)
 
@@ -38,15 +49,35 @@ class ChatBubbleBase: UIView {
         bubbleContainer.layer.cornerRadius = Self.bubbleCornerRadius
         bubbleContainer.translatesAutoresizingMaskIntoConstraints = false
 
-        bubbleLabel.translatesAutoresizingMaskIntoConstraints = false
-        bubbleContainer.addSubview(bubbleLabel)
+        bubbleContentStack.translatesAutoresizingMaskIntoConstraints = false
+        bubbleContainer.addSubview(bubbleContentStack)
 
         NSLayoutConstraint.activate([
-            bubbleLabel.topAnchor.constraint(equalTo: bubbleContainer.topAnchor, constant: Self.bubblePadding.top),
-            bubbleLabel.leadingAnchor.constraint(equalTo: bubbleContainer.leadingAnchor, constant: Self.bubblePadding.left),
-            bubbleLabel.trailingAnchor.constraint(equalTo: bubbleContainer.trailingAnchor, constant: -Self.bubblePadding.right),
-            bubbleLabel.bottomAnchor.constraint(equalTo: bubbleContainer.bottomAnchor, constant: -Self.bubblePadding.bottom),
+            bubbleContentStack.topAnchor.constraint(equalTo: bubbleContainer.topAnchor, constant: Self.bubblePadding.top),
+            bubbleContentStack.leadingAnchor.constraint(equalTo: bubbleContainer.leadingAnchor, constant: Self.bubblePadding.left),
+            bubbleContentStack.trailingAnchor.constraint(equalTo: bubbleContainer.trailingAnchor, constant: -Self.bubblePadding.right),
+            bubbleContentStack.bottomAnchor.constraint(equalTo: bubbleContainer.bottomAnchor, constant: -Self.bubblePadding.bottom),
         ])
+
+        bubbleContentStack.addArrangedSubview(bubbleLabel)
+
+        switch item.contentType {
+        case .text:
+            break
+        case .locationShare:
+            actionButton = makeMapButton()
+            bubbleContentStack.addArrangedSubview(actionButton!)
+        case .placeShare(let placeName, let placeAddress):
+            bubbleLabel.text = placeName
+            bubbleLabel.font = .preferredFont(forTextStyle: .headline)
+            addressLabel = UILabel()
+            addressLabel?.text = placeAddress
+            addressLabel?.font = .preferredFont(forTextStyle: .caption1)
+            addressLabel?.numberOfLines = 0
+            bubbleContentStack.addArrangedSubview(addressLabel!)
+            actionButton = makeMapButton()
+            bubbleContentStack.addArrangedSubview(actionButton!)
+        }
 
         timeLabel.text = item.timeText
         timeLabel.isHidden = item.timeText == nil
@@ -54,6 +85,24 @@ class ChatBubbleBase: UIView {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    private func makeMapButton() -> UIButton {
+        var config = UIButton.Configuration.plain()
+        var attributedTitle = AttributedString("위치 보기")
+        attributedTitle.font = .preferredFont(forTextStyle: .caption1)
+        config.attributedTitle = attributedTitle
+        config.image = UIImage(systemName: "map", withConfiguration: UIImage.SymbolConfiguration(pointSize: 11))
+        config.imagePadding = 4
+        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+
+        let button = UIButton(configuration: config)
+        button.backgroundColor = .white.withAlphaComponent(0.2)
+        button.layer.cornerRadius = 12
+        button.addAction(UIAction { _ in
+            // TODO: 공유된 위치를 중심으로 한 지도 화면 열기
+        }, for: .touchUpInside)
+        return button
     }
 
 }

@@ -16,4 +16,11 @@ struct ChatBubbleItem {
     let content: String
     let timeText: String?
     let sentAt: Date
+    let contentType: BubbleContentType
+
+    enum BubbleContentType {
+        case text
+        case locationShare
+        case placeShare(placeName: String, placeAddress: String)
+    }
 }
