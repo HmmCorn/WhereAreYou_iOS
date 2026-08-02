@@ -61,6 +61,11 @@ final class SearchPlaceCardViewController: UIViewController {
         bindViewModel()
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        viewModel.resetAll()
+    }
+
     // MARK: - Layout
 
     private func setUpLayout() {
