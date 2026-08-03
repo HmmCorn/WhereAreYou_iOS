@@ -7,6 +7,7 @@
 
 import UIKit
 
+/// 내 위치 공유 확인 다이얼로그
 final class ShareMyLocationViewController: UIViewController {
 
     var onConfirm: (() -> Void)?

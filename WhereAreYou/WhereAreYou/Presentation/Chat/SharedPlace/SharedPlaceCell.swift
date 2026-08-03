@@ -7,6 +7,7 @@
 
 import UIKit
 
+/// 공유된 장소 목록의 셀 — 장소 정보, 투표자 프로필, 투표 버튼
 final class SharedPlaceCell: UIView {
 
     var onVoteTap: (() -> Void)?

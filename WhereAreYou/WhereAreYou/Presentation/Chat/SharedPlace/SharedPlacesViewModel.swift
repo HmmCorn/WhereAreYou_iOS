@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+/// 공유된 장소 목록 상태 관리 — 조회, 정렬, 투표
 final class SharedPlacesViewModel {
 
     enum SortOrder {

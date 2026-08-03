@@ -8,6 +8,7 @@
 import UIKit
 import Combine
 
+/// 공유된 장소 모아보기 시트 — 정렬 버튼, 장소 셀 목록, 투표
 final class SharedPlacesViewController: UIViewController {
 
     private let viewModel: SharedPlacesViewModel

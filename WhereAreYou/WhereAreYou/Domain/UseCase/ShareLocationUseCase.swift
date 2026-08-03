@@ -5,6 +5,7 @@
 //  Created by 이상유 on 2026-08-03.
 //
 
+/// 내 위치를 채팅으로 공유한다
 final class ShareLocationUseCase {
 
     private let repository: ChatRepository

@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// 채팅 메시지 저장소 — 조회, 전송, 위치/장소 공유
 protocol ChatRepository {
     func fetchMessages(appointmentID: String, completion: @escaping (Result<[Chat], Error>) -> Void)
     func sendMessage(appointmentID: String, content: String, completion: @escaping (Result<Chat, Error>) -> Void)

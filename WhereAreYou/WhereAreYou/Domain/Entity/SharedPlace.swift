@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// 약속에 공유된 장소 — 투표자 목록 포함
 struct SharedPlace {
     let id: String
     let place: Place

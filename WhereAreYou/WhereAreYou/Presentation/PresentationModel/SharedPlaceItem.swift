@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// 공유된 장소 목록 셀의 표시 정보
 struct SharedPlaceItem {
     let id: String
     let placeName: String

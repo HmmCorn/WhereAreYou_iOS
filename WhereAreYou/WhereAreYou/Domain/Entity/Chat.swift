@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// 약속 채팅 메시지
 struct Chat {
     let id: String
     let appointmentID: String

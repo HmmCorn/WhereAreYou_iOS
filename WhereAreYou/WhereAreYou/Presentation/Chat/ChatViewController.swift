@@ -8,6 +8,7 @@
 import UIKit
 import Combine
 
+/// 채팅 화면 — 메시지 스크롤, 입력바, 키보드 처리, 하위 화면 조합
 final class ChatViewController: UIViewController {
 
     // MARK: - Spacing

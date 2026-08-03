@@ -5,6 +5,7 @@
 //  Created by 이상유 on 2026-08-03.
 //
 
+/// 장소를 채팅으로 공유하고, 공유 장소 목록에 등록한다
 final class SharePlaceUseCase {
 
     private let chatRepository: ChatRepository

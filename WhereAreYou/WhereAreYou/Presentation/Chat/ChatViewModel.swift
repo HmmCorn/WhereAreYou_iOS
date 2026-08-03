@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+/// 채팅 화면 상태 관리 — 메시지 조회/전송, 위치/장소 공유, display item 빌드
 final class ChatViewModel {
 
     static let currentUserID = "me"
