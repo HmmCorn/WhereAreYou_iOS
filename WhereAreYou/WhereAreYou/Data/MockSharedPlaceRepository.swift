@@ -69,15 +69,22 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
             initialized.insert(appointmentID)
         }
 
+        if let existing = sharedPlaces[appointmentID]?.first(where: { $0.place.id == place.id }) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                completion(.success(existing))
+            }
+            return
+        }
+
         let shared = SharedPlace(
-            id: "sp_\(place.id)_\(Date().timeIntervalSince1970)",
+            id: "sp_\(place.id)",
             place: place,
             sharedBy: Self.currentUser,
             sharedAt: Date(),
             voters: []
         )
 
-        sharedPlaces[appointmentID]?.append(shared)
+        sharedPlaces[appointmentID, default: []].append(shared)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             completion(.success(shared))
@@ -112,7 +119,6 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
         }
     }
 
-    /// 강남역(user2 공유, user2+user3 투표), 홍대입구역(user3 공유, user3 투표)
     private static func makeMockSharedPlaces() -> [SharedPlace] {
         let now = Date()
 

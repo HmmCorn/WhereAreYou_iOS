@@ -7,10 +7,12 @@
 
 final class SharePlaceUseCase {
 
-    private let repository: ChatRepository
+    private let chatRepository: ChatRepository
+    private let sharedPlaceRepository: SharedPlaceRepository
 
-    init(repository: ChatRepository) {
-        self.repository = repository
+    init(chatRepository: ChatRepository, sharedPlaceRepository: SharedPlaceRepository) {
+        self.chatRepository = chatRepository
+        self.sharedPlaceRepository = sharedPlaceRepository
     }
 
     func execute(
@@ -18,7 +20,8 @@ final class SharePlaceUseCase {
         place: Place,
         completion: @escaping (Result<Chat, Error>) -> Void
     ) {
-        repository.sharePlace(appointmentID: appointmentID, place: place, completion: completion)
+        sharedPlaceRepository.sharePlace(appointmentID: appointmentID, place: place) { _ in }
+        chatRepository.sharePlace(appointmentID: appointmentID, place: place, completion: completion)
     }
 
 }
