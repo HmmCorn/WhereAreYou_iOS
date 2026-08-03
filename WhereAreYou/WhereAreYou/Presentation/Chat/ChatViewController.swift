@@ -28,6 +28,7 @@ final class ChatViewController: UIViewController {
 
     private let viewModel: ChatViewModel
     private var cancellables = Set<AnyCancellable>()
+    private var hasLoadedInitialMessages = false
 
     // MARK: - Chat scroll area
 
@@ -395,6 +396,8 @@ final class ChatViewController: UIViewController {
     private func updateChatUI(items: [ChatDisplayItem]) {
         chatStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
+        guard !items.isEmpty else { return }
+
         for (index, item) in items.enumerated() {
             let bubbleView: UIView
 
@@ -413,7 +416,9 @@ final class ChatViewController: UIViewController {
             }
         }
 
-        scrollToBottom(animated: false)
+        let shouldAnimate = hasLoadedInitialMessages
+        hasLoadedInitialMessages = true
+        scrollToBottom(animated: shouldAnimate)
     }
 
     /// 발신자·시간 조합에 따라 메시지 간 세로 간격 결정
@@ -430,13 +435,12 @@ final class ChatViewController: UIViewController {
     }
 
     private func scrollToBottom(animated: Bool) {
-        DispatchQueue.main.async {
-            let bottomOffset = CGPoint(
-                x: 0,
-                y: max(0, self.scrollView.contentSize.height - self.scrollView.bounds.height + self.scrollView.contentInset.bottom)
-            )
-            self.scrollView.setContentOffset(bottomOffset, animated: animated)
-        }
+        view.layoutIfNeeded()
+        let bottomOffset = CGPoint(
+            x: 0,
+            y: max(0, scrollView.contentSize.height - scrollView.bounds.height + scrollView.contentInset.bottom)
+        )
+        scrollView.setContentOffset(bottomOffset, animated: animated)
     }
 
 }
