@@ -219,6 +219,12 @@ final class MockChatRepository: ChatRepository {
                 sentAt: calendar.date(byAdding: .minute, value: 8, to: baseDate)!,
                 contentType: .text
             ),
+            Chat(
+                id: "12", appointmentID: appointmentID,
+                sender: user3, text: "강남역 장소를 공유했어요",
+                sentAt: calendar.date(byAdding: .minute, value: 10, to: baseDate)!,
+                contentType: .placeShare(gangnamPlace)
+            ),
         ]
     }
 
