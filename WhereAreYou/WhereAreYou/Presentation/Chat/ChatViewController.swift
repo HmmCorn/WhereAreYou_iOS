@@ -46,6 +46,21 @@ final class ChatViewController: UIViewController {
         return stack
     }()
 
+    private lazy var emptyLabel: UILabel = {
+        let label = UILabel()
+        label.text = "첫 메시지를 보내보세요!"
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: scrollView.frameLayoutGuide.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: scrollView.frameLayoutGuide.centerYAnchor),
+        ])
+        return label
+    }()
+
     // MARK: - Input bar
 
     private let inputBarContainer: UIView = {
@@ -376,9 +391,23 @@ final class ChatViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.$displayItems
+            .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] items in
                 self?.updateChatUI(items: items)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$isEmpty
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isEmpty in
+                guard let self else { return }
+                if isEmpty {
+                    emptyLabel.isHidden = false
+                } else if emptyLabel.superview != nil {
+                    emptyLabel.isHidden = true
+                }
             }
             .store(in: &cancellables)
 

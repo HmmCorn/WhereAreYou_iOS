@@ -15,6 +15,7 @@ final class ChatViewModel {
 
     @Published private(set) var displayItems: [ChatDisplayItem] = []
     @Published private(set) var canSend = false
+    @Published private(set) var isEmpty = false
 
     private(set) var appointmentInfo: AppointmentInfo
     private var messages: [Chat] = []
@@ -129,6 +130,8 @@ private extension ChatViewModel {
 
     /// 내 메시지는 오른쪽, 타인 메시지는 왼쪽 — 발신자가 바뀌면 프로필 표시, 같은 발신자·같은 분(minute)이면 마지막에만 시간 표시
     func buildDisplayItems(from messages: [Chat]) -> [ChatDisplayItem] {
+        isEmpty = messages.isEmpty
+
         var items: [ChatDisplayItem] = []
         var sharedPlaceIDs: Set<String> = []
 
