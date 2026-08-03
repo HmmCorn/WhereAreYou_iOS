@@ -21,6 +21,6 @@ struct ChatBubbleItem {
     enum BubbleContentType {
         case text
         case locationShare
-        case placeShare(placeName: String, placeAddress: String)
+        case placeShare(placeName: String, placeAddress: String, isDuplicate: Bool)
     }
 }

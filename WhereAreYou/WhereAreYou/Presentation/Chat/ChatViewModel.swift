@@ -74,11 +74,24 @@ private extension ChatViewModel {
     /// 내 메시지는 오른쪽, 타인 메시지는 왼쪽 — 발신자가 바뀌면 프로필 표시, 같은 발신자·같은 분(minute)이면 마지막에만 시간 표시
     func buildDisplayItems(from messages: [Chat]) -> [ChatDisplayItem] {
         var items: [ChatDisplayItem] = []
+        var sharedPlaceIDs: Set<String> = []
 
         for (index, message) in messages.enumerated() {
             let isMe = message.sender.id == Self.currentUserID
             let showTime = shouldShowTime(at: index, in: messages)
             let timeText = showTime ? message.sentAt.koreanTimeString : nil
+
+            let contentType: ChatBubbleItem.BubbleContentType
+            switch message.contentType {
+            case .text:
+                contentType = .text
+            case .locationShare:
+                contentType = .locationShare
+            case .placeShare(let place):
+                let isDuplicate = sharedPlaceIDs.contains(place.id)
+                sharedPlaceIDs.insert(place.id)
+                contentType = .placeShare(placeName: place.name, placeAddress: place.address, isDuplicate: isDuplicate)
+            }
 
             let bubbleItem = ChatBubbleItem(
                 id: message.id,
@@ -87,7 +100,8 @@ private extension ChatViewModel {
                 senderProfileImage: message.sender.profileImage.lastPathComponent,
                 content: message.text,
                 timeText: timeText,
-                sentAt: message.sentAt
+                sentAt: message.sentAt,
+                contentType: contentType
             )
 
             if isMe {

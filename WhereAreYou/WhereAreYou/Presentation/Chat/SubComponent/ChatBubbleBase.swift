@@ -41,6 +41,7 @@ class ChatBubbleBase: UIView {
     /// contentType에 따라 생성되는 액션 버튼 — 서브클래스에서 tintColor 등 설정
     private(set) var actionButton: UIButton?
     private(set) var addressLabel: UILabel?
+    private(set) var duplicateLabel: UILabel?
 
     init(item: ChatBubbleItem) {
         super.init(frame: .zero)
@@ -68,7 +69,7 @@ class ChatBubbleBase: UIView {
             bubbleLabel.font = .boldPreferredFont(forTextStyle: .footnote)
             actionButton = makeMapButton()
             bubbleContentStack.addArrangedSubview(actionButton!)
-        case .placeShare(let placeName, let placeAddress):
+        case .placeShare(let placeName, let placeAddress, let isDuplicate):
             bubbleLabel.text = "📌 " + placeName
             bubbleLabel.font = .boldPreferredFont(forTextStyle: .callout)
             addressLabel = UILabel()
@@ -76,6 +77,13 @@ class ChatBubbleBase: UIView {
             addressLabel?.font = .preferredFont(forTextStyle: .caption1)
             addressLabel?.numberOfLines = 0
             bubbleContentStack.addArrangedSubview(addressLabel!)
+            if isDuplicate {
+                duplicateLabel = UILabel()
+                duplicateLabel?.text = "이미 공유된 장소"
+                duplicateLabel?.font = .preferredFont(forTextStyle: .caption2)
+                duplicateLabel?.textColor = .secondaryLabel
+                bubbleContentStack.addArrangedSubview(duplicateLabel!)
+            }
             actionButton = makeMapButton()
             bubbleContentStack.addArrangedSubview(actionButton!)
         }

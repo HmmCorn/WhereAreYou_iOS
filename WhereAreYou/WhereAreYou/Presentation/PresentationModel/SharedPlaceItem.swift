@@ -12,7 +12,6 @@ struct SharedPlaceItem {
     let placeName: String
     let placeAddress: String
     let voterProfileImages: [String]
-    let voterCount: Int
     let hasVoted: Bool
     let sharedAt: Date
 }

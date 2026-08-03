@@ -19,6 +19,7 @@ final class MyChatBubble: ChatBubbleBase {
         if let actionButton {
             actionButton.tintColor = .white
             addressLabel?.textColor = .white
+            duplicateLabel?.textColor = .white.withAlphaComponent(0.7)
         }
 
         let rowStack = UIStackView(arrangedSubviews: [timeLabel, bubbleContainer])
