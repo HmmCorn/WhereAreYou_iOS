@@ -20,15 +20,24 @@ final class ChatViewModel {
 
     private let fetchMessagesUseCase: FetchMessagesUseCase
     private let sendMessageUseCase: SendMessageUseCase
+    private let getCurrentLocationUseCase: GetCurrentLocationUseCase
+    private let shareLocationUseCase: ShareLocationUseCase
+    private let sharePlaceUseCase: SharePlaceUseCase
 
     init(
         appointmentInfo: AppointmentInfo,
         fetchMessagesUseCase: FetchMessagesUseCase,
-        sendMessageUseCase: SendMessageUseCase
+        sendMessageUseCase: SendMessageUseCase,
+        getCurrentLocationUseCase: GetCurrentLocationUseCase,
+        shareLocationUseCase: ShareLocationUseCase,
+        sharePlaceUseCase: SharePlaceUseCase
     ) {
         self.appointmentInfo = appointmentInfo
         self.fetchMessagesUseCase = fetchMessagesUseCase
         self.sendMessageUseCase = sendMessageUseCase
+        self.getCurrentLocationUseCase = getCurrentLocationUseCase
+        self.shareLocationUseCase = shareLocationUseCase
+        self.sharePlaceUseCase = sharePlaceUseCase
     }
 
     func fetchMessages() {
@@ -63,6 +72,52 @@ final class ChatViewModel {
 
     func updateCanSend(text: String) {
         canSend = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    // MARK: - Location Share
+
+    func fetchCurrentLocation(completion: @escaping (Coordinate, String) -> Void) {
+        getCurrentLocationUseCase.execute { result in
+            DispatchQueue.main.async {
+                if case .success(let coordinate) = result {
+                    // TODO: CLGeocoder로 실제 주소 변환
+                    let address = "서울특별시 중구 세종대로 110"
+                    completion(coordinate, address)
+                }
+            }
+        }
+    }
+
+    func shareLocation(coordinate: Coordinate) {
+        shareLocationUseCase.execute(
+            appointmentID: appointmentInfo.id,
+            coordinate: coordinate
+        ) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                if case .success(let message) = result {
+                    self.messages.append(message)
+                    self.displayItems = self.buildDisplayItems(from: self.messages)
+                }
+            }
+        }
+    }
+
+    // MARK: - Place Share
+
+    func sharePlace(_ place: Place) {
+        sharePlaceUseCase.execute(
+            appointmentID: appointmentInfo.id,
+            place: place
+        ) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                if case .success(let message) = result {
+                    self.messages.append(message)
+                    self.displayItems = self.buildDisplayItems(from: self.messages)
+                }
+            }
+        }
     }
 
 }

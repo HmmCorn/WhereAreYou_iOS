@@ -57,10 +57,10 @@ final class ChatViewController: UIViewController {
         return view
     }()
 
-    private let searchPlaceButton: UIButton = {
+    private let extraFeatrueButton: UIButton = {
         let button = UIButton(type: .system)
         let config = UIImage.SymbolConfiguration(pointSize: 17, weight: .medium)
-        button.setImage(UIImage(systemName: "magnifyingglass", withConfiguration: config), for: .normal)
+        button.setImage(UIImage(systemName: "plus", withConfiguration: config), for: .normal)
         button.tintColor = .label
         return button
     }()
@@ -170,7 +170,7 @@ final class ChatViewController: UIViewController {
         chatStack.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(chatStack)
 
-        [searchPlaceButton, messageTextField, sendButton].forEach {
+        [extraFeatrueButton, messageTextField, sendButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             inputBarContainer.addSubview($0)
         }
@@ -199,14 +199,14 @@ final class ChatViewController: UIViewController {
             inputBarContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.inputBarHorizontalPadding),
             inputBarBottomConstraint,
 
-            // Search place button
-            searchPlaceButton.leadingAnchor.constraint(equalTo: inputBarContainer.leadingAnchor, constant: Self.inputBarHorizontalPadding),
-            searchPlaceButton.centerYAnchor.constraint(equalTo: messageTextField.centerYAnchor),
-            searchPlaceButton.widthAnchor.constraint(equalToConstant: Self.inputBarButtonSize),
-            searchPlaceButton.heightAnchor.constraint(equalToConstant: Self.inputBarButtonSize),
+            // Extra feature button
+            extraFeatrueButton.leadingAnchor.constraint(equalTo: inputBarContainer.leadingAnchor, constant: Self.inputBarHorizontalPadding),
+            extraFeatrueButton.centerYAnchor.constraint(equalTo: messageTextField.centerYAnchor),
+            extraFeatrueButton.widthAnchor.constraint(equalToConstant: Self.inputBarButtonSize),
+            extraFeatrueButton.heightAnchor.constraint(equalToConstant: Self.inputBarButtonSize),
 
             // Text field
-            messageTextField.leadingAnchor.constraint(equalTo: searchPlaceButton.trailingAnchor, constant: 6),
+            messageTextField.leadingAnchor.constraint(equalTo: extraFeatrueButton.trailingAnchor, constant: 6),
             messageTextField.topAnchor.constraint(equalTo: inputBarContainer.topAnchor, constant: 8),
             messageTextField.bottomAnchor.constraint(equalTo: inputBarContainer.bottomAnchor, constant: -8),
             messageTextField.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.inputBarButtonSize),
@@ -223,9 +223,8 @@ final class ChatViewController: UIViewController {
     // MARK: - Actions
 
     private func setUpActions() {
-        searchPlaceButton.addAction(UIAction { _ in
-            // TODO: 장소 검색 화면 표시
-        }, for: .touchUpInside)
+        extraFeatrueButton.menu = makeExtraFeatureMenu()
+        extraFeatrueButton.showsMenuAsPrimaryAction = true
 
         sendButton.addAction(UIAction { [weak self] _ in
             self?.handleSend()
@@ -247,6 +246,84 @@ final class ChatViewController: UIViewController {
             self, selector: #selector(keyboardWillHide(_:)),
             name: UIResponder.keyboardWillHideNotification, object: nil
         )
+    }
+
+    private func makeExtraFeatureMenu() -> UIMenu {
+        let shareLocation = UIAction(
+            title: "내 위치 공유하기",
+            image: UIImage(systemName: "location")
+        ) { [weak self] _ in
+            self?.handleShareLocation()
+        }
+
+        let searchPlace = UIAction(
+            title: "모일 장소 검색하기",
+            image: UIImage(systemName: "magnifyingglass")
+        ) { [weak self] _ in
+            self?.handleSearchPlace()
+        }
+
+        let viewSharedPlaces = UIAction(
+            title: "공유된 장소 모아보기",
+            image: UIImage(systemName: "list.bullet")
+        ) { [weak self] _ in
+            self?.handleViewSharedPlaces()
+        }
+
+        return UIMenu(children: [viewSharedPlaces, searchPlace, shareLocation])
+    }
+
+    // MARK: - Extra Feature Handlers
+
+    private func handleShareLocation() {
+        viewModel.fetchCurrentLocation { [weak self] coordinate, address in
+            let confirmVC = ShareMyLocationViewController(address: address)
+            confirmVC.onConfirm = {
+                self?.viewModel.shareLocation(coordinate: coordinate)
+            }
+            self?.present(confirmVC, animated: true)
+        }
+    }
+
+    private func handleSearchPlace() {
+        // TODO: DIContainer 도입 시 의존성 주입 방식 변경
+        let searchPlacesUseCase = SearchPlacesUseCase(repository: MockPlaceSearchRepository())
+        let searchPlaceCardVM = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
+        let shareMeVC = SearchPlaceCardViewController(
+            viewModel: searchPlaceCardVM,
+            selectionButtonTitle: "공유하기",
+            style: .onlyHeader(title: "모일 장소 검색하기")
+        )
+
+        shareMeVC.onPlaceSelected = { [weak self] place in
+            self?.viewModel.sharePlace(place)
+        }
+
+        if let sheet = shareMeVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(shareMeVC, animated: true)
+    }
+
+    private func handleViewSharedPlaces() {
+        // TODO: DIContainer 도입 시 의존성 주입 방식 변경
+        let sharedPlaceRepo = MockSharedPlaceRepository()
+        let fetchUseCase = FetchSharedPlacesUseCase(repository: sharedPlaceRepo)
+        let voteUseCase = VotePlaceUseCase(repository: sharedPlaceRepo)
+        let sharedPlacesVM = SharedPlacesViewModel(
+            appointmentID: viewModel.appointmentInfo.id,
+            currentUserID: ChatViewModel.currentUserID,
+            fetchSharedPlacesUseCase: fetchUseCase,
+            votePlaceUseCase: voteUseCase
+        )
+        let sharedPlacesVC = SharedPlacesViewController(viewModel: sharedPlacesVM)
+
+        if let sheet = sharedPlacesVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(sharedPlacesVC, animated: true)
     }
 
     @objc private func textFieldDidChange() {
