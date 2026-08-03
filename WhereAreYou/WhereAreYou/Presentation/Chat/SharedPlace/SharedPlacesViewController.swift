@@ -10,18 +10,8 @@ import Combine
 
 final class SharedPlacesViewController: UIViewController {
 
-    enum SortOrder {
-        case newest
-        case oldest
-    }
-
-    private let appointmentID: String
-    private let fetchSharedPlacesUseCase: FetchSharedPlacesUseCase
-    private let votePlaceUseCase: VotePlaceUseCase
-    private let currentUserID: String
-
-    private var sharedPlaces: [SharedPlace] = []
-    private var sortOrder: SortOrder = .newest
+    private let viewModel: SharedPlacesViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     private let card: CardContainerView
 
@@ -57,16 +47,8 @@ final class SharedPlacesViewController: UIViewController {
         return label
     }()
 
-    init(
-        appointmentID: String,
-        currentUserID: String,
-        fetchSharedPlacesUseCase: FetchSharedPlacesUseCase,
-        votePlaceUseCase: VotePlaceUseCase
-    ) {
-        self.appointmentID = appointmentID
-        self.currentUserID = currentUserID
-        self.fetchSharedPlacesUseCase = fetchSharedPlacesUseCase
-        self.votePlaceUseCase = votePlaceUseCase
+    init(viewModel: SharedPlacesViewModel) {
+        self.viewModel = viewModel
         self.card = CardContainerView(headerStyle: .title("공유된 장소 모아보기"))
         super.init(nibName: nil, bundle: nil)
     }
@@ -80,7 +62,8 @@ final class SharedPlacesViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
-        fetchPlaces()
+        bindViewModel()
+        viewModel.fetchPlaces()
     }
 
     // MARK: - Layout
@@ -129,93 +112,62 @@ final class SharedPlacesViewController: UIViewController {
         }
 
         newestButton.addAction(UIAction { [weak self] _ in
-            self?.updateSortOrder(.newest)
+            self?.viewModel.updateSortOrder(.newest)
         }, for: .touchUpInside)
 
         oldestButton.addAction(UIAction { [weak self] _ in
-            self?.updateSortOrder(.oldest)
+            self?.viewModel.updateSortOrder(.oldest)
         }, for: .touchUpInside)
     }
 
-    // MARK: - Data
+    // MARK: - Binding
 
-    private func fetchPlaces() {
-        fetchSharedPlacesUseCase.execute(appointmentID: appointmentID) { [weak self] result in
-            guard let self else { return }
-            DispatchQueue.main.async {
-                if case .success(let places) = result {
-                    self.sharedPlaces = places
-                    self.rebuildCells()
-                }
+    private func bindViewModel() {
+        viewModel.$items
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] items in
+                self?.rebuildCells(items: items)
             }
-        }
-    }
+            .store(in: &cancellables)
 
-    private func sortedPlaces() -> [SharedPlace] {
-        sharedPlaces.sorted { a, b in
-            switch sortOrder {
-            case .newest: return a.sharedAt > b.sharedAt
-            case .oldest: return a.sharedAt < b.sharedAt
+        viewModel.$sortOrder
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] order in
+                self?.updateSortButtons(order)
             }
-        }
+            .store(in: &cancellables)
     }
 
-    private func updateSortOrder(_ order: SortOrder) {
-        sortOrder = order
-        newestButton.configuration?.baseBackgroundColor = order == .newest ? .blue2 : .systemGray5
-        newestButton.configuration?.baseForegroundColor = order == .newest ? .white : .label
-        oldestButton.configuration?.baseBackgroundColor = order == .oldest ? .blue2 : .systemGray5
-        oldestButton.configuration?.baseForegroundColor = order == .oldest ? .white : .label
-        rebuildCells()
-    }
+    // MARK: - UI Update
 
-    private func rebuildCells() {
+    private func rebuildCells(items: [SharedPlaceItem]) {
         resultStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-        let sorted = sortedPlaces()
-        guard !sorted.isEmpty else {
+        guard !items.isEmpty else {
             emptyLabel.isHidden = false
             return
         }
 
         emptyLabel.isHidden = true
 
-        for (index, shared) in sorted.enumerated() {
-            let item = SharedPlaceItem(
-                id: shared.id,
-                placeName: shared.place.name,
-                placeAddress: shared.place.address,
-                voterProfileImages: shared.voters.map { $0.profileImage.lastPathComponent },
-                voterCount: shared.voters.count,
-                hasVoted: shared.voters.contains { $0.id == currentUserID },
-                sharedAt: shared.sharedAt
-            )
-
+        for (index, item) in items.enumerated() {
             if index > 0 {
-                let divider = makeDivider()
-                resultStack.addArrangedSubview(divider)
+                resultStack.addArrangedSubview(makeDivider())
             }
 
             let cell = SharedPlaceCell(item: item)
             cell.onVoteTap = { [weak self] in
-                self?.voteForPlace(placeID: shared.id)
+                self?.viewModel.voteForPlace(id: item.id)
             }
             resultStack.addArrangedSubview(cell)
         }
     }
 
-    private func voteForPlace(placeID: String) {
-        votePlaceUseCase.execute(appointmentID: appointmentID, placeID: placeID) { [weak self] result in
-            guard let self else { return }
-            DispatchQueue.main.async {
-                if case .success(let updatedPlace) = result {
-                    if let index = self.sharedPlaces.firstIndex(where: { $0.id == placeID }) {
-                        self.sharedPlaces[index] = updatedPlace
-                    }
-                    self.rebuildCells()
-                }
-            }
-        }
+    private func updateSortButtons(_ order: SharedPlacesViewModel.SortOrder) {
+        newestButton.configuration?.baseBackgroundColor = order == .newest ? .blue2 : .systemGray5
+        newestButton.configuration?.baseForegroundColor = order == .newest ? .white : .label
+        oldestButton.configuration?.baseBackgroundColor = order == .oldest ? .blue2 : .systemGray5
+        oldestButton.configuration?.baseForegroundColor = order == .oldest ? .white : .label
     }
 
     // MARK: - Helpers
