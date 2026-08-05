@@ -109,33 +109,19 @@ final class AppointmentRouteViewController: UIViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$myDepartureTimeText
+        viewModel.$myRouteSummary
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in
+            .compactMap { $0 }
+            .sink { [weak self] summary in
                 guard let self else { return }
-                self.infoView.setDeparture(timeText: text, elapsedText: self.viewModel.myElapsedTimeText)
-            }
-            .store(in: &cancellables)
-
-        viewModel.$myArrivalTimeText
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in
-                guard let self else { return }
+                self.infoView.setDeparture(timeText: summary.departureTimeText, elapsedText: summary.elapsedTimeText)
                 self.infoView.setArrival(
-                    timeText: text,
-                    remainingText: self.viewModel.myRemainingTimeText.map { "\($0) 남음" }
+                    timeText: summary.arrivalTimeText,
+                    remainingText: "\(summary.remainingTimeText) 남음"
                 )
+                self.infoView.setRemaining(timeText: summary.remainingTimeText)
+                self.infoView.setSteps(summary.steps)
             }
-            .store(in: &cancellables)
-
-        viewModel.$myRemainingTimeText
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] text in self?.infoView.setRemaining(timeText: text) }
-            .store(in: &cancellables)
-
-        viewModel.$mySteps
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] steps in self?.infoView.setSteps(steps) }
             .store(in: &cancellables)
     }
 

@@ -16,16 +16,8 @@ final class AppointmentRouteViewModel {
     @Published private(set) var placeCoordinate: Coordinate?
     /// 나를 포함한 전체 참여자의 화면 표시용 정보 (지도 마커/폴리라인, info 참여자 리스트에 공통 사용)
     @Published private(set) var participants: [AppointmentRouteParticipant] = []
-    /// 나의 경로 출발 예정 시간 텍스트
-    @Published private(set) var myDepartureTimeText: String?
-    /// 나의 경로 도착 예정 시간 텍스트
-    @Published private(set) var myArrivalTimeText: String?
-    /// 나의 경로 남은 시간 텍스트
-    @Published private(set) var myRemainingTimeText: String?
-    /// 나의 경로 출발 후 경과 시간 텍스트
-    @Published private(set) var myElapsedTimeText: String?
-    /// 나의 경로를 구성하는 이동수단별 구간 목록
-    @Published private(set) var mySteps: [RouteStep] = []
+    /// 나의 경로 요약 정보
+    @Published private(set) var myRouteSummary: MyRouteSummary?
     /// 약속 정보 조회 중 여부
     @Published private(set) var isLoading = false
     /// 조회 실패 시 사용자에게 보여줄 에러 메시지
@@ -73,11 +65,7 @@ final class AppointmentRouteViewModel {
         }
 
         if let myRoute = appointment.routes[currentUserID] {
-            myDepartureTimeText = myRoute.departureTime.koreanTimeString
-            myArrivalTimeText = myRoute.arrivalTime.koreanTimeString
-            myRemainingTimeText = myRoute.arrivalTime.minutesRemainingText
-            myElapsedTimeText = myRoute.departureTime.elapsedMinutesText
-            mySteps = myRoute.step
+            myRouteSummary = MyRouteSummary(route: myRoute)
         }
     }
 
