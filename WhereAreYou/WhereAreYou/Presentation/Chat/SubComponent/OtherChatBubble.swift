@@ -15,7 +15,7 @@ final class OtherChatBubble: ChatBubbleBase {
     init(item: ChatBubbleItem, showProfile: Bool) {
         super.init(item: item)
 
-        bubbleContainer.backgroundColor = .systemGray3
+        bubbleContainer.backgroundColor = .systemGray5
         bubbleLabel.textColor = .label
 
         if let actionButton {
