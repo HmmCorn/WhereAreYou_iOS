@@ -41,13 +41,13 @@ struct AppointmentRouteParticipant {
     init(
         user: User,
         route: Route,
-        currentUserId: String
+        currentUserID: String
     ) {
         self.init(
             id: user.id,
             nickname: user.nickname,
             profileImageURL: user.profileImage,
-            isMe: user.id == currentUserId,
+            isMe: user.id == currentUserID,
             path: route.step.flatMap(\.path),
             transportType: route.step.last?.transportType ?? user.defaultTransportMode,
             departureTimeText: route.departureTime.koreanTimeString,

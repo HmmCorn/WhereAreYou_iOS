@@ -31,23 +31,23 @@ final class AppointmentRouteViewModel {
     /// 조회 실패 시 사용자에게 보여줄 에러 메시지
     @Published private(set) var errorMessage: String?
 
-    private let appointmentId: String
+    private let appointmentID: String
     private let getAppointmentDetailUseCase: GetAppointmentDetailUseCase
 
-    init(appointmentId: String, getAppointmentDetailUseCase: GetAppointmentDetailUseCase) {
-        self.appointmentId = appointmentId
+    init(appointmentID: String, getAppointmentDetailUseCase: GetAppointmentDetailUseCase) {
+        self.appointmentID = appointmentID
         self.getAppointmentDetailUseCase = getAppointmentDetailUseCase
     }
 
     func fetchAppointmentDetail() {
         isLoading = true
-        getAppointmentDetailUseCase.execute(appointmentId: appointmentId) { [weak self] result in
+        getAppointmentDetailUseCase.execute(appointmentID: appointmentID) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 self.isLoading = false
                 switch result {
                 case .success(let value):
-                    self.apply(appointment: value.appointment, currentUserId: value.currentUserId)
+                    self.apply(appointment: value.appointment, currentUserID: value.currentUserID)
                 case .failure:
                     self.errorMessage = "약속 정보를 불러오지 못했습니다"
                 }
@@ -59,20 +59,20 @@ final class AppointmentRouteViewModel {
         print("경로 변경 버튼 탭")
     }
 
-    private func apply(appointment: Appointment, currentUserId: String) {
+    private func apply(appointment: Appointment, currentUserID: String) {
         placeName = appointment.place?.name
         placeCoordinate = appointment.place?.coordinate
 
-        let otherParticipants = appointment.participants.filter { $0.id != currentUserId }
-        let orderedParticipants = appointment.participants.first(where: { $0.id == currentUserId })
+        let otherParticipants = appointment.participants.filter { $0.id != currentUserID }
+        let orderedParticipants = appointment.participants.first(where: { $0.id == currentUserID })
             .map { [$0] + otherParticipants } ?? otherParticipants
 
         participants = orderedParticipants.compactMap { user in
             guard let route = appointment.routes[user.id] else { return nil }
-            return AppointmentRouteParticipant(user: user, route: route, currentUserId: currentUserId)
+            return AppointmentRouteParticipant(user: user, route: route, currentUserID: currentUserID)
         }
 
-        if let myRoute = appointment.routes[currentUserId] {
+        if let myRoute = appointment.routes[currentUserID] {
             myDepartureTimeText = myRoute.departureTime.koreanTimeString
             myArrivalTimeText = myRoute.arrivalTime.koreanTimeString
             myRemainingTimeText = myRoute.arrivalTime.minutesRemainingText

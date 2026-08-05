@@ -14,10 +14,10 @@ final class GetAppointmentDetailUseCase {
     }
 
     func execute(
-        appointmentId: String,
-        completion: @escaping (Result<(appointment: Appointment, currentUserId: String), Error>) -> Void
+        appointmentID: String,
+        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
     ) {
-        repository.fetchAppointment(appointmentId: appointmentId, completion: completion)
+        repository.fetchAppointment(appointmentID: appointmentID, completion: completion)
     }
 
 }

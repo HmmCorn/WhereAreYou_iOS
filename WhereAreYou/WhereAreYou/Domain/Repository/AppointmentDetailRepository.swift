@@ -10,8 +10,8 @@ import Foundation
 protocol AppointmentDetailRepository {
 
     func fetchAppointment(
-        appointmentId: String,
-        completion: @escaping (Result<(appointment: Appointment, currentUserId: String), Error>) -> Void
+        appointmentID: String,
+        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
     )
 
 }

@@ -10,22 +10,22 @@ import Foundation
 final class MockAppointmentDetailRepository: AppointmentDetailRepository {
 
     func fetchAppointment(
-        appointmentId: String,
-        completion: @escaping (Result<(appointment: Appointment, currentUserId: String), Error>) -> Void
+        appointmentID: String,
+        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
     ) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let appointment = Self.makeMockAppointment(appointmentId: appointmentId)
-            completion(.success((appointment: appointment, currentUserId: Self.currentUserId)))
+            let appointment = Self.makeMockAppointment(appointmentID: appointmentID)
+            completion(.success((appointment: appointment, currentUserID: Self.currentUserID)))
         }
     }
 
-    private static let currentUserId = "user_me"
+    private static let currentUserID = "user_me"
 
     private static func profileImageURL(_ assetName: String) -> URL {
         URL(string: "asset://\(assetName)")!
     }
 
-    private static func makeMockAppointment(appointmentId: String) -> Appointment {
+    private static func makeMockAppointment(appointmentID: String) -> Appointment {
         let place = Place(
             id: "place_starbucks_gangnam",
             name: "스타벅스 강남역점",
@@ -38,7 +38,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
 
         let users: [User] = [
             User(
-                id: currentUserId,
+                id: currentUserID,
                 nickname: "나",
                 profileImage: profileImageURL("shark"),
                 defaultTransportMode: .car,
@@ -94,7 +94,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
         ]
 
         let routes: [String: Route] = [
-            currentUserId: makeMultiStepRoute(
+            currentUserID: makeMultiStepRoute(
                 to: place, departureTime: now.addingTimeInterval(-45 * 60),
                 arrivalTime: now.addingTimeInterval(13 * 60),
                 start: Coordinate(latitude: 37.4930, longitude: 127.0180)
@@ -132,7 +132,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
         ]
 
         return Appointment(
-            id: appointmentId,
+            id: appointmentID,
             code: "MOCK1234",
             name: "고기굽는방앗간 이수역점",
             dateTime: now.addingTimeInterval(13 * 60),
