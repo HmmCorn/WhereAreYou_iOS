@@ -1,5 +1,5 @@
 //
-//  MapMarkerView.swift
+//  MapMarker.swift
 //  WhereAreYou
 //
 //  Created by 김성훈 on 7/31/26.
@@ -8,7 +8,7 @@
 import UIKit
 
 /// 지도 마커 이미지를 만들기 위한 렌더링 전용 뷰
-enum MapMarkerView {
+enum MapMarker {
 
     enum Kind {
         case participant(profileImage: UIImage?, tintColor: UIColor)
@@ -32,7 +32,7 @@ enum MapMarkerView {
 
     static func renderImage(kind: Kind, name: String) -> UIImage {
         let size = size(for: kind)
-        let container = makeContainer(kind: kind, name: name, size: size)
+        let container = makeView(kind: kind, name: name, size: size)
         container.frame = CGRect(origin: .zero, size: size)
         container.layoutIfNeeded()
 
@@ -46,7 +46,7 @@ enum MapMarkerView {
 
 // MARK: - Private
 
-private extension MapMarkerView {
+private extension MapMarker {
 
     // MARK: - Constants
 
@@ -82,7 +82,7 @@ private extension MapMarkerView {
 
     // MARK: - View Building
 
-    static func makeContainer(kind: Kind, name: String, size: CGSize) -> UIView {
+    static func makeView(kind: Kind, name: String, size: CGSize) -> UIView {
         let container = UIView(frame: CGRect(origin: .zero, size: size))
         let iconSize = iconSize(for: kind)
 
