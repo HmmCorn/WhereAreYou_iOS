@@ -15,14 +15,6 @@ final class AppointmentRouteInfoView: UIView {
         set { routeSummaryCard.onChangeRouteTap = newValue }
     }
 
-    private let sectionHeaderLabel: UILabel = {
-        let label = UILabel()
-        label.text = "상세 정보"
-        label.font = .preferredFont(forTextStyle: .callout)
-        label.textColor = .secondaryLabel
-        return label
-    }()
-
     private let routeSummaryCard = RouteSummaryCardView()
 
     private let participantsStack: UIStackView = {
@@ -103,7 +95,7 @@ final class AppointmentRouteInfoView: UIView {
         ])
 
         let contentStack = UIStackView(arrangedSubviews: [
-            sectionHeaderLabel, routeSummaryCard, participantsScrollView,
+            routeSummaryCard, participantsScrollView,
         ])
         contentStack.axis = .vertical
         contentStack.spacing = 10
@@ -111,7 +103,7 @@ final class AppointmentRouteInfoView: UIView {
         addSubview(contentStack)
 
         NSLayoutConstraint.activate([
-            contentStack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            contentStack.topAnchor.constraint(equalTo: topAnchor, constant: 2),
             contentStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
             contentStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
             contentStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
