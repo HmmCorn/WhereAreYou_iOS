@@ -69,35 +69,16 @@ final class AppointmentRouteViewModel {
 
         participants = orderedParticipants.compactMap { user in
             guard let route = appointment.routes[user.id] else { return nil }
-            return AppointmentRouteParticipant(
-                id: user.id,
-                nickname: user.nickname,
-                profileImageURL: user.profileImage,
-                isMe: user.id == currentUserId,
-                path: route.step.flatMap(\.path),
-                transportType: route.step.last?.transportType ?? user.defaultTransportMode,
-                departureTimeText: route.departureTime.koreanTimeString,
-                arrivalTimeText: route.arrivalTime.koreanTimeString
-            )
+            return AppointmentRouteParticipant(user: user, route: route, currentUserId: currentUserId)
         }
 
         if let myRoute = appointment.routes[currentUserId] {
             myDepartureTimeText = myRoute.departureTime.koreanTimeString
             myArrivalTimeText = myRoute.arrivalTime.koreanTimeString
-            myRemainingTimeText = Self.minutesText(until: myRoute.arrivalTime)
-            myElapsedTimeText = Self.elapsedTimeText(since: myRoute.departureTime)
+            myRemainingTimeText = myRoute.arrivalTime.minutesRemainingText
+            myElapsedTimeText = myRoute.departureTime.elapsedMinutesText
             mySteps = myRoute.step
         }
-    }
-
-    private static func minutesText(until date: Date) -> String {
-        let minutes = max(0, Int(date.timeIntervalSinceNow / 60))
-        return "\(minutes)분"
-    }
-
-    private static func elapsedTimeText(since departureTime: Date) -> String {
-        let minutes = max(0, Int(-departureTime.timeIntervalSinceNow / 60))
-        return "\(minutes)분 전"
     }
 
 }
