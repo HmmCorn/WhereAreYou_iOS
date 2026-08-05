@@ -12,7 +12,6 @@ final class AppointmentRouteViewController: UIViewController {
 
     private let viewModel: AppointmentRouteViewModel
     private var cancellables = Set<AnyCancellable>()
-    private var isInitialCameraMoveHandled = false
 
     init(viewModel: AppointmentRouteViewModel) {
         self.viewModel = viewModel
@@ -94,10 +93,6 @@ final class AppointmentRouteViewController: UIViewController {
             .sink { [weak self] coordinate in
                 guard let self else { return }
                 self.mapView.setPlaceMarker(coordinate: coordinate, name: self.viewModel.placeName ?? "")
-                if !self.isInitialCameraMoveHandled {
-                    self.isInitialCameraMoveHandled = true
-                    self.mapView.moveCamera(to: coordinate)
-                }
             }
             .store(in: &cancellables)
 

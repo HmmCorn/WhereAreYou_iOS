@@ -13,6 +13,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var placeMarker: NMFMarker?
     private var participantMarkers: [NMFMarker] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
+    private var hasMovedToInitialPosition = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -48,6 +49,11 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         marker.mapView = mapView
 
         placeMarker = marker
+
+        if !hasMovedToInitialPosition {
+            hasMovedToInitialPosition = true
+            moveCamera(to: coordinate)
+        }
     }
 
     func setParticipants(_ participants: [AppointmentRouteParticipant]) {
