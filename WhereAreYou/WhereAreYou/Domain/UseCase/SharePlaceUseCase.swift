@@ -21,8 +21,14 @@ final class SharePlaceUseCase {
         place: Place,
         completion: @escaping (Result<Chat, Error>) -> Void
     ) {
-        sharedPlaceRepository.sharePlace(appointmentID: appointmentID, place: place) { _ in }
-        chatRepository.sharePlace(appointmentID: appointmentID, place: place, completion: completion)
+        sharedPlaceRepository.sharePlace(appointmentID: appointmentID, place: place) { [chatRepository] result in
+            switch result {
+            case .failure(let error):
+                completion(.failure(error))
+            case .success:
+                chatRepository.sharePlace(appointmentID: appointmentID, place: place, completion: completion)
+            }
+        }
     }
 
 }
