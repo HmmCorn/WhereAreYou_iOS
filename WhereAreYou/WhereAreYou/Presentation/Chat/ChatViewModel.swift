@@ -55,12 +55,9 @@ final class ChatViewModel {
     }
 
     func sendMessage(_ text: String) {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-
         sendMessageUseCase.execute(
             appointmentID: appointmentInfo.id,
-            content: trimmed
+            content: text
         ) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
