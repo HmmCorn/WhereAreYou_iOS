@@ -156,7 +156,7 @@ final class SharedPlacesViewController: UIViewController {
                 resultStack.addArrangedSubview(makeDivider())
             }
 
-            let cell = SharedPlaceCell(item: item)
+            let cell = SharedPlaceRow(item: item)
             cell.onVoteTap = { [weak self] in
                 self?.viewModel.voteForPlace(id: item.id)
             }

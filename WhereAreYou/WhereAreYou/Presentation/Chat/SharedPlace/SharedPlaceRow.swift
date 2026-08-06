@@ -1,5 +1,5 @@
 //
-//  SharedPlaceCell.swift
+//  SharedPlaceRow.swift
 //  WhereAreYou
 //
 //  Created by 이상유 on 2026-08-03.
@@ -8,7 +8,7 @@
 import UIKit
 
 /// 공유된 장소 목록의 셀 — 장소 정보, 투표자 프로필, 투표 버튼
-final class SharedPlaceCell: UIView {
+final class SharedPlaceRow: UIView {
 
     var onVoteTap: (() -> Void)?
 
