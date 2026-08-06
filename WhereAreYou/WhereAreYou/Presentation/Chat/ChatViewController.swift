@@ -5,7 +5,7 @@
 //  Created by 이상유 on 2026-07-30.
 //
 
-import UIKit
+@preconcurrency import UIKit
 import Combine
 
 /// 채팅 화면 — 메시지 스크롤, 입력바, 키보드 처리, 하위 화면 조합
@@ -29,21 +29,32 @@ final class ChatViewController: UIViewController {
     private let viewModel: ChatViewModel
     private var cancellables = Set<AnyCancellable>()
     private var hasLoadedInitialMessages = false
+    private var needsInitialScroll = false
 
-    // MARK: - Chat scroll area
+    // MARK: - Chat collection view
 
-    private let scrollView: UIScrollView = {
-        let sv = UIScrollView()
-        sv.showsVerticalScrollIndicator = false
-        sv.alwaysBounceVertical = true
-        sv.keyboardDismissMode = .interactive
-        return sv
+    private lazy var collectionView: UICollectionView = {
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: makeLayout())
+        cv.showsVerticalScrollIndicator = true
+        cv.alwaysBounceVertical = true
+        cv.keyboardDismissMode = .interactive
+        cv.backgroundColor = .clear
+        cv.register(ChatBubbleCell.self, forCellWithReuseIdentifier: ChatBubbleCell.reuseID)
+        return cv
     }()
 
-    private let chatStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .vertical
-        return stack
+    private lazy var dataSource: UICollectionViewDiffableDataSource<Int, ChatDisplayItem> = {
+        UICollectionViewDiffableDataSource<Int, ChatDisplayItem>(
+            collectionView: collectionView
+        ) { [weak self] collectionView, indexPath, item in
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: ChatBubbleCell.reuseID,
+                for: indexPath
+            ) as! ChatBubbleCell
+            let spacing = self?.topSpacing(at: indexPath.item) ?? 0
+            cell.configure(with: item, topSpacing: spacing)
+            return cell
+        }
     }()
 
     private lazy var emptyLabel: UILabel = {
@@ -53,10 +64,10 @@ final class ChatViewController: UIViewController {
         label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(label)
+        collectionView.addSubview(label)
         NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: scrollView.frameLayoutGuide.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: scrollView.frameLayoutGuide.centerYAnchor),
+            label.centerXAnchor.constraint(equalTo: collectionView.frameLayoutGuide.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: collectionView.frameLayoutGuide.centerYAnchor),
         ])
         return label
     }()
@@ -138,6 +149,21 @@ final class ChatViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard needsInitialScroll,
+              collectionView.contentSize.height > 0,
+              collectionView.bounds.height > 0
+        else { return }
+
+        let maxOffsetY = max(0, collectionView.contentSize.height - collectionView.bounds.height + collectionView.contentInset.bottom)
+        if abs(collectionView.contentOffset.y - maxOffsetY) < 2 {
+            needsInitialScroll = false
+        } else {
+            scrollToBottom(animated: false)
+        }
+    }
+
     // MARK: - Navigation Bar
 
     private func setUpNavigationBar() {
@@ -179,13 +205,10 @@ final class ChatViewController: UIViewController {
     // MARK: - Layout
 
     private func setUpLayout() {
-        [scrollView, inputBarContainer].forEach {
+        [collectionView, inputBarContainer].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
-
-        chatStack.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.addSubview(chatStack)
 
         [extraFeatureButton, messageTextField, sendButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -198,18 +221,11 @@ final class ChatViewController: UIViewController {
         )
 
         NSLayoutConstraint.activate([
-            // Scroll view
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: inputBarContainer.topAnchor),
-
-            // Chat stack inside scroll
-            chatStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 16),
-            chatStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: Self.horizontalPadding),
-            chatStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -Self.horizontalPadding),
-            chatStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -16),
-            chatStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -Self.horizontalPadding * 2),
+            // Collection view
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: inputBarContainer.topAnchor),
 
             // Input bar container
             inputBarContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.inputBarHorizontalPadding),
@@ -252,8 +268,7 @@ final class ChatViewController: UIViewController {
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
-        tapGesture.delegate = self
-        scrollView.addGestureRecognizer(tapGesture)
+        collectionView.addGestureRecognizer(tapGesture)
 
         NotificationCenter.default.addObserver(
             self, selector: #selector(keyboardWillShow(_:)),
@@ -423,53 +438,70 @@ final class ChatViewController: UIViewController {
     // MARK: - Update UI
 
     private func updateChatUI(items: [ChatDisplayItem]) {
-        chatStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-
-        guard !items.isEmpty else { return }
-
-        for (index, item) in items.enumerated() {
-            let bubbleView: UIView
-
-            switch item {
-            case .myMessage(let bubble):
-                bubbleView = MyChatBubble(item: bubble)
-            case .otherMessage(let bubble, let showProfile):
-                bubbleView = OtherChatBubble(item: bubble, showProfile: showProfile)
-            }
-
-            chatStack.addArrangedSubview(bubbleView)
-
-            if index < items.count - 1 {
-                let spacing = calculateSpacing(current: item, next: items[index + 1])
-                chatStack.setCustomSpacing(spacing, after: bubbleView)
-            }
-        }
+        var snapshot = NSDiffableDataSourceSnapshot<Int, ChatDisplayItem>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(items)
 
         let shouldAnimate = hasLoadedInitialMessages
         hasLoadedInitialMessages = true
-        scrollToBottom(animated: shouldAnimate)
-    }
 
-    /// 발신자·시간 조합에 따라 메시지 간 세로 간격 결정
-    private func calculateSpacing(current: ChatDisplayItem, next: ChatDisplayItem) -> CGFloat {
-        if current.senderID != next.senderID {
-            if current.isMe != next.isMe {
-                return Self.differentSenderSpacing
+        if shouldAnimate {
+            dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
+                self?.scrollToBottom(animated: true)
             }
-            return Self.differentSenderWithProfileSpacing
+        } else {
+            dataSource.apply(snapshot, animatingDifferences: false)
+            needsInitialScroll = true
         }
-
-        let sameMinute = Calendar.current.isDate(current.sentAt, equalTo: next.sentAt, toGranularity: .minute)
-        return sameMinute ? Self.sameSenderSpacing : Self.sameMinuteSpacing
     }
 
     private func scrollToBottom(animated: Bool) {
         view.layoutIfNeeded()
         let bottomOffset = CGPoint(
             x: 0,
-            y: max(0, scrollView.contentSize.height - scrollView.bounds.height + scrollView.contentInset.bottom)
+            y: max(0, collectionView.contentSize.height - collectionView.bounds.height + collectionView.contentInset.bottom)
         )
-        scrollView.setContentOffset(bottomOffset, animated: animated)
+        collectionView.setContentOffset(bottomOffset, animated: animated)
+    }
+
+    /// 직전 메시지와의 관계에 따라 버블 상단 간격을 결정한다.
+    /// - 나 ↔ 친구 전환: 20pt  /  친구 ↔ 친구(다른 사람) 전환: 10pt
+    /// - 동일 발신자, 분이 다르면: 10pt  /  같은 분이면: 5pt
+    private func topSpacing(at index: Int) -> CGFloat {
+        let items = viewModel.displayItems
+        guard index > 0 else { return 0 }
+
+        let current = items[index]
+        let previous = items[index - 1]
+
+        if current.senderID != previous.senderID {
+            return current.isMe != previous.isMe
+                ? Self.differentSenderSpacing
+                : Self.differentSenderWithProfileSpacing
+        }
+
+        let sameMinute = Calendar.current.isDate(current.sentAt, equalTo: previous.sentAt, toGranularity: .minute)
+        return sameMinute ? Self.sameSenderSpacing : Self.sameMinuteSpacing
+    }
+
+    // MARK: - Layout
+
+    private func makeLayout() -> UICollectionViewCompositionalLayout {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(50)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: itemSize, subitems: [item])
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: 16, leading: Self.horizontalPadding,
+            bottom: 16, trailing: Self.horizontalPadding
+        )
+        section.interGroupSpacing = 0
+
+        return UICollectionViewCompositionalLayout { _, _ in section }
     }
 
 }
@@ -485,18 +517,4 @@ extension ChatViewController: UITextFieldDelegate {
 
 }
 
-// MARK: - UIGestureRecognizerDelegate
 
-extension ChatViewController: UIGestureRecognizerDelegate {
-
-    /// 입력 바 영역 안의 터치는 키보드 dismiss에서 제외
-    func gestureRecognizer(
-        _ gestureRecognizer: UIGestureRecognizer,
-        shouldReceive touch: UITouch
-    ) -> Bool {
-        let location = touch.location(in: view)
-        let inputBarFrame = inputBarContainer.convert(inputBarContainer.bounds, to: view)
-        return !inputBarFrame.contains(location)
-    }
-
-}
