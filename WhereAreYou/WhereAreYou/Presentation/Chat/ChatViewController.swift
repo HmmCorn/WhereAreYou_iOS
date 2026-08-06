@@ -156,12 +156,8 @@ final class ChatViewController: UIViewController {
               collectionView.bounds.height > 0
         else { return }
 
-        let maxOffsetY = max(0, collectionView.contentSize.height - collectionView.bounds.height + collectionView.contentInset.bottom)
-        if abs(collectionView.contentOffset.y - maxOffsetY) < 2 {
-            needsInitialScroll = false
-        } else {
-            scrollToBottom(animated: false)
-        }
+        needsInitialScroll = false
+        scrollToBottom(animated: false)
     }
 
     // MARK: - Navigation Bar
@@ -199,7 +195,15 @@ final class ChatViewController: UIViewController {
     }
 
     @objc private func moreButtonTapped() {
-        // TODO: 약속 수정 화면 표시
+        // TODO: 의존성 주입 필요
+        let repository = MockAppointmentInfoRepository()
+        let useCase = FetchAppointmentInfoUseCase(repository: repository)
+        let appointmentInfoVM = AppointmentInfoViewModel(
+            appointmentID: viewModel.appointmentInfo.id,
+            fetchAppointmentInfoUseCase: useCase
+        )
+        let appointmentInfoVC = AppointmentInfoViewController(viewModel: appointmentInfoVM)
+        present(appointmentInfoVC, animated: false)
     }
 
     // MARK: - Layout
