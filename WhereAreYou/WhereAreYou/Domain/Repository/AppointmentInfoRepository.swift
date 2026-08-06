@@ -12,4 +12,11 @@ protocol AppointmentInfoRepository {
         appointmentID: String,
         completion: @escaping (Result<Appointment, Error>) -> Void
     )
+    func updateAppointmentInfo(
+        appointmentID: String,
+        name: String?,
+        date: Date?,
+        place: Place?,
+        completion: @escaping (Result<Appointment, Error>) -> Void
+    )
 }

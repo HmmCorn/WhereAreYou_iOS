@@ -9,13 +9,47 @@ import Foundation
 
 final class MockAppointmentInfoRepository: AppointmentInfoRepository {
 
+    private var storedAppointments: [String: Appointment] = [:]
+
     func fetchAppointmentInfo(
         appointmentID: String,
         completion: @escaping (Result<Appointment, Error>) -> Void
     ) {
-        let appointment = Self.makeMockAppointment(appointmentID: appointmentID)
+        if storedAppointments[appointmentID] == nil {
+            storedAppointments[appointmentID] = Self.makeMockAppointment(appointmentID: appointmentID)
+        }
+        let appointment = storedAppointments[appointmentID]!
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             completion(.success(appointment))
+        }
+    }
+
+    func updateAppointmentInfo(
+        appointmentID: String,
+        name: String?,
+        date: Date?,
+        place: Place?,
+        completion: @escaping (Result<Appointment, Error>) -> Void
+    ) {
+        guard let current = storedAppointments[appointmentID] else {
+            completion(.failure(NSError(domain: "MockAppointmentInfoRepository", code: 404)))
+            return
+        }
+
+        let updated = Appointment(
+            id: current.id,
+            code: current.code,
+            name: name ?? current.name,
+            dateTime: date ?? current.dateTime,
+            place: place ?? current.place,
+            participants: current.participants,
+            routes: current.routes,
+            placeVoteStatus: current.placeVoteStatus
+        )
+        storedAppointments[appointmentID] = updated
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            completion(.success(updated))
         }
     }
 
