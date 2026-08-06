@@ -195,12 +195,14 @@ final class ChatViewController: UIViewController {
     }
 
     @objc private func moreButtonTapped() {
-        // TODO: 의존성 주입 필요
+        // TODO: DIContainer 도입 시 의존성 주입 방식 변경
         let repository = MockAppointmentInfoRepository()
-        let useCase = FetchAppointmentInfoUseCase(repository: repository)
+        let fetchUseCase = FetchAppointmentInfoUseCase(repository: repository)
+        let updateUseCase = UpdateAppointmentInfoUseCase(repository: repository)
         let appointmentInfoVM = AppointmentInfoViewModel(
             appointmentID: viewModel.appointmentInfo.id,
-            fetchAppointmentInfoUseCase: useCase
+            fetchAppointmentInfoUseCase: fetchUseCase,
+            updateAppointmentInfoUseCase: updateUseCase
         )
         let appointmentInfoVC = AppointmentInfoViewController(viewModel: appointmentInfoVM)
         present(appointmentInfoVC, animated: false)

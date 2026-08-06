@@ -82,9 +82,11 @@ final class AppointmentInfoViewController: UIViewController {
         ])
 
         infoCard.onClose = { [weak self] in self?.dismissCard() }
-        infoCard.onCopyCodeTap = {
-            UIPasteboard.general.string = info.code
-        }
+        infoCard.onNameEditingEnded = { [weak self] name in self?.viewModel.updateNameIfChanged(name) }
+        infoCard.onDateRowTap = { [weak self] in self?.presentDatePicker() }
+        infoCard.onPlaceRowTap = { [weak self] in self?.presentPlaceSearch() }
+        infoCard.onMapButtonTap = { [weak self] in self?.presentPlaceMapSelection() }
+        infoCard.onCopyCodeTap = { UIPasteboard.general.string = info.code }
 
         card = infoCard
 
@@ -103,6 +105,76 @@ final class AppointmentInfoViewController: UIViewController {
         }) { _ in
             self.dismiss(animated: false)
         }
+    }
+
+    // MARK: - Date Picker
+
+    private func presentDatePicker() {
+        let pickerViewController = DatePickerSheetViewController(
+            title: "약속 날짜/시간 설정",
+            initialDate: viewModel.appointmentInfo?.date
+        )
+        pickerViewController.onDateSelected = { [weak self] date in
+            self?.viewModel.updateDate(date)
+        }
+
+        if let sheet = pickerViewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(pickerViewController, animated: true)
+    }
+
+    // MARK: - Place Search
+
+    private func presentPlaceSearch() {
+        let searchPlaceViewController = SearchPlaceCardViewController(
+            viewModel: SearchPlaceCardViewModel(
+                searchPlacesUseCase: SearchPlacesUseCase(
+                    repository: MockPlaceSearchRepository()
+                )
+            ),
+            selectionButtonTitle: "선택하기",
+            style: .onlyHeader(title: "약속 장소 검색")
+        )
+
+        searchPlaceViewController.onPlaceSelected = { [weak self] place in
+            self?.viewModel.updatePlace(place)
+            searchPlaceViewController.dismiss(animated: true)
+        }
+
+        if let sheet = searchPlaceViewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(searchPlaceViewController, animated: true)
+    }
+
+    // MARK: - Place Map Selection
+
+    private func presentPlaceMapSelection() {
+        let placeSelectionViewModel = PlaceSelectionViewModel(
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: CoreLocationRepository()
+            ),
+            getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
+                nearbyPlaceRepository: MockNearbyPlaceRepository(),
+                reverseGeocodingRepository: MockReverseGeocodingRepository()
+            )
+        )
+        let placeSelectionViewController = PlaceSelectionViewController(viewModel: placeSelectionViewModel)
+
+        placeSelectionViewController.onPlaceConfirmed = { [weak self] place in
+            self?.viewModel.updatePlace(place)
+        }
+
+        let navigationController = UINavigationController(rootViewController: placeSelectionViewController)
+        navigationController.isModalInPresentation = true
+
+        if let sheet = navigationController.sheetPresentationController {
+            sheet.detents = [.large()]
+        }
+        present(navigationController, animated: true)
     }
 
 }

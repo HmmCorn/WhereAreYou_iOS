@@ -10,6 +10,7 @@ import UIKit
 final class AppointmentInfoCard: UIView {
 
     var onClose: (() -> Void)?
+    var onNameEditingEnded: ((String) -> Void)?
     var onDateRowTap: (() -> Void)?
     var onPlaceRowTap: (() -> Void)?
     var onMapButtonTap: (() -> Void)?
@@ -99,6 +100,7 @@ final class AppointmentInfoCard: UIView {
         card.contentStack.addArrangedSubview(footerStack)
 
         card.onClose = { [weak self] in self?.onClose?() }
+        fieldsBox.onNameEditingEnded = { [weak self] text in self?.onNameEditingEnded?(text) }
         fieldsBox.onDateRowTap = { [weak self] in self?.onDateRowTap?() }
         fieldsBox.onPlaceRowTap = { [weak self] in self?.onPlaceRowTap?() }
         fieldsBox.onMapButtonTap = { [weak self] in self?.onMapButtonTap?() }
