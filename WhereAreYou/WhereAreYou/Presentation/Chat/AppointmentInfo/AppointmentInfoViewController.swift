@@ -12,7 +12,8 @@ final class AppointmentInfoViewController: UIViewController {
 
     private let viewModel: AppointmentInfoViewModel
     private var cancellables = Set<AnyCancellable>()
-    private var card: AppointmentInfoCard?
+    private let infoCard = AppointmentInfoCard()
+    private var hasConfiguredCard = false
 
     private let dimView: UIView = {
         let view = UIView()
@@ -36,6 +37,7 @@ final class AppointmentInfoViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .clear
         setUpLayout()
+        setUpCard()
         bindViewModel()
         viewModel.fetchAppointmentInfo()
     }
@@ -58,20 +60,7 @@ final class AppointmentInfoViewController: UIViewController {
         dismissCard()
     }
 
-    private func bindViewModel() {
-        viewModel.$appointmentInfo
-            .compactMap { $0 }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] info in
-                self?.showCard(with: info)
-            }
-            .store(in: &cancellables)
-    }
-
-    private func showCard(with info: AppointmentInfo) {
-        card?.removeFromSuperview()
-
-        let infoCard = AppointmentInfoCard(data: info)
+    private func setUpCard() {
         infoCard.alpha = 0
         infoCard.transform = CGAffineTransform(translationX: 0, y: 20)
         view.addSubview(infoCard)
@@ -86,22 +75,45 @@ final class AppointmentInfoViewController: UIViewController {
         infoCard.onDateRowTap = { [weak self] in self?.presentDatePicker() }
         infoCard.onPlaceRowTap = { [weak self] in self?.presentPlaceSearch() }
         infoCard.onMapButtonTap = { [weak self] in self?.presentPlaceMapSelection() }
-        infoCard.onCopyCodeTap = { UIPasteboard.general.string = info.code }
+        infoCard.onCopyCodeTap = { [weak self] in
+            guard let code = self?.viewModel.appointmentInfo?.code else { return }
+            UIPasteboard.general.string = code
+        }
+    }
 
-        card = infoCard
-
+    private func showCard() {
         UIView.animate(withDuration: 0.25) {
             self.dimView.alpha = 1
-            infoCard.alpha = 1
-            infoCard.transform = .identity
+            self.infoCard.alpha = 1
+            self.infoCard.transform = .identity
         }
+    }
+
+    private func bindViewModel() {
+        viewModel.$appointmentInfo
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] info in
+                self?.handleAppointmentInfoUpdate(info)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func handleAppointmentInfoUpdate(_ info: AppointmentInfo) {
+        if !hasConfiguredCard {
+            hasConfiguredCard = true
+            infoCard.configure(with: info)
+            showCard()
+            return
+        }
+        infoCard.updateInfo(info)
     }
 
     private func dismissCard() {
         UIView.animate(withDuration: 0.2, animations: {
             self.dimView.alpha = 0
-            self.card?.alpha = 0
-            self.card?.transform = CGAffineTransform(translationX: 0, y: 20)
+            self.infoCard.alpha = 0
+            self.infoCard.transform = CGAffineTransform(translationX: 0, y: 20)
         }) { _ in
             self.dismiss(animated: false)
         }

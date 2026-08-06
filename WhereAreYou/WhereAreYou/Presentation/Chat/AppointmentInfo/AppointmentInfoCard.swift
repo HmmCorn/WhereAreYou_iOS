@@ -70,14 +70,13 @@ final class AppointmentInfoCard: UIView {
         return stack
     }()
 
-    init(data: AppointmentInfo) {
+    init() {
         super.init(frame: .zero)
         setUp()
-        configure(with: data)
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented — use init(data:)")
+        fatalError("init(coder:) has not been implemented")
     }
 
     private func setUp() {
@@ -113,10 +112,8 @@ final class AppointmentInfoCard: UIView {
         addGestureRecognizer(dismissKeyboardGesture)
     }
 
-    private func configure(with data: AppointmentInfo) {
-        fieldsBox.name = data.title
-        fieldsBox.dateText = data.date?.appointmentDateTimeText ?? "미정"
-        fieldsBox.placeText = data.location?.title ?? "미정"
+    func configure(with data: AppointmentInfo) {
+        updateInfo(data)
 
         memberSectionLabel.text = "인원 (\(data.participants.count)명)"
         data.participants.forEach { member in
@@ -124,6 +121,12 @@ final class AppointmentInfoCard: UIView {
         }
 
         codeLabel.text = "약속 코드 : \(data.code)"
+    }
+
+    func updateInfo(_ data: AppointmentInfo) {
+        fieldsBox.name = data.title
+        fieldsBox.dateText = data.date?.appointmentDateTimeText ?? "미정"
+        fieldsBox.placeText = data.location?.title ?? "미정"
     }
 
     @objc private func dismissKeyboard() { endEditing(true) }
