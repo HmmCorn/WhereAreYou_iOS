@@ -115,7 +115,7 @@ final class AppointmentInfoCard: UIView {
 
     private func configure(with data: AppointmentInfo) {
         fieldsBox.name = data.title
-        fieldsBox.dateText = data.date?.koreanDateString ?? "미정"
+        fieldsBox.dateText = data.date?.appointmentDateTimeText ?? "미정"
         fieldsBox.placeText = data.location?.title ?? "미정"
 
         memberSectionLabel.text = "인원 (\(data.participants.count)명)"
