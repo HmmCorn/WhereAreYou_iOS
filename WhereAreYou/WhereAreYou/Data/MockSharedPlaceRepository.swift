@@ -49,7 +49,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
         completion: @escaping (Result<[SharedPlace], Error>) -> Void
     ) {
         if !initialized.contains(appointmentID) {
-            sharedPlaces[appointmentID] = Self.makeMockSharedPlaces()
+            sharedPlaces[appointmentID] = Self.makeMockSharedPlaces(appointmentID: appointmentID)
             initialized.insert(appointmentID)
         }
 
@@ -65,7 +65,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
         completion: @escaping (Result<SharedPlace, Error>) -> Void
     ) {
         if !initialized.contains(appointmentID) {
-            sharedPlaces[appointmentID] = Self.makeMockSharedPlaces()
+            sharedPlaces[appointmentID] = Self.makeMockSharedPlaces(appointmentID: appointmentID)
             initialized.insert(appointmentID)
         }
 
@@ -78,6 +78,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
 
         let shared = SharedPlace(
             id: "sp_\(place.id)",
+            appointmentID: appointmentID,
             place: place,
             sharedBy: Self.currentUser,
             sharedAt: Date(),
@@ -119,11 +120,12 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
         }
     }
 
-    private static func makeMockSharedPlaces() -> [SharedPlace] {
+    private static func makeMockSharedPlaces(appointmentID: String) -> [SharedPlace] {
         let now = Date()
 
         let gangnam = SharedPlace(
             id: "sp_gangnam",
+            appointmentID: appointmentID,
             place: Place(
                 id: "gangnam", name: "강남역",
                 address: "서울 강남구 강남대로 396",
@@ -137,6 +139,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
 
         let hongdae = SharedPlace(
             id: "sp_hongdae",
+            appointmentID: appointmentID,
             place: Place(
                 id: "hongdae", name: "홍대입구역",
                 address: "서울 마포구 양화로 160",
