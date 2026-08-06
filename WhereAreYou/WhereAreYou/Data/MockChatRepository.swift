@@ -37,9 +37,9 @@ final class MockChatRepository: ChatRepository {
             id: "\(nextID)",
             appointmentID: appointmentID,
             sender: Self.currentUser,
-            text: content,
             sentAt: Date(),
-            contentType: .text
+            contentType: .text(content),
+            summaryText: content
         )
         nextID += 1
 
@@ -62,9 +62,9 @@ final class MockChatRepository: ChatRepository {
             id: "\(nextID)",
             appointmentID: appointmentID,
             sender: Self.currentUser,
-            text: "📌 위치를 공유했어요",
             sentAt: Date(),
-            contentType: .locationShare(coordinate)
+            contentType: .locationShare(coordinate),
+            summaryText: "📌 위치를 공유했어요"
         )
         nextID += 1
 
@@ -87,9 +87,9 @@ final class MockChatRepository: ChatRepository {
             id: "\(nextID)",
             appointmentID: appointmentID,
             sender: Self.currentUser,
-            text: "\(place.name) 장소를 공유했어요",
             sentAt: Date(),
-            contentType: .placeShare(place)
+            contentType: .placeShare(place),
+            summaryText: "\(place.name) 장소를 공유했어요"
         )
         nextID += 1
 
@@ -155,75 +155,87 @@ final class MockChatRepository: ChatRepository {
         return [
             Chat(
                 id: "1", appointmentID: appointmentID,
-                sender: currentUser, text: "텍스트 텍스트",
+                sender: currentUser,
                 sentAt: calendar.date(byAdding: .minute, value: 0, to: baseDate)!,
-                contentType: .text
+                contentType: .text("텍스트 텍스트"),
+                summaryText: nil
             ),
             Chat(
                 id: "2", appointmentID: appointmentID,
-                sender: user2, text: "안녕하세요! 오늘 약속 장소 확인했어요",
+                sender: user2,
                 sentAt: calendar.date(byAdding: .minute, value: 2, to: baseDate)!,
-                contentType: .text
+                contentType: .text("안녕하세요! 오늘 약속 장소 확인했어요"),
+                summaryText: nil
             ),
             Chat(
                 id: "3", appointmentID: appointmentID,
-                sender: user3, text: "저도 확인했습니다",
+                sender: user3,
                 sentAt: calendar.date(byAdding: .minute, value: 2, to: baseDate)!,
-                contentType: .text
+                contentType: .text("저도 확인했습니다"),
+                summaryText: nil
             ),
             Chat(
                 id: "4", appointmentID: appointmentID,
-                sender: user3, text: "근데 장소가 좀 멀어서 일찍 출발해야 할 것 같아요",
+                sender: user3,
                 sentAt: calendar.date(byAdding: .minute, value: 2, to: baseDate)!,
-                contentType: .text
+                contentType: .text("근데 장소가 좀 멀어서 일찍 출발해야 할 것 같아요"),
+                summaryText: nil
             ),
             Chat(
                 id: "5", appointmentID: appointmentID,
-                sender: user3, text: "다들 몇 시에 출발하시나요?",
+                sender: user3,
                 sentAt: calendar.date(byAdding: .minute, value: 3, to: baseDate)!,
-                contentType: .text
+                contentType: .text("다들 몇 시에 출발하시나요?"),
+                summaryText: nil
             ),
             Chat(
                 id: "6", appointmentID: appointmentID,
-                sender: currentUser, text: "저는 2시에 출발할 예정이에요",
+                sender: currentUser,
                 sentAt: calendar.date(byAdding: .minute, value: 3, to: baseDate)!,
-                contentType: .text
+                contentType: .text("저는 2시에 출발할 예정이에요"),
+                summaryText: nil
             ),
             Chat(
                 id: "7", appointmentID: appointmentID,
-                sender: user2, text: "📌 위치를 공유했어요",
+                sender: user2,
                 sentAt: calendar.date(byAdding: .minute, value: 5, to: baseDate)!,
-                contentType: .locationShare(Coordinate(latitude: 37.5100, longitude: 127.0300))
+                contentType: .locationShare(Coordinate(latitude: 37.5100, longitude: 127.0300)),
+                summaryText: "📌 위치를 공유했어요"
             ),
             Chat(
                 id: "8", appointmentID: appointmentID,
-                sender: user2, text: "강남역 장소를 공유했어요",
+                sender: user2,
                 sentAt: calendar.date(byAdding: .minute, value: 6, to: baseDate)!,
-                contentType: .placeShare(gangnamPlace)
+                contentType: .placeShare(gangnamPlace),
+                summaryText: "강남역 장소를 공유했어요"
             ),
             Chat(
                 id: "9", appointmentID: appointmentID,
-                sender: user3, text: "📌 위치를 공유했어요",
+                sender: user3,
                 sentAt: calendar.date(byAdding: .minute, value: 7, to: baseDate)!,
-                contentType: .locationShare(Coordinate(latitude: 37.5500, longitude: 126.9200))
+                contentType: .locationShare(Coordinate(latitude: 37.5500, longitude: 126.9200)),
+                summaryText: "📌 위치를 공유했어요"
             ),
             Chat(
                 id: "10", appointmentID: appointmentID,
-                sender: user3, text: "홍대입구역 장소를 공유했어요",
+                sender: user3,
                 sentAt: calendar.date(byAdding: .minute, value: 8, to: baseDate)!,
-                contentType: .placeShare(hongdaePlace)
+                contentType: .placeShare(hongdaePlace),
+                summaryText: "홍대입구역 장소를 공유했어요"
             ),
             Chat(
                 id: "11", appointmentID: appointmentID,
-                sender: user3, text: "홍대 쪽이 중간이라 좋을 것 같아요!",
+                sender: user3,
                 sentAt: calendar.date(byAdding: .minute, value: 8, to: baseDate)!,
-                contentType: .text
+                contentType: .text("홍대 쪽이 중간이라 좋을 것 같아요!"),
+                summaryText: nil
             ),
             Chat(
                 id: "12", appointmentID: appointmentID,
-                sender: user3, text: "강남역 장소를 공유했어요",
+                sender: user3,
                 sentAt: calendar.date(byAdding: .minute, value: 10, to: baseDate)!,
-                contentType: .placeShare(gangnamPlace)
+                contentType: .placeShare(gangnamPlace),
+                summaryText: "강남역 장소를 공유했어요"
             ),
         ]
     }

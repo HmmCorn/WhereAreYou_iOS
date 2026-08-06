@@ -140,13 +140,17 @@ private extension ChatViewModel {
             let showTime = shouldShowTime(at: index, in: messages)
             let timeText = showTime ? message.sentAt.koreanTimeString : nil
 
+            let bubbleContent: String
             let contentType: ChatBubbleItem.BubbleContentType
             switch message.contentType {
-            case .text:
+            case .text(let text):
+                bubbleContent = text
                 contentType = .text
             case .locationShare:
+                bubbleContent = "📌 위치를 공유했어요"
                 contentType = .locationShare
             case .placeShare(let place):
+                bubbleContent = place.name
                 let isDuplicate = sharedPlaceIDs.contains(place.id)
                 sharedPlaceIDs.insert(place.id)
                 contentType = .placeShare(placeName: place.name, placeAddress: place.address, isDuplicate: isDuplicate)
@@ -157,7 +161,7 @@ private extension ChatViewModel {
                 senderID: message.sender.id,
                 senderNickname: message.sender.nickname,
                 senderProfileImage: message.sender.profileImage.lastPathComponent,
-                content: message.text,
+                content: bubbleContent,
                 timeText: timeText,
                 sentAt: message.sentAt,
                 contentType: contentType

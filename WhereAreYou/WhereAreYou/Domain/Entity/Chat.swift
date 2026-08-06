@@ -12,7 +12,7 @@ struct Chat {
     let id: String
     let appointmentID: String
     let sender: User
-    let text: String
     let sentAt: Date
     let contentType: ChatContentType
+    let summaryText: String?
 }
