@@ -14,7 +14,7 @@ final class AppointmentInfoViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     private var card: AppointmentInfoCard?
 
-    private let dimmingView: UIView = {
+    private let dimView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
         view.alpha = 0
@@ -35,26 +35,26 @@ final class AppointmentInfoViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
-        setUpDimmingView()
+        setUpLayout()
         bindViewModel()
         viewModel.fetchAppointmentInfo()
     }
 
-    private func setUpDimmingView() {
-        dimmingView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(dimmingView)
+    private func setUpLayout() {
+        dimView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(dimView)
         NSLayoutConstraint.activate([
-            dimmingView.topAnchor.constraint(equalTo: view.topAnchor),
-            dimmingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            dimmingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            dimmingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            dimView.topAnchor.constraint(equalTo: view.topAnchor),
+            dimView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            dimView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            dimView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
 
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimmingViewTapped))
-        dimmingView.addGestureRecognizer(tapGesture)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimTapped))
+        dimView.addGestureRecognizer(tapGesture)
     }
 
-    @objc private func dimmingViewTapped() {
+    @objc private func dimTapped() {
         dismissCard()
     }
 
@@ -91,7 +91,7 @@ final class AppointmentInfoViewController: UIViewController {
         card = infoCard
 
         UIView.animate(withDuration: 0.25) {
-            self.dimmingView.alpha = 1
+            self.dimView.alpha = 1
             infoCard.alpha = 1
             infoCard.transform = .identity
         }
@@ -99,7 +99,7 @@ final class AppointmentInfoViewController: UIViewController {
 
     private func dismissCard() {
         UIView.animate(withDuration: 0.2, animations: {
-            self.dimmingView.alpha = 0
+            self.dimView.alpha = 0
             self.card?.alpha = 0
             self.card?.transform = CGAffineTransform(translationX: 0, y: 20)
         }) { _ in

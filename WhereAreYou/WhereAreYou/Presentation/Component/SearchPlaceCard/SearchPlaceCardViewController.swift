@@ -56,9 +56,15 @@ final class SearchPlaceCardViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if case .dimmed = style { view.backgroundColor = .clear }
         setUpLayout()
         setUpActions()
         bindViewModel()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if case .dimmed = style { showCard() }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -76,6 +82,7 @@ final class SearchPlaceCardViewController: UIViewController {
         case .dimmed:
             let dim = UIView()
             dim.backgroundColor = .black.withAlphaComponent(0.4)
+            dim.alpha = 0
             dim.translatesAutoresizingMaskIntoConstraints = false
             view.insertSubview(dim, belowSubview: searchCard)
             self.dimView = dim
@@ -95,6 +102,9 @@ final class SearchPlaceCardViewController: UIViewController {
                 searchCard.heightAnchor.constraint(lessThanOrEqualTo: view.heightAnchor, multiplier: 0.7),
             ])
 
+            searchCard.alpha = 0
+            searchCard.transform = CGAffineTransform(translationX: 0, y: 20)
+
         case .plain, .onlyHeader:
             NSLayoutConstraint.activate([
                 searchCard.topAnchor.constraint(equalTo: view.topAnchor),
@@ -102,6 +112,26 @@ final class SearchPlaceCardViewController: UIViewController {
                 searchCard.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 searchCard.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             ])
+        }
+    }
+
+    // MARK: - Animation
+
+    private func showCard() {
+        UIView.animate(withDuration: 0.25) {
+            self.dimView?.alpha = 1
+            self.searchCard.alpha = 1
+            self.searchCard.transform = .identity
+        }
+    }
+
+    private func dismissCard() {
+        UIView.animate(withDuration: 0.2, animations: {
+            self.dimView?.alpha = 0
+            self.searchCard.alpha = 0
+            self.searchCard.transform = CGAffineTransform(translationX: 0, y: 20)
+        }) { _ in
+            self.dismiss(animated: false)
         }
     }
 
@@ -115,7 +145,7 @@ final class SearchPlaceCardViewController: UIViewController {
         searchCard.onPlaceTap = { [weak self] placeInfo in
             guard let self, let place = self.viewModel.place(for: placeInfo) else { return }
             self.onPlaceSelected?(place)
-            if case .dimmed = self.style { self.dismiss(animated: true) }
+            if case .dimmed = self.style { self.dismissCard() }
         }
 
         searchCard.onFilterTap = { [weak self] placeType in
@@ -127,14 +157,19 @@ final class SearchPlaceCardViewController: UIViewController {
         }
 
         searchCard.onClose = { [weak self] in
-            self?.dismiss(animated: true)
+            guard let self else { return }
+            if case .dimmed = self.style {
+                self.dismissCard()
+            } else {
+                self.dismiss(animated: true)
+            }
         }
     }
 
     @objc private func dimTapped(_ gesture: UITapGestureRecognizer) {
         let location = gesture.location(in: view)
         if !searchCard.frame.contains(location) {
-            dismiss(animated: true)
+            dismissCard()
         }
     }
 
