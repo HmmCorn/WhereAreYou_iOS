@@ -55,6 +55,13 @@ final class SearchPlaceCardViewModel {
         allPlaces.first { $0.id == placeInfo.id }
     }
 
+    func resetAll() {
+        filteredPlaces = []
+        selectedFilters = []
+        hasSearched = false
+        allPlaces = []
+    }
+
     private func applyFilter() {
         if selectedFilters.isEmpty {
             filteredPlaces = allPlaces
