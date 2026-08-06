@@ -28,68 +28,28 @@ final class MockChatRepository: ChatRepository {
         }
     }
 
-    func sendMessage(
+    func sendChat(
         appointmentID: String,
-        content: String,
+        contentType: ChatContentType,
         completion: @escaping (Result<Chat, Error>) -> Void
     ) {
+        let summaryText: String?
+        switch contentType {
+        case .text(let text):
+            summaryText = text
+        case .locationShare:
+            summaryText = "📌 위치를 공유했어요"
+        case .placeShare(let place):
+            summaryText = "\(place.name) 장소를 공유했어요"
+        }
+
         let message = Chat(
             id: "\(nextID)",
             appointmentID: appointmentID,
             sender: Self.currentUser,
             sentAt: Date(),
-            contentType: .text(content),
-            summaryText: content
-        )
-        nextID += 1
-
-        if messages[appointmentID] == nil {
-            messages[appointmentID] = []
-        }
-        messages[appointmentID]?.append(message)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            completion(.success(message))
-        }
-    }
-
-    func shareLocation(
-        appointmentID: String,
-        coordinate: Coordinate,
-        completion: @escaping (Result<Chat, Error>) -> Void
-    ) {
-        let message = Chat(
-            id: "\(nextID)",
-            appointmentID: appointmentID,
-            sender: Self.currentUser,
-            sentAt: Date(),
-            contentType: .locationShare(coordinate),
-            summaryText: "📌 위치를 공유했어요"
-        )
-        nextID += 1
-
-        if messages[appointmentID] == nil {
-            messages[appointmentID] = []
-        }
-        messages[appointmentID]?.append(message)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            completion(.success(message))
-        }
-    }
-
-    func sharePlace(
-        appointmentID: String,
-        place: Place,
-        completion: @escaping (Result<Chat, Error>) -> Void
-    ) {
-        let message = Chat(
-            id: "\(nextID)",
-            appointmentID: appointmentID,
-            sender: Self.currentUser,
-            sentAt: Date(),
-            contentType: .placeShare(place),
-            summaryText: "\(place.name) 장소를 공유했어요"
+            contentType: contentType,
+            summaryText: summaryText
         )
         nextID += 1
 

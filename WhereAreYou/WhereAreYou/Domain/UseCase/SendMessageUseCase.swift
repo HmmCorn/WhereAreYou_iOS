@@ -19,7 +19,7 @@ final class SendMessageUseCase {
         content: String,
         completion: @escaping (Result<Chat, Error>) -> Void
     ) {
-        repository.sendMessage(appointmentID: appointmentID, content: content, completion: completion)
+        repository.sendChat(appointmentID: appointmentID, contentType: .text(content), completion: completion)
     }
 
 }

@@ -19,7 +19,7 @@ final class ShareLocationUseCase {
         coordinate: Coordinate,
         completion: @escaping (Result<Chat, Error>) -> Void
     ) {
-        repository.shareLocation(appointmentID: appointmentID, coordinate: coordinate, completion: completion)
+        repository.sendChat(appointmentID: appointmentID, contentType: .locationShare(coordinate), completion: completion)
     }
 
 }

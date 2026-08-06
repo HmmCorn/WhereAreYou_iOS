@@ -26,7 +26,7 @@ final class SharePlaceUseCase {
             case .failure(let error):
                 completion(.failure(error))
             case .success:
-                chatRepository.sharePlace(appointmentID: appointmentID, place: place, completion: completion)
+                chatRepository.sendChat(appointmentID: appointmentID, contentType: .placeShare(place), completion: completion)
             }
         }
     }
