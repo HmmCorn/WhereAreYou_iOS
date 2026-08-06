@@ -160,7 +160,8 @@ final class AppointmentInfoViewController: UIViewController {
             getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
                 nearbyPlaceRepository: MockNearbyPlaceRepository(),
                 reverseGeocodingRepository: MockReverseGeocodingRepository()
-            )
+            ),
+            initialCoordinate: viewModel.appointmentInfo?.location?.coordinate
         )
         let placeSelectionViewController = PlaceSelectionViewController(viewModel: placeSelectionViewModel)
 

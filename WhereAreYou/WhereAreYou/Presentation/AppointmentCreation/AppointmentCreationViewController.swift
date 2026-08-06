@@ -197,7 +197,8 @@ extension AppointmentCreationViewController {
             getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
                 nearbyPlaceRepository: MockNearbyPlaceRepository(),
                 reverseGeocodingRepository: MockReverseGeocodingRepository()
-            )
+            ),
+            initialCoordinate: viewModel.appointmentPlace?.coordinate
         )
         let placeSelectionViewController = PlaceSelectionViewController(viewModel: placeSelectionViewModel)
 

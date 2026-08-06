@@ -157,6 +157,11 @@ final class PlaceSelectionViewController: UIViewController {
             self?.viewModel.setCenterCoordinate(coordinate)
         }
         bindViewModel()
+        if let initialCoordinate = viewModel.initialCoordinate {
+            isInitialCameraMoveHandled = true
+            naverMapView.moveCamera(to: initialCoordinate)
+            viewModel.setCenterCoordinate(initialCoordinate)
+        }
         viewModel.fetchCurrentLocation()
     }
 
