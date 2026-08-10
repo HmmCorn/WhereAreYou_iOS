@@ -112,21 +112,23 @@ final class AppointmentInfoCard: UIView {
         addGestureRecognizer(dismissKeyboardGesture)
     }
 
+    /// 불변 정보(약속 코드)를 설정하고 변경 가능한 정보를 초기화한다. 최초 1회만 호출.
     func configure(with data: AppointmentInfo) {
-        updateInfo(data)
-
-        memberSectionLabel.text = "인원 (\(data.participants.count)명)"
-        data.participants.forEach { member in
-            memberStack.addArrangedSubview(ParticipantBox(member: member))
-        }
-
         codeLabel.text = "약속 코드 : \(data.code)"
+        updateInfo(data)
     }
 
+    /// 변경 가능한 정보(이름, 날짜, 장소, 참여자)를 갱신한다. 매 emit마다 호출.
     func updateInfo(_ data: AppointmentInfo) {
         fieldsBox.name = data.title
         fieldsBox.dateText = data.date?.appointmentDateTimeText ?? "미정"
         fieldsBox.placeText = data.location?.title ?? "미정"
+
+        memberSectionLabel.text = "인원 (\(data.participants.count)명)"
+        memberStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        data.participants.forEach { member in
+            memberStack.addArrangedSubview(ParticipantBox(member: member))
+        }
     }
 
     @objc private func dismissKeyboard() { endEditing(true) }
