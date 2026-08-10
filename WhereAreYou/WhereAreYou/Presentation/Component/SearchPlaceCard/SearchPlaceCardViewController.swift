@@ -35,10 +35,15 @@ final class SearchPlaceCardViewController: UIViewController {
         switch style {
         case .plain:
             self.searchCard = SearchPlaceCard(selectionButtonTitle: selectionButtonTitle)
-        case .dimmed(let title), .onlyHeader(let title):
+        case .dimmed(let title):
             self.searchCard = SearchPlaceCard(
                 selectionButtonTitle: selectionButtonTitle,
                 headerStyle: .titleWithCloseButton(title)
+            )
+        case .onlyHeader(let title):
+            self.searchCard = SearchPlaceCard(
+                selectionButtonTitle: selectionButtonTitle,
+                headerStyle: .title(title)
             )
         }
 
