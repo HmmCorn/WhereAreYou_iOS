@@ -33,13 +33,17 @@ final class PlaceSelectionViewModel {
     private let getCurrentLocationUseCase: GetCurrentLocationUseCase
     /// 좌표 기준 근처 장소 조회를 위임하는 UseCase
     private let getNearbyPlaceUseCase: GetNearbyPlaceUseCase
+    /// 초기 지도 중심 좌표 (nil이면 현재 위치 사용)
+    let initialCoordinate: Coordinate?
 
     init(
         getCurrentLocationUseCase: GetCurrentLocationUseCase,
-        getNearbyPlaceUseCase: GetNearbyPlaceUseCase
+        getNearbyPlaceUseCase: GetNearbyPlaceUseCase,
+        initialCoordinate: Coordinate? = nil
     ) {
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
         self.getNearbyPlaceUseCase = getNearbyPlaceUseCase
+        self.initialCoordinate = initialCoordinate
         bindCenterCoordinate()
     }
 

@@ -102,11 +102,12 @@ final class SearchPlaceCard: UIView {
         resultScrollView.addSubview(resultStack)
         resultScrollView.addSubview(emptyResultLabel)
 
-        let expandHeight = resultScrollView.heightAnchor.constraint(equalToConstant: 300)
-        expandHeight.priority = .defaultLow
+        resultScrollView.setContentHuggingPriority(.init(1), for: .vertical)
+
+        let minHeight = resultScrollView.heightAnchor.constraint(greaterThanOrEqualToConstant: 200)
 
         NSLayoutConstraint.activate([
-            expandHeight,
+            minHeight,
 
             resultStack.topAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.topAnchor),
             resultStack.bottomAnchor.constraint(equalTo: resultScrollView.contentLayoutGuide.bottomAnchor),

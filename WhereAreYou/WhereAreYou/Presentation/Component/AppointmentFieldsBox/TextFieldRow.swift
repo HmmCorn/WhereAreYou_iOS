@@ -12,6 +12,7 @@ import UIKit
 final class TextFieldRow: UIView {
 
     var onTextChanged: ((String) -> Void)?
+    var onEditingEnded: ((String) -> Void)?
 
     var text: String? {
         get { textField.text }
@@ -60,6 +61,10 @@ final class TextFieldRow: UIView {
         textField.addAction(UIAction { [weak self] _ in
             self?.onTextChanged?(self?.textField.text ?? "")
         }, for: .editingChanged)
+
+        textField.addAction(UIAction { [weak self] _ in
+            self?.onEditingEnded?(self?.textField.text ?? "")
+        }, for: .editingDidEnd)
     }
     
 }

@@ -20,7 +20,7 @@ final class ShareMyLocationViewController: UIViewController {
         self.address = address
         self.card = CardContainerView(headerStyle: .title("내 위치 공유"))
         super.init(nibName: nil, bundle: nil)
-        modalPresentationStyle = .overFullScreen
+        modalPresentationStyle = .overCurrentContext
         modalTransitionStyle = .crossDissolve
     }
 
@@ -30,12 +30,19 @@ final class ShareMyLocationViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .clear
         setUpLayout()
         setUpActions()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        showCard()
+    }
+
     private func setUpLayout() {
         dimView.backgroundColor = .black.withAlphaComponent(0.4)
+        dimView.alpha = 0
         dimView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(dimView)
 
@@ -80,7 +87,7 @@ final class ShareMyLocationViewController: UIViewController {
             edgeInsets: NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
         )
         confirmButton.addAction(UIAction { [weak self] _ in
-            self?.dismiss(animated: true) {
+            self?.dismissCard {
                 self?.onConfirm?()
             }
         }, for: .touchUpInside)
@@ -92,7 +99,7 @@ final class ShareMyLocationViewController: UIViewController {
             edgeInsets: NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16)
         )
         cancelButton.addAction(UIAction { [weak self] _ in
-            self?.dismiss(animated: true)
+            self?.dismissCard()
         }, for: .touchUpInside)
 
         let buttonStack = UIStackView(arrangedSubviews: [cancelButton, confirmButton])
@@ -107,11 +114,34 @@ final class ShareMyLocationViewController: UIViewController {
 
         card.contentStack.alignment = .center
         card.contentStack.setCustomSpacing(8, after: addressLabel)
+
+        card.alpha = 0
+        card.transform = CGAffineTransform(translationX: 0, y: 20)
+    }
+
+    // MARK: - Animation
+
+    private func showCard() {
+        UIView.animate(withDuration: 0.25) {
+            self.dimView.alpha = 1
+            self.card.alpha = 1
+            self.card.transform = .identity
+        }
+    }
+
+    private func dismissCard(completion: (() -> Void)? = nil) {
+        UIView.animate(withDuration: 0.2, animations: {
+            self.dimView.alpha = 0
+            self.card.alpha = 0
+            self.card.transform = CGAffineTransform(translationX: 0, y: 20)
+        }) { _ in
+            self.dismiss(animated: false, completion: completion)
+        }
     }
 
     private func setUpActions() {
         card.onClose = { [weak self] in
-            self?.dismiss(animated: true)
+            self?.dismissCard()
         }
 
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dimTapped(_:)))
@@ -119,7 +149,7 @@ final class ShareMyLocationViewController: UIViewController {
     }
 
     @objc private func dimTapped(_ gesture: UITapGestureRecognizer) {
-        dismiss(animated: true)
+        dismissCard()
     }
 
 }

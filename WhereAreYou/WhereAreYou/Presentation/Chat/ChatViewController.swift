@@ -29,7 +29,6 @@ final class ChatViewController: UIViewController {
     private let viewModel: ChatViewModel
     private var cancellables = Set<AnyCancellable>()
     private var hasLoadedInitialMessages = false
-    private var needsInitialScroll = false
 
     // MARK: - Chat collection view
 
@@ -39,6 +38,7 @@ final class ChatViewController: UIViewController {
         cv.alwaysBounceVertical = true
         cv.keyboardDismissMode = .interactive
         cv.backgroundColor = .clear
+        cv.contentInset.bottom = 16
         cv.register(ChatBubbleCell.self, forCellWithReuseIdentifier: ChatBubbleCell.reuseID)
         return cv
     }()
@@ -149,21 +149,6 @@ final class ChatViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        guard needsInitialScroll,
-              collectionView.contentSize.height > 0,
-              collectionView.bounds.height > 0
-        else { return }
-
-        let maxOffsetY = max(0, collectionView.contentSize.height - collectionView.bounds.height + collectionView.contentInset.bottom)
-        if abs(collectionView.contentOffset.y - maxOffsetY) < 2 {
-            needsInitialScroll = false
-        } else {
-            scrollToBottom(animated: false)
-        }
-    }
-
     // MARK: - Navigation Bar
 
     private func setUpNavigationBar() {
@@ -199,7 +184,17 @@ final class ChatViewController: UIViewController {
     }
 
     @objc private func moreButtonTapped() {
-        // TODO: 약속 수정 화면 표시
+        // TODO: DIContainer 도입 시 의존성 주입 방식 변경
+        let repository = MockAppointmentInfoRepository()
+        let fetchUseCase = FetchAppointmentInfoUseCase(repository: repository)
+        let updateUseCase = UpdateAppointmentInfoUseCase(repository: repository)
+        let appointmentInfoVM = AppointmentInfoViewModel(
+            appointmentID: viewModel.appointmentInfo.id,
+            fetchAppointmentInfoUseCase: fetchUseCase,
+            updateAppointmentInfoUseCase: updateUseCase
+        )
+        let appointmentInfoVC = AppointmentInfoViewController(viewModel: appointmentInfoVM)
+        present(appointmentInfoVC, animated: false)
     }
 
     // MARK: - Layout
@@ -387,7 +382,6 @@ final class ChatViewController: UIViewController {
         UIView.animate(withDuration: duration) {
             self.view.layoutIfNeeded()
         }
-        scrollToBottom(animated: true)
     }
 
     @objc private func keyboardWillHide(_ notification: Notification) {
@@ -406,7 +400,6 @@ final class ChatViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.$displayItems
-            .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] items in
                 self?.updateChatUI(items: items)
@@ -442,26 +435,19 @@ final class ChatViewController: UIViewController {
         snapshot.appendSections([0])
         snapshot.appendItems(items)
 
-        let shouldAnimate = hasLoadedInitialMessages
+        let isInitialLoad = !hasLoadedInitialMessages
         hasLoadedInitialMessages = true
 
-        if shouldAnimate {
-            dataSource.apply(snapshot, animatingDifferences: true) { [weak self] in
-                self?.scrollToBottom(animated: true)
-            }
-        } else {
-            dataSource.apply(snapshot, animatingDifferences: false)
-            needsInitialScroll = true
+        dataSource.apply(snapshot, animatingDifferences: !isInitialLoad) { [weak self] in
+            self?.scrollToBottom(animated: !isInitialLoad)
         }
     }
 
     private func scrollToBottom(animated: Bool) {
-        view.layoutIfNeeded()
-        let bottomOffset = CGPoint(
-            x: 0,
-            y: max(0, collectionView.contentSize.height - collectionView.bounds.height + collectionView.contentInset.bottom)
-        )
-        collectionView.setContentOffset(bottomOffset, animated: animated)
+        let itemCount = collectionView.numberOfItems(inSection: 0)
+        guard itemCount > 0 else { return }
+        let lastIndexPath = IndexPath(item: itemCount - 1, section: 0)
+        collectionView.scrollToItem(at: lastIndexPath, at: .bottom, animated: animated)
     }
 
     /// 직전 메시지와의 관계에 따라 버블 상단 간격을 결정한다.
@@ -497,7 +483,7 @@ final class ChatViewController: UIViewController {
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(
             top: 16, leading: Self.horizontalPadding,
-            bottom: 16, trailing: Self.horizontalPadding
+            bottom: 0, trailing: Self.horizontalPadding
         )
         section.interGroupSpacing = 0
 

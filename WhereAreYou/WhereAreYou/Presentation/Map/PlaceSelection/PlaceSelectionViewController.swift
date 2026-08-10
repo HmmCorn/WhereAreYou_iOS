@@ -156,7 +156,16 @@ final class PlaceSelectionViewController: UIViewController {
         naverMapView.onCameraIdle = { [weak self] coordinate in
             self?.viewModel.setCenterCoordinate(coordinate)
         }
+        searchOtherPlaceButton.addAction(
+            UIAction { [weak self] _ in self?.searchOtherPlaceTapped() },
+            for: .touchUpInside
+        )
         bindViewModel()
+        if let initialCoordinate = viewModel.initialCoordinate {
+            isInitialCameraMoveHandled = true
+            naverMapView.moveCamera(to: initialCoordinate)
+            viewModel.setCenterCoordinate(initialCoordinate)
+        }
         viewModel.fetchCurrentLocation()
     }
 
@@ -229,6 +238,24 @@ final class PlaceSelectionViewController: UIViewController {
         guard let place = viewModel.nearbyPlace else { return }
         onPlaceConfirmed?(place)
         presentingViewController?.dismiss(animated: true)
+    }
+
+    private func searchOtherPlaceTapped() {
+        let searchPlaceViewController = SearchPlaceCardViewController(
+            viewModel: SearchPlaceCardViewModel(
+                searchPlacesUseCase: SearchPlacesUseCase(
+                    repository: MockPlaceSearchRepository()
+                )
+            ),
+            selectionButtonTitle: "선택하기",
+            style: .onlyHeader(title: "장소 검색")
+        )
+        searchPlaceViewController.onPlaceSelected = { [weak self] place in
+            self?.navigationController?.popViewController(animated: true)
+            self?.naverMapView.moveCamera(to: place.coordinate)
+        }
+        navigationController?.setNavigationBarHidden(false, animated: false)
+        navigationController?.pushViewController(searchPlaceViewController, animated: true)
     }
 
     // MARK: - Layout

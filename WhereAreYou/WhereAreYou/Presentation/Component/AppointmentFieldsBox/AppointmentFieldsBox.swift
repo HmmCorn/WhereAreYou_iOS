@@ -10,6 +10,7 @@ import UIKit
 final class AppointmentFieldsBox: UIView {
 
     var onNameChanged: ((String) -> Void)?
+    var onNameEditingEnded: ((String) -> Void)?
     var onDateRowTap: (() -> Void)?
     var onPlaceRowTap: (() -> Void)?
     var onMapButtonTap: (() -> Void)?
@@ -78,6 +79,7 @@ final class AppointmentFieldsBox: UIView {
         dateRow.onTap = { [weak self] in self?.onDateRowTap?() }
         placeRow.onTap = { [weak self] in self?.onPlaceRowTap?() }
         nameField.onTextChanged = { [weak self] text in self?.onNameChanged?(text) }
+        nameField.onEditingEnded = { [weak self] text in self?.onNameEditingEnded?(text) }
     }
 
     private func labeledSection(title: String, content: UIView) -> UIView {
