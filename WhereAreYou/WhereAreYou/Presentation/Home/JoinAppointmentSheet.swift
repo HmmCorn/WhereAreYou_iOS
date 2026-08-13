@@ -24,6 +24,11 @@ final class JoinAppointmentSheet: UIView {
         field.layer.borderWidth = 1
         field.layer.borderColor = UIColor.separator.cgColor
         field.layer.cornerRadius = 12
+        field.keyboardType = .asciiCapable
+        field.autocapitalizationType = .allCharacters
+        field.autocorrectionType = .no
+        field.returnKeyType = .done
+        field.enablesReturnKeyAutomatically = true
         field.heightAnchor.constraint(equalToConstant: 32).isActive = true
         return field
     }()
@@ -113,7 +118,16 @@ final class JoinAppointmentSheet: UIView {
         joinButton.addAction(UIAction { [weak self] _ in
             self?.joinTapped()
         }, for: .touchUpInside)
+
+        codeField.delegate = self
+
+        let dismissKeyboardGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        dismissKeyboardGesture.cancelsTouchesInView = false
+        dismissKeyboardGesture.delegate = self
+        addGestureRecognizer(dismissKeyboardGesture)
     }
+
+    @objc private func dismissKeyboard() { endEditing(true) }
 
     private func pasteTapped() {
         print("붙여넣기 tapped")
@@ -126,6 +140,27 @@ final class JoinAppointmentSheet: UIView {
     private func joinTapped() {
         print("참여하기 tapped")
         onJoin?(codeField.text ?? "")
+    }
+
+}
+
+// MARK: - UITextFieldDelegate
+
+extension JoinAppointmentSheet: UITextFieldDelegate {
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+
+}
+
+// MARK: - UIGestureRecognizerDelegate
+
+extension JoinAppointmentSheet: UIGestureRecognizerDelegate {
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        !(touch.view is UITextField)
     }
 
 }
