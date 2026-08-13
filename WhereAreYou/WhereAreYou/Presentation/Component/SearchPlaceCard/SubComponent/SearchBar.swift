@@ -22,6 +22,8 @@ final class SearchBar: UIView {
         field.placeholder = "장소를 검색해요."
         field.font = UIFont.preferredFont(forTextStyle: .footnote)
         field.adjustsFontForContentSizeCategory = true
+        field.returnKeyType = .search
+        field.enablesReturnKeyAutomatically = true
         return field
     }()
 
@@ -83,6 +85,20 @@ final class SearchBar: UIView {
             self?.onSearchTap?()
             self?.endEditing(true)
         }, for: .touchUpInside)
+
+        textField.delegate = self
+    }
+
+}
+
+// MARK: - UITextFieldDelegate
+
+extension SearchBar: UITextFieldDelegate {
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        onSearchTap?()
+        textField.resignFirstResponder()
+        return true
     }
 
 }
