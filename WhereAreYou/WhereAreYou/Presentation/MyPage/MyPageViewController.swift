@@ -11,7 +11,11 @@ final class MyPageViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel = MyPageViewModel()
+    private let viewModel = MyPageViewModel(
+        observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
+            repository: CoreLocationRepository()
+        )
+    )
 
     private let logoImageView: UIImageView = {
         let imageView = UIImageView(image: .logo)
