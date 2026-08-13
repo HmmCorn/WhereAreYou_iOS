@@ -5,6 +5,7 @@
 //  Created by 김성훈 on 7/28/26.
 //
 
+import Combine
 import CoreLocation
 
 final class CoreLocationRepository: NSObject, LocationRepository {
@@ -12,12 +13,17 @@ final class CoreLocationRepository: NSObject, LocationRepository {
     private let locationManager = CLLocationManager()
     private var completion: ((Result<Coordinate, Error>) -> Void)?
 
+    private let authorizationStatusSubject: CurrentValueSubject<LocationPermissionStatus, Never>
+
     enum LocationError: Error {
         case permissionDenied
         case unableToFetch
     }
 
     override init() {
+        authorizationStatusSubject = CurrentValueSubject(
+            LocationPermissionStatus(locationManager.authorizationStatus)
+        )
         super.init()
         locationManager.delegate = self
     }
@@ -41,9 +47,29 @@ final class CoreLocationRepository: NSObject, LocationRepository {
 
 }
 
+// MARK: - LocationPermissionRepository
+
+extension CoreLocationRepository: LocationPermissionRepository {
+
+    var authorizationStatus: LocationPermissionStatus {
+        LocationPermissionStatus(locationManager.authorizationStatus)
+    }
+
+    var authorizationStatusPublisher: AnyPublisher<LocationPermissionStatus, Never> {
+        authorizationStatusSubject.eraseToAnyPublisher()
+    }
+
+    func requestAuthorization() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+
+}
+
 extension CoreLocationRepository: CLLocationManagerDelegate {
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        authorizationStatusSubject.send(LocationPermissionStatus(manager.authorizationStatus))
+
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
             manager.requestLocation()
@@ -72,6 +98,23 @@ extension CoreLocationRepository: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         completion?(.failure(error))
         completion = nil
+    }
+
+}
+
+// MARK: - CLAuthorizationStatus 변환
+
+private extension LocationPermissionStatus {
+
+    init(_ status: CLAuthorizationStatus) {
+        switch status {
+        case .notDetermined: self = .notDetermined
+        case .denied: self = .denied
+        case .restricted: self = .restricted
+        case .authorizedAlways: self = .authorizedAlways
+        case .authorizedWhenInUse: self = .authorizedWhenInUse
+        @unknown default: self = .notDetermined
+        }
     }
 
 }
