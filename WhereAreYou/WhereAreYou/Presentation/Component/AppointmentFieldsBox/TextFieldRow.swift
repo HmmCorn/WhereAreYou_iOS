@@ -29,6 +29,7 @@ final class TextFieldRow: UIView {
         iconView.contentMode = .scaleAspectFit
         textField.placeholder = placeholder
         textField.font = UIFont.preferredFont(forTextStyle: .caption1)
+        textField.returnKeyType = .done
         setUp()
     }
 
@@ -65,6 +66,19 @@ final class TextFieldRow: UIView {
         textField.addAction(UIAction { [weak self] _ in
             self?.onEditingEnded?(self?.textField.text ?? "")
         }, for: .editingDidEnd)
+
+        textField.delegate = self
     }
-    
+
+}
+
+// MARK: - UITextFieldDelegate
+
+extension TextFieldRow: UITextFieldDelegate {
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+
 }
