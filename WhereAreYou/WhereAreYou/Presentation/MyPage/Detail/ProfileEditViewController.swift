@@ -62,6 +62,7 @@ final class ProfileEditViewController: UIViewController {
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
         field.leftViewMode = .always
         field.returnKeyType = .done
+        field.enablesReturnKeyAutomatically = true
         return field
     }()
 
@@ -103,6 +104,7 @@ final class ProfileEditViewController: UIViewController {
         nicknameField.text = nickname
         nicknameField.delegate = self
         setUpLayout()
+        setUpDismissKeyboardGesture()
         setUpActions()
         applySnapshot()
         updatePreviewImage()
@@ -201,6 +203,14 @@ final class ProfileEditViewController: UIViewController {
         previewImageView.image = UIImage(named: selectedImageName) ?? UIImage(systemName: selectedImageName)
         previewImageView.layer.cornerRadius = Self.previewImageSize / 2
     }
+
+    private func setUpDismissKeyboardGesture() {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        gesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(gesture)
+    }
+
+    @objc private func dismissKeyboard() { view.endEditing(true) }
 
     private func setUpActions() {
         saveButton.addAction(UIAction { [weak self] _ in

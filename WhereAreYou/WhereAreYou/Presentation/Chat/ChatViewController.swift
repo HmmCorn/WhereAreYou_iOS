@@ -104,6 +104,7 @@ final class ChatViewController: UIViewController {
         tf.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
         tf.rightViewMode = .always
         tf.returnKeyType = .send
+        tf.enablesReturnKeyAutomatically = true
         return tf
     }()
 
