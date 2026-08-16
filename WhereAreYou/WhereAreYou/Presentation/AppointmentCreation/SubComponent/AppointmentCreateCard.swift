@@ -32,8 +32,8 @@ final class AppointmentCreateCard: UIView {
         fieldsBox.dateText = date.appointmentDateTimeText
     }
 
-    func setPlaceLabel(_ place: Place) {
-        fieldsBox.placeText = place.name
+    func setPlaceLabel(name: String) {
+        fieldsBox.placeText = name
     }
 
     private func setUp() {

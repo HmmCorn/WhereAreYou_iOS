@@ -89,9 +89,9 @@ final class AppointmentCreationViewController: UIViewController {
 
         viewModel.$appointmentPlace
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] place in
-                guard let self, let place else { return }
-                self.creationCard.setPlaceLabel(place)
+            .sink { [weak self] placeInfo in
+                guard let self, let placeInfo else { return }
+                self.creationCard.setPlaceLabel(name: placeInfo.name)
             }
             .store(in: &cancellables)
 

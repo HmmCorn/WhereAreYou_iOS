@@ -140,7 +140,7 @@ extension FilterTagBox {
 
         init(placeType: PlaceType) {
             self.placeType = placeType
-            self.capsule = PlaceTagCapsule(placeType)
+            self.capsule = PlaceTagCapsule(title: placeType.title, color: placeType.color)
             super.init(frame: .zero)
             setUp()
         }

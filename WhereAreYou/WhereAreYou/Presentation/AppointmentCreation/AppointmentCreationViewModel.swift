@@ -16,9 +16,10 @@ final class AppointmentCreationViewModel {
     private var id: String?
     private var code: String?
     private var isCreating = false
+    private var selectedPlace: Place?
 
     @Published private(set) var appointmentDate: Date?
-    @Published private(set) var appointmentPlace: Place?
+    @Published private(set) var appointmentPlace: PlaceInfo?
     @Published private(set) var hasCreated: Bool = false
 
     init(createAppointmentUseCase: CreateAppointmentUseCase) {
@@ -35,7 +36,8 @@ final class AppointmentCreationViewModel {
     }
 
     func setPlace(_ place: Place) {
-        appointmentPlace = place
+        selectedPlace = place
+        appointmentPlace = PlaceInfo(place: place)
     }
 
     func create() {
@@ -46,7 +48,7 @@ final class AppointmentCreationViewModel {
         createAppointmentUseCase.execute(
             title: appointmentTitle,
             date: appointmentDate,
-            place: appointmentPlace
+            place: selectedPlace
         ) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
@@ -70,7 +72,7 @@ final class AppointmentCreationViewModel {
             code: code ?? "",
             title: appointmentTitle,
             date: appointmentDate,
-            location: appointmentPlace.map {
+            location: selectedPlace.map {
                 AppointmentLocation(
                     title: $0.name,
                     address: $0.address,

@@ -184,10 +184,7 @@ final class SearchPlaceCardViewController: UIViewController {
         viewModel.$filteredPlaces
             .receive(on: DispatchQueue.main)
             .sink { [weak self] places in
-                let infos = places.map {
-                    PlaceInfo(id: $0.id, name: $0.name, address: $0.address, tag: $0.type)
-                }
-                self?.searchCard.updatePlaces(infos)
+                self?.searchCard.updatePlaces(places)
             }
             .store(in: &cancellables)
 

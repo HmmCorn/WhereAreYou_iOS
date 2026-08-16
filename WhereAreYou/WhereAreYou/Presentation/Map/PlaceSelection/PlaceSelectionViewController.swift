@@ -235,7 +235,7 @@ final class PlaceSelectionViewController: UIViewController {
     }
 
     private func confirmTapped() {
-        guard let place = viewModel.nearbyPlace else { return }
+        guard let place = viewModel.confirmedPlace else { return }
         onPlaceConfirmed?(place)
         presentingViewController?.dismiss(animated: true)
     }
