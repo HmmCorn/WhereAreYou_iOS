@@ -18,7 +18,9 @@ struct ChatBubbleItem: Sendable {
     let sentAt: Date
     let contentType: BubbleContentType
 
-    enum BubbleContentType: Hashable, Sendable {
+    /// `nonisolated extension ChatBubbleItem: Hashable`의 `==`에서 비교되므로
+    /// 합성 Equatable/Hashable 준수도 nonisolated여야 한다.
+    nonisolated enum BubbleContentType: Hashable, Sendable {
         case text
         case locationShare
         case placeShare(placeName: String, placeAddress: String, isDuplicate: Bool)

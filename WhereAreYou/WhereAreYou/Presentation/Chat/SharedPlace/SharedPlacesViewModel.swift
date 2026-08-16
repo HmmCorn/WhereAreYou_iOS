@@ -70,15 +70,8 @@ final class SharedPlacesViewModel {
     }
 
     private func buildItems() {
-        var result = sharedPlaces.map { shared in
-            SharedPlaceItem(
-                id: shared.id,
-                placeName: shared.place.name,
-                placeAddress: shared.place.address,
-                voterProfileImages: shared.voters.map { $0.profileImage.lastPathComponent },
-                hasVoted: shared.voters.contains { $0.id == currentUserID },
-                sharedAt: shared.sharedAt
-            )
+        var result = sharedPlaces.map {
+            SharedPlaceItem(sharedPlace: $0, currentUserID: currentUserID)
         }
 
         switch sortOrder {

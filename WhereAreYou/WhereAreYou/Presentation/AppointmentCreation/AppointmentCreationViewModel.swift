@@ -72,13 +72,7 @@ final class AppointmentCreationViewModel {
             code: code ?? "",
             title: appointmentTitle,
             date: appointmentDate,
-            location: selectedPlace.map {
-                AppointmentLocation(
-                    title: $0.name,
-                    address: $0.address,
-                    coordinate: $0.coordinate
-                )
-            },
+            location: selectedPlace.map { AppointmentLocation(place: $0) },
             participants: []
         )
     }
