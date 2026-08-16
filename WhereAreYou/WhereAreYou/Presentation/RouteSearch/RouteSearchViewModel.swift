@@ -10,13 +10,17 @@ import Combine
 
 final class RouteSearchViewModel {
 
-    @Published private(set) var departure: Place?
-    @Published private(set) var destination: Place?
+    @Published private(set) var departure: PlaceInfo?
+    @Published private(set) var destination: PlaceInfo?
     @Published private(set) var departureTime: Date = Date()
     @Published private(set) var selectedTransportType: TransportType = TransportType.allCases[0]
-    @Published private(set) var routes: [Route] = []
+    @Published private(set) var routes: [RouteItem] = []
     @Published private(set) var isLoading = false
     @Published private(set) var selectedRouteIndex: Int = 0
+
+    private var departureDomain: Place?
+    private var destinationDomain: Place?
+    private var routesDomain: [Route] = []
 
     private let searchRoutesUseCase: SearchRoutesUseCase
     private let getCurrentLocationUseCase: GetCurrentLocationUseCase
@@ -30,12 +34,14 @@ final class RouteSearchViewModel {
     }
 
     func setDeparture(_ place: Place?) {
-        departure = place
+        departureDomain = place
+        departure = place.map(PlaceInfo.init)
         searchIfReady()
     }
 
     func setDestination(_ place: Place?) {
-        destination = place
+        destinationDomain = place
+        destination = place.map(PlaceInfo.init)
         searchIfReady()
     }
 
@@ -73,7 +79,8 @@ final class RouteSearchViewModel {
     }
 
     private func searchIfReady() {
-        guard let departure, let destination else {
+        guard let departureDomain, let destinationDomain else {
+            routesDomain = []
             routes = []
             selectedRouteIndex = 0
             return
@@ -82,8 +89,8 @@ final class RouteSearchViewModel {
         isLoading = true
 
         searchRoutesUseCase.execute(
-            departure: departure,
-            destination: destination,
+            departure: departureDomain,
+            destination: destinationDomain,
             departureTime: departureTime,
             transportType: selectedTransportType
         ) { [weak self] result in
@@ -93,10 +100,12 @@ final class RouteSearchViewModel {
                 self.selectedRouteIndex = 0
 
                 switch result {
-                case .success(let routes):
-                    self.routes = routes
+                case .success(let fetchedRoutes):
+                    self.routesDomain = fetchedRoutes
+                    self.routes = fetchedRoutes.map(RouteItem.init)
                 case .failure:
                     // TODO: 길찾기 API 확인 후 검색 실패 텍스트 설정 필요
+                    self.routesDomain = []
                     self.routes = []
                 }
             }

@@ -11,11 +11,11 @@ final class RouteCard: UIView {
 
     var onTap: (() -> Void)?
 
-    private let route: Route
+    private let routeItem: RouteItem
     private let isSelected: Bool
 
-    init(route: Route, isSelected: Bool) {
-        self.route = route
+    init(routeItem: RouteItem, isSelected: Bool) {
+        self.routeItem = routeItem
         self.isSelected = isSelected
         super.init(frame: .zero)
         setUp()
@@ -35,7 +35,7 @@ final class RouteCard: UIView {
 
         mainStack.addArrangedSubview(makeHeaderRow())
 
-        for step in route.step {
+        for step in routeItem.steps {
             mainStack.addArrangedSubview(makeStepView(step))
         }
 
@@ -68,13 +68,11 @@ final class RouteCard: UIView {
 
     private func makeHeaderRow() -> UIView {
         let durationLabel = UILabel()
-        durationLabel.text = formatDuration(route.arrivalTime.timeIntervalSince(route.departureTime) / 60)
+        durationLabel.text = routeItem.durationText
         durationLabel.font = .boldPreferredFont(forTextStyle: .headline)
 
         let timeRangeLabel = UILabel()
-        let depStr = route.departureTime.koreanTimeString
-        let arrStr = route.arrivalTime.koreanTimeString
-        timeRangeLabel.text = "\(depStr) - \(arrStr)"
+        timeRangeLabel.text = "\(routeItem.departureTimeText) - \(routeItem.arrivalTimeText)"
         timeRangeLabel.font = .preferredFont(forTextStyle: .footnote)
         timeRangeLabel.textColor = .secondaryLabel
 
@@ -86,19 +84,19 @@ final class RouteCard: UIView {
 
     // MARK: - Step
 
-    private func makeStepView(_ step: RouteStep) -> UIView {
+    private func makeStepView(_ step: RouteStepItem) -> UIView {
         let container = UIView()
 
-        let icon = UIImageView(image: UIImage(systemName: step.transportType.icon))
-        icon.tintColor = step.transportType.color
+        let icon = UIImageView(image: UIImage(systemName: step.transportIcon))
+        icon.tintColor = step.transportColor
         icon.contentMode = .scaleAspectFit
 
         let nameLabel = UILabel()
-        nameLabel.text = "\(step.departurePoint.name) > \(step.destination.name)"
+        nameLabel.text = "\(step.departureName) > \(step.destinationName)"
         nameLabel.font = .boldPreferredFont(forTextStyle: .subheadline)
 
         let durationLabel = UILabel()
-        durationLabel.text = formatDuration(step.estimatedTime)
+        durationLabel.text = step.durationText
         durationLabel.font = .preferredFont(forTextStyle: .footnote)
         durationLabel.textColor = .secondaryLabel
 
@@ -151,18 +149,6 @@ final class RouteCard: UIView {
         }
 
         return outer
-    }
-
-    // MARK: - Formatting
-
-    private func formatDuration(_ minutes: Double) -> String {
-        let total = Int(minutes)
-        let hours = total / 60
-        let mins = total % 60
-        if hours > 0 {
-            return mins > 0 ? "\(hours)시간 \(mins)분" : "\(hours)시간"
-        }
-        return "\(mins)분"
     }
 
 }

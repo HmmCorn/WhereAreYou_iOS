@@ -62,7 +62,7 @@ final class AppointmentRouteInfoView: UIView {
         routeSummaryCard.setRemaining(timeText: timeText)
     }
 
-    func setSteps(_ steps: [RouteStep]) {
+    func setSteps(_ steps: [RouteStepItem]) {
         routeSummaryCard.setSteps(steps)
     }
 
@@ -225,7 +225,7 @@ private final class RouteSummaryCardView: UIView {
         remainingTimeSummary.valueLabel.text = timeText
     }
 
-    func setSteps(_ steps: [RouteStep]) {
+    func setSteps(_ steps: [RouteStepItem]) {
         stepLabelsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         stepBarsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         stepBarWidthConstraints.forEach { $0.isActive = false }
@@ -236,18 +236,18 @@ private final class RouteSummaryCardView: UIView {
 
         guard !steps.isEmpty else { return }
 
-        let totalTime = max(steps.reduce(0) { $0 + $1.estimatedTime }, 1)
+        let totalTime = max(steps.reduce(0) { $0 + $1.estimatedTimeMinutes }, 1)
 
         for step in steps {
-            let icon = UIImageView(image: UIImage(systemName: step.transportType.icon))
-            icon.tintColor = step.transportType.color
+            let icon = UIImageView(image: UIImage(systemName: step.transportIcon))
+            icon.tintColor = step.transportColor
             icon.contentMode = .scaleAspectFit
             icon.translatesAutoresizingMaskIntoConstraints = false
             icon.widthAnchor.constraint(equalToConstant: 14).isActive = true
             icon.heightAnchor.constraint(equalToConstant: 14).isActive = true
 
             let label = UILabel()
-            label.text = "\(Int(step.estimatedTime))분"
+            label.text = "\(Int(step.estimatedTimeMinutes))분"
             label.font = .preferredFont(forTextStyle: .caption2)
             label.textColor = .secondaryLabel
 
@@ -258,7 +258,7 @@ private final class RouteSummaryCardView: UIView {
             stepLabelsStack.addArrangedSubview(labelStack)
 
             let bar = UIView()
-            bar.backgroundColor = step.transportType.color
+            bar.backgroundColor = step.transportColor
             bar.layer.cornerRadius = 2
             bar.heightAnchor.constraint(equalToConstant: 4).isActive = true
             stepBarsStack.addArrangedSubview(bar)
@@ -271,7 +271,7 @@ private final class RouteSummaryCardView: UIView {
 
             let minWidth = labelStack.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).width
             stepMinWidths.append(minWidth)
-            stepRatios.append(CGFloat(step.estimatedTime / totalTime))
+            stepRatios.append(CGFloat(step.estimatedTimeMinutes / totalTime))
         }
 
         setNeedsLayout()
