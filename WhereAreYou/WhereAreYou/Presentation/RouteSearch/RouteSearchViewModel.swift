@@ -35,13 +35,13 @@ final class RouteSearchViewModel {
 
     func setDeparture(_ place: Place?) {
         departureDomain = place
-        departure = place.map(PlaceInfo.init)
+        departure = place.map { PlaceInfo(place: $0) }
         searchIfReady()
     }
 
     func setDestination(_ place: Place?) {
         destinationDomain = place
-        destination = place.map(PlaceInfo.init)
+        destination = place.map { PlaceInfo(place: $0) }
         searchIfReady()
     }
 
@@ -102,7 +102,7 @@ final class RouteSearchViewModel {
                 switch result {
                 case .success(let fetchedRoutes):
                     self.routesDomain = fetchedRoutes
-                    self.routes = fetchedRoutes.map(RouteItem.init)
+                    self.routes = fetchedRoutes.map { RouteItem(route: $0) }
                 case .failure:
                     // TODO: 길찾기 API 확인 후 검색 실패 텍스트 설정 필요
                     self.routesDomain = []

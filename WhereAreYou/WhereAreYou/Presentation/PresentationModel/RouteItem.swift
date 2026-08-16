@@ -19,7 +19,7 @@ struct RouteItem {
         durationText = RouteStepItem.formatDuration(totalMinutes)
         departureTimeText = route.departureTime.koreanTimeString
         arrivalTimeText = route.arrivalTime.koreanTimeString
-        steps = route.step.map(RouteStepItem.init)
+        steps = route.step.map { RouteStepItem(step: $0) }
     }
 
 }

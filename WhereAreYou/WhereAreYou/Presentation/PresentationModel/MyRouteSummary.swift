@@ -19,7 +19,7 @@ struct MyRouteSummary {
         arrivalTimeText = route.arrivalTime.koreanTimeString
         remainingTimeText = route.arrivalTime.minutesRemainingText
         elapsedTimeText = route.departureTime.elapsedMinutesText
-        steps = route.step.map(RouteStepItem.init)
+        steps = route.step.map { RouteStepItem(step: $0) }
     }
 
 }

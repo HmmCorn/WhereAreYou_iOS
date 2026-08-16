@@ -87,7 +87,7 @@ final class PlaceSelectionViewModel {
                 switch result {
                 case .success(let fetchedPlace):
                     self.confirmedPlace = fetchedPlace
-                    self.nearbyPlace = fetchedPlace.map(PlaceInfo.init)
+                    self.nearbyPlace = fetchedPlace.map { PlaceInfo(place: $0) }
                     self.updateDistanceText(for: fetchedPlace)
                 case .failure:
                     self.confirmedPlace = nil

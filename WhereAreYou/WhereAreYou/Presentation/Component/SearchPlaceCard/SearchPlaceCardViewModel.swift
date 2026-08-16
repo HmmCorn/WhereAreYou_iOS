@@ -69,7 +69,7 @@ final class SearchPlaceCardViewModel {
         } else {
             filtered = allPlaces.filter { selectedFilters.contains($0.type) }
         }
-        filteredPlaces = filtered.map(PlaceInfo.init)
+        filteredPlaces = filtered.map { PlaceInfo(place: $0) }
     }
 
 }
