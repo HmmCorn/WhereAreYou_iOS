@@ -5,7 +5,7 @@
 //  Created by 이상유 on 2026-08-17.
 //
 
-import UIKit
+import Foundation
 
 struct RouteStepItem {
 
@@ -14,7 +14,7 @@ struct RouteStepItem {
     let estimatedTimeMinutes: Double
     let durationText: String
     let transportIcon: String
-    let transportColor: UIColor
+    let transportColor: ColorAsset
 
     init(step: RouteStep) {
         departureName = step.departurePoint.name

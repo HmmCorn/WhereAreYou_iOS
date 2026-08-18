@@ -88,7 +88,7 @@ final class RouteCard: UIView {
         let container = UIView()
 
         let icon = UIImageView(image: UIImage(systemName: step.transportIcon))
-        icon.tintColor = step.transportColor
+        icon.tintColor = step.transportColor.uiColor
         icon.contentMode = .scaleAspectFit
 
         let nameLabel = UILabel()

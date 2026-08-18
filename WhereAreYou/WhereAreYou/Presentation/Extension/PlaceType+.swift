@@ -5,7 +5,7 @@
 //  Created by 이상유 on 2026-07-16.
 //
 
-import UIKit
+import Foundation
 
 extension PlaceType {
 
@@ -21,15 +21,15 @@ extension PlaceType {
         }
     }
 
-    var color: UIColor {
+    var color: ColorAsset {
         switch self {
-        case .subway: return .systemGreen
-        case .restaurant: return .systemYellow
+        case .subway: return .green
+        case .restaurant: return .yellow
         case .cafe: return .orange
-        case .hospital: return .systemIndigo
-        case .station: return .systemBlue
-        case .shop: return .systemRed
-        case .other: return .systemBrown
+        case .hospital: return .indigo
+        case .station: return .blue
+        case .shop: return .red
+        case .other: return .brown
         }
     }
 

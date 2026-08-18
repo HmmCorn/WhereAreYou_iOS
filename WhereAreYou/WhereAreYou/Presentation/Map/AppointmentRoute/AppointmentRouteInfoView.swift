@@ -240,7 +240,7 @@ private final class RouteSummaryCardView: UIView {
 
         for step in steps {
             let icon = UIImageView(image: UIImage(systemName: step.transportIcon))
-            icon.tintColor = step.transportColor
+            icon.tintColor = step.transportColor.uiColor
             icon.contentMode = .scaleAspectFit
             icon.translatesAutoresizingMaskIntoConstraints = false
             icon.widthAnchor.constraint(equalToConstant: 14).isActive = true
@@ -258,7 +258,7 @@ private final class RouteSummaryCardView: UIView {
             stepLabelsStack.addArrangedSubview(labelStack)
 
             let bar = UIView()
-            bar.backgroundColor = step.transportColor
+            bar.backgroundColor = step.transportColor.uiColor
             bar.layer.cornerRadius = 2
             bar.heightAnchor.constraint(equalToConstant: 4).isActive = true
             stepBarsStack.addArrangedSubview(bar)

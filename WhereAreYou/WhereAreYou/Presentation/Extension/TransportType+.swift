@@ -5,7 +5,7 @@
 //  Created by 이상유 on 2026-07-14.
 //
 
-import UIKit
+import Foundation
 
 extension TransportType {
 
@@ -25,11 +25,11 @@ extension TransportType {
         }
     }
 
-    var color: UIColor {
+    var color: ColorAsset {
         switch self {
-        case .walk: return .systemGreen
-        case .car: return .systemIndigo
-        case .transit: return .systemYellow
+        case .walk: return .green
+        case .car: return .indigo
+        case .transit: return .yellow
         }
     }
 

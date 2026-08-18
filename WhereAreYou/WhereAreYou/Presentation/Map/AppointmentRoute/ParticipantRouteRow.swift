@@ -59,7 +59,7 @@ final class ParticipantRouteRow: UIView {
         nameColumn.alignment = .leading
 
         let transportIcon = UIImageView(image: UIImage(systemName: participant.transportIcon))
-        transportIcon.tintColor = participant.transportColor
+        transportIcon.tintColor = participant.transportColor.uiColor
         transportIcon.contentMode = .scaleAspectFit
         transportIcon.translatesAutoresizingMaskIntoConstraints = false
         transportIcon.widthAnchor.constraint(equalToConstant: 16).isActive = true
@@ -68,7 +68,7 @@ final class ParticipantRouteRow: UIView {
         let transportLabel = UILabel()
         transportLabel.text = participant.transportName
         transportLabel.font = .preferredFont(forTextStyle: .caption1)
-        transportLabel.textColor = participant.transportColor
+        transportLabel.textColor = participant.transportColor.uiColor
 
         let transportStack = UIStackView(arrangedSubviews: [transportIcon, transportLabel])
         transportStack.axis = .horizontal

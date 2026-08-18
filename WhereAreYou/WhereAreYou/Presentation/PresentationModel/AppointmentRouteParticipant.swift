@@ -5,7 +5,7 @@
 //  Created by 김성훈 on 7/31/26.
 //
 
-import UIKit
+import Foundation
 
 struct AppointmentRouteParticipant {
 
@@ -16,7 +16,7 @@ struct AppointmentRouteParticipant {
     let path: [Coordinate]
     let transportName: String
     let transportIcon: String
-    let transportColor: UIColor
+    let transportColor: ColorAsset
     let departureTimeText: String
     let arrivalTimeText: String
 

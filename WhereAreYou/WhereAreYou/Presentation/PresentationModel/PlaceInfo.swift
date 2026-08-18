@@ -5,7 +5,7 @@
 //  Created by 이상유 on 2026-07-16.
 //
 
-import UIKit
+import Foundation
 
 struct PlaceInfo {
 
@@ -14,7 +14,7 @@ struct PlaceInfo {
     let address: String
     let coordinate: Coordinate
     let tagTitle: String
-    let tagColor: UIColor
+    let tagColor: ColorAsset
 
     init(place: Place) {
         id = place.id
