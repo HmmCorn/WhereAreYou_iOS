@@ -19,7 +19,7 @@ final class PlaceSelectionViewModel {
     /// currentLocation과 nearbyPlace 사이 거리를 표시용 문자열로 계산해둔 값
     @Published private(set) var distanceText: String?
 
-    private(set) var confirmedPlace: Place?
+    private(set) var nearbyPlaceDomain: Place?
     /// 지도 중앙 좌표가 바뀔 때마다 이벤트를 흘려보내는 파이프
     private let centerCoordinateSubject = PassthroughSubject<Coordinate, Never>()
     /// Combine 구독을 유지하기 위한 저장소
@@ -86,11 +86,11 @@ final class PlaceSelectionViewModel {
                 self.isFetchingNearbyPlace = false
                 switch result {
                 case .success(let fetchedPlace):
-                    self.confirmedPlace = fetchedPlace
+                    self.nearbyPlaceDomain = fetchedPlace
                     self.nearbyPlace = fetchedPlace.map { PlaceInfo(place: $0) }
                     self.updateDistanceText(for: fetchedPlace)
                 case .failure:
-                    self.confirmedPlace = nil
+                    self.nearbyPlaceDomain = nil
                     self.nearbyPlace = nil
                     self.distanceText = nil
                 }
