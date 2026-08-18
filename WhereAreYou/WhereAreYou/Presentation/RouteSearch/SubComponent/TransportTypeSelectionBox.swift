@@ -62,7 +62,7 @@ final class TransportTypeSelectionBox: UIView {
         config.cornerStyle = .fixed
         config.background.cornerRadius = 12
         config.background.strokeWidth = 1.5
-        config.background.strokeColor = type.color
+        config.background.strokeColor = type.color.uiColor
         config.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 8, bottom: 12, trailing: 8)
         config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var out = incoming
@@ -79,11 +79,11 @@ final class TransportTypeSelectionBox: UIView {
         for (type, button) in buttons {
             var config = button.configuration ?? .filled()
             if type == selectedType {
-                config.baseBackgroundColor = type.color.withAlphaComponent(0.8)
+                config.baseBackgroundColor = type.color.uiColor.withAlphaComponent(0.8)
                 config.baseForegroundColor = .white
             } else {
                 config.baseBackgroundColor = .white
-                config.baseForegroundColor = type.color
+                config.baseForegroundColor = type.color.uiColor
             }
             button.configuration = config
         }

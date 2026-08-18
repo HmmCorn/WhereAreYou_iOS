@@ -10,7 +10,7 @@ import Combine
 
 final class SearchPlaceCardViewModel {
 
-    @Published private(set) var filteredPlaces: [Place] = []
+    @Published private(set) var filteredPlaces: [PlaceInfo] = []
     @Published private(set) var selectedFilters: [PlaceType] = []
     @Published private(set) var isSearching = false
     @Published private(set) var hasSearched = false
@@ -63,11 +63,13 @@ final class SearchPlaceCardViewModel {
     }
 
     private func applyFilter() {
+        let filtered: [Place]
         if selectedFilters.isEmpty {
-            filteredPlaces = allPlaces
+            filtered = allPlaces
         } else {
-            filteredPlaces = allPlaces.filter { selectedFilters.contains($0.type) }
+            filtered = allPlaces.filter { selectedFilters.contains($0.type) }
         }
+        filteredPlaces = filtered.map { PlaceInfo(place: $0) }
     }
 
 }

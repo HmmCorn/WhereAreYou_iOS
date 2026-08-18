@@ -12,14 +12,14 @@ struct MyRouteSummary {
     let arrivalTimeText: String
     let remainingTimeText: String
     let elapsedTimeText: String
-    let steps: [RouteStep]
+    let steps: [RouteStepItem]
 
     init(route: Route) {
         departureTimeText = route.departureTime.koreanTimeString
         arrivalTimeText = route.arrivalTime.koreanTimeString
         remainingTimeText = route.arrivalTime.minutesRemainingText
         elapsedTimeText = route.departureTime.elapsedMinutesText
-        steps = route.step
+        steps = route.step.map { RouteStepItem(step: $0) }
     }
 
 }

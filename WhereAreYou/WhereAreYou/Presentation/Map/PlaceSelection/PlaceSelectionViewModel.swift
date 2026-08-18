@@ -15,10 +15,11 @@ final class PlaceSelectionViewModel {
     /// 지도 중앙 좌표 기준 근처 장소를 조회 중인지 여부
     @Published private(set) var isFetchingNearbyPlace = false
     /// 지도 중앙 좌표 기준으로 조회된 가장 가까운 장소 1개
-    @Published private(set) var nearbyPlace: Place?
+    @Published private(set) var nearbyPlace: PlaceInfo?
     /// currentLocation과 nearbyPlace 사이 거리를 표시용 문자열로 계산해둔 값
     @Published private(set) var distanceText: String?
 
+    private(set) var nearbyPlaceDomain: Place?
     /// 지도 중앙 좌표가 바뀔 때마다 이벤트를 흘려보내는 파이프
     private let centerCoordinateSubject = PassthroughSubject<Coordinate, Never>()
     /// Combine 구독을 유지하기 위한 저장소
@@ -84,10 +85,12 @@ final class PlaceSelectionViewModel {
             DispatchQueue.main.async {
                 self.isFetchingNearbyPlace = false
                 switch result {
-                case .success(let place):
-                    self.nearbyPlace = place
-                    self.updateDistanceText(for: place)
+                case .success(let fetchedPlace):
+                    self.nearbyPlaceDomain = fetchedPlace
+                    self.nearbyPlace = fetchedPlace.map { PlaceInfo(place: $0) }
+                    self.updateDistanceText(for: fetchedPlace)
                 case .failure:
+                    self.nearbyPlaceDomain = nil
                     self.nearbyPlace = nil
                     self.distanceText = nil
                 }

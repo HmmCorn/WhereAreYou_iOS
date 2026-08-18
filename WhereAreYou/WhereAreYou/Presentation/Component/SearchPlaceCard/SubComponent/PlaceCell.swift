@@ -29,7 +29,7 @@ final class PlaceCell: UIView {
     private let selectionButton: UIButton
 
     init(_ place: PlaceInfo, buttonText: String) {
-        self.placeTag = PlaceTagCapsule(place.tag)
+        self.placeTag = PlaceTagCapsule(title: place.tagTitle, color: place.tagColor.uiColor)
         self.selectionButton = UIButton.filled(
             title: buttonText,
             background: .blue2.withAlphaComponent(0.85),

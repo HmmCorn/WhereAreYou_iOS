@@ -345,7 +345,7 @@ final class RouteSearchViewController: UIViewController {
 
     // MARK: - Update UI
 
-    private func updateRouteSection(routes: [Route], selectedIndex: Int) {
+    private func updateRouteSection(routes: [RouteItem], selectedIndex: Int) {
         routeCardsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         let hasPlaces = viewModel.departure != nil && viewModel.destination != nil
@@ -369,8 +369,8 @@ final class RouteSearchViewController: UIViewController {
 
         routeScrollView.isHidden = false
 
-        for (index, route) in routes.enumerated() {
-            let card = RouteCard(route: route, isSelected: index == selectedIndex)
+        for (index, routeItem) in routes.enumerated() {
+            let card = RouteCard(routeItem: routeItem, isSelected: index == selectedIndex)
             card.onTap = { [weak self] in
                 self?.viewModel.selectRoute(at: index)
             }

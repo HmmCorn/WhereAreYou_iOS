@@ -16,10 +16,10 @@ final class PlaceTagCapsule: UIView {
         return label
     }()
 
-    init(_ placeType: PlaceType) {
+    init(title: String, color: UIColor) {
         super.init(frame: .zero)
-        label.text = placeType.title
-        setUp(backgroundColor: placeType.color)
+        label.text = title
+        setUp(backgroundColor: color)
     }
 
     required init?(coder: NSCoder) {

@@ -87,11 +87,11 @@ final class AppointmentCreationViewController: UIViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$appointmentPlace
+        viewModel.$place
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] place in
-                guard let self, let place else { return }
-                self.creationCard.setPlaceLabel(place)
+            .sink { [weak self] placeInfo in
+                guard let self, let placeInfo else { return }
+                self.creationCard.setPlaceLabel(name: placeInfo.name)
             }
             .store(in: &cancellables)
 
@@ -198,7 +198,7 @@ extension AppointmentCreationViewController {
                 nearbyPlaceRepository: MockNearbyPlaceRepository(),
                 reverseGeocodingRepository: MockReverseGeocodingRepository()
             ),
-            initialCoordinate: viewModel.appointmentPlace?.coordinate
+            initialCoordinate: viewModel.place?.coordinate
         )
         let placeSelectionViewController = PlaceSelectionViewController(viewModel: placeSelectionViewModel)
 

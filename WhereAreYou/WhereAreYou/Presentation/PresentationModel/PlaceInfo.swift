@@ -5,11 +5,24 @@
 //  Created by 이상유 on 2026-07-16.
 //
 
+import Foundation
+
 struct PlaceInfo {
 
     let id: String
     let name: String
     let address: String
-    let tag: PlaceType
-    
+    let coordinate: Coordinate
+    let tagTitle: String
+    let tagColor: ColorAsset
+
+    init(place: Place) {
+        id = place.id
+        name = place.name
+        address = place.address
+        coordinate = place.coordinate
+        tagTitle = place.type.title
+        tagColor = place.type.color
+    }
+
 }

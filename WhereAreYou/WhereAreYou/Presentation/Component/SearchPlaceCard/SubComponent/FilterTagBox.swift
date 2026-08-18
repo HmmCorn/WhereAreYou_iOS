@@ -140,7 +140,7 @@ extension FilterTagBox {
 
         init(placeType: PlaceType) {
             self.placeType = placeType
-            self.capsule = PlaceTagCapsule(placeType)
+            self.capsule = PlaceTagCapsule(title: placeType.title, color: placeType.color.uiColor)
             super.init(frame: .zero)
             setUp()
         }
@@ -168,7 +168,7 @@ extension FilterTagBox {
 
         private func updateAppearance() {
             let baseColor: UIColor = isSelected
-                ? placeType.color
+                ? placeType.color.uiColor
                 : UIColor.systemGray2.withAlphaComponent(0.3)
             capsule.setColor(isHighlighted ? baseColor.withAlphaComponent(0.6) : baseColor)
         }
