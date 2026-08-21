@@ -14,8 +14,25 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = makeRootTabBarController()
+        window?.rootViewController = makeRootLoginViewController()
         window?.makeKeyAndVisible()
+    }
+
+    private func makeRootLoginViewController() -> UIViewController {
+        let loginViewController = LoginViewController()
+        loginViewController.onAppleLoginTap = { [weak self] in
+            self?.switchToHome()
+        }
+        return loginViewController
+    }
+
+    private func switchToHome() {
+        guard let window else { return }
+        let tabBarController = makeRootTabBarController()
+
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
+            window.rootViewController = tabBarController
+        }
     }
 
     private func makeRootTabBarController() -> UITabBarController {
@@ -57,4 +74,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidEnterBackground(_ scene: UIScene) { }
 
 }
-
