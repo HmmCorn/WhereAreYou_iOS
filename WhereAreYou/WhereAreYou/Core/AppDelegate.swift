@@ -7,6 +7,7 @@
 
 import UIKit
 import NMapsMap
+import FirebaseCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -15,6 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let clientId = Bundle.main.object(forInfoDictionaryKey: "NMFClientId") as? String {
             NMFAuthManager.shared().ncpKeyId = clientId
         }
+        FirebaseApp.configure()
         return true
     }
 
