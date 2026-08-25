@@ -8,6 +8,10 @@
 import UIKit
 import NMapsMap
 import FirebaseCore
+import FirebaseAuth
+import FirebaseFirestore
+import FirebaseDatabase
+import FirebaseStorage
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,7 +21,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             NMFAuthManager.shared().ncpKeyId = clientId
         }
         FirebaseApp.configure()
+        configureFirebaseEmulators()
         return true
+    }
+
+    private func configureFirebaseEmulators() {
+        #if DEBUG
+        Auth.auth().useEmulator(withHost: "localhost", port: 9099)
+        let firestoreSettings = Firestore.firestore().settings
+        firestoreSettings.host = "localhost:8080"
+        firestoreSettings.isSSLEnabled = false
+        firestoreSettings.cacheSettings = MemoryCacheSettings()
+        Firestore.firestore().settings = firestoreSettings
+        Database.database().useEmulator(withHost: "localhost", port: 9000)
+        Storage.storage().useEmulator(withHost: "localhost", port: 9199)
+        #endif
     }
 
     // MARK: UISceneSession Lifecycle

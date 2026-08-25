@@ -27,3 +27,5 @@ build/
 
 # Firebase
 GoogleService-Info.plist
+*-debug.log
+ui-debug.log
