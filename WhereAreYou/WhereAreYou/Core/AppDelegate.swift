@@ -26,16 +26,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
+    private static let emulatorHost = "192.168.45.166"
+
     private func configureFirebaseEmulators() {
         #if DEBUG
-        Auth.auth().useEmulator(withHost: "localhost", port: 9099)
+        let host = Self.emulatorHost
+        Auth.auth().useEmulator(withHost: host, port: 9099)
         let firestoreSettings = Firestore.firestore().settings
-        firestoreSettings.host = "localhost:8080"
+        firestoreSettings.host = "\(host):8080"
         firestoreSettings.isSSLEnabled = false
         firestoreSettings.cacheSettings = MemoryCacheSettings()
         Firestore.firestore().settings = firestoreSettings
-        Database.database().useEmulator(withHost: "localhost", port: 9000)
-        Storage.storage().useEmulator(withHost: "localhost", port: 9199)
+        Database.database().useEmulator(withHost: host, port: 9000)
+        Storage.storage().useEmulator(withHost: host, port: 9199)
         #endif
     }
 
