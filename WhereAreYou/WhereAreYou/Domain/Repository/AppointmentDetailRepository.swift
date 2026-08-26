@@ -14,4 +14,9 @@ protocol AppointmentDetailRepository {
         completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
     )
 
+    func fetchAppointment(
+        code: String,
+        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
+    )
+
 }
