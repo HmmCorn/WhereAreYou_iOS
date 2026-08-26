@@ -63,10 +63,11 @@ enum FirebaseErrorMapper {
     }
 
     private static func mapDatabase(_ error: NSError) -> AppError {
+        // Realtime Database SDK는 public error code enum을 제공하지 않음
         switch error.code {
-        case -4:
+        case -4: // disconnected
             return .network
-        case -3:
+        case -3: // permission_denied
             return .permissionDenied
         default:
             return .unknown(error)
