@@ -24,3 +24,8 @@ build/
 **/.env
 **/.env.local
 !**/.env.example
+
+# Firebase
+GoogleService-Info.plist
+*-debug.log
+ui-debug.log
