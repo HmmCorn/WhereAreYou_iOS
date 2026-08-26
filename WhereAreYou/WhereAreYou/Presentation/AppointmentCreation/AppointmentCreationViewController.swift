@@ -119,8 +119,8 @@ extension AppointmentCreationViewController {
         card.onCopyCodeTap = {
             UIPasteboard.general.string = info.code
         }
-        card.onConfirmTap = {
-            // TODO: 약속 화면으로 이동
+        card.onConfirmTap = { [weak self] in
+            self?.presentChat(appointmentInfo: info)
         }
 
         view.addSubview(card)
@@ -139,6 +139,34 @@ extension AppointmentCreationViewController {
             card.transform = .identity
             card.alpha = 1
         }
+    }
+
+    private func presentChat(appointmentInfo: AppointmentInfo) {
+        guard let navigationController else { return }
+
+        let chatRepository = DIContainer.shared.resolve(ChatRepository.self)
+        let chatViewModel = ChatViewModel(
+            appointmentInfo: appointmentInfo,
+            fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
+            sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: DIContainer.shared.resolve(LocationRepository.self)
+            ),
+            shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
+            sharePlaceUseCase: SharePlaceUseCase(
+                chatRepository: chatRepository,
+                sharedPlaceRepository: DIContainer.shared.resolve(SharedPlaceRepository.self)
+            )
+        )
+        let chatViewController = ChatViewController(viewModel: chatViewModel)
+
+        var viewControllers = navigationController.viewControllers
+        if let index = viewControllers.firstIndex(of: self) {
+            viewControllers[index] = chatViewController
+        } else {
+            viewControllers.append(chatViewController)
+        }
+        navigationController.setViewControllers(viewControllers, animated: true)
     }
 
     // MARK: - Date Picker

@@ -78,6 +78,9 @@ final class AppointmentRouteViewController: UIViewController {
 
     private func bindViewModel() {
         infoView.onChangeRouteTap = { [weak self] in self?.viewModel.changeRouteTapped() }
+        viewModel.onChangeRouteTap = { [weak self] destination in
+            self?.presentRouteSearch(destination: destination)
+        }
 
         viewModel.$placeName
             .receive(on: DispatchQueue.main)
@@ -118,6 +121,24 @@ final class AppointmentRouteViewController: UIViewController {
                 self.infoView.setSteps(summary.steps)
             }
             .store(in: &cancellables)
+    }
+
+    // MARK: - Route Search
+
+    private func presentRouteSearch(destination: Place?) {
+        let routeSearchViewModel = RouteSearchViewModel(
+            searchRoutesUseCase: SearchRoutesUseCase(
+                repository: DIContainer.shared.resolve(RouteSearchRepository.self)
+            ),
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: DIContainer.shared.resolve(LocationRepository.self)
+            )
+        )
+        let routeSearchViewController = RouteSearchViewController(
+            viewModel: routeSearchViewModel, destination: destination
+        )
+        let navigationController = UINavigationController(rootViewController: routeSearchViewController)
+        present(navigationController, animated: true)
     }
 
     // MARK: - Action

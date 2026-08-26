@@ -12,16 +12,21 @@ final class ChatBubbleCell: UICollectionViewCell {
 
     static let reuseID = "ChatBubbleCell"
 
-    func configure(with item: ChatDisplayItem, topSpacing: CGFloat) {
+    func configure(
+        with item: ChatDisplayItem,
+        topSpacing: CGFloat,
+        onMapTap: ((Coordinate) -> Void)? = nil
+    ) {
         contentView.subviews.forEach { $0.removeFromSuperview() }
 
-        let bubbleView: UIView
+        let bubbleView: ChatBubbleBase
         switch item {
         case .myMessage(let bubble):
             bubbleView = MyChatBubble(item: bubble)
         case .otherMessage(let bubble, let showProfile):
             bubbleView = OtherChatBubble(item: bubble, showProfile: showProfile)
         }
+        bubbleView.onMapTap = onMapTap
 
         bubbleView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(bubbleView)
