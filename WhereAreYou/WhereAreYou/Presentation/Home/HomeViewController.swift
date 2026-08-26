@@ -199,7 +199,7 @@ final class HomeViewController: UIViewController {
     private func presentAppointmentCreation() {
         let viewModel = AppointmentCreationViewModel(
             createAppointmentUseCase: CreateAppointmentUseCase(
-                repository: MockAppointmentCreationRepository()
+                repository: DIContainer.shared.resolve(AppointmentCreationRepository.self)
             )
         )
         let viewController = AppointmentCreationViewController(viewModel)
