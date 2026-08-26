@@ -384,8 +384,7 @@ final class RouteSearchViewController: UIViewController {
         placeSearchTarget = target
 
         let buttonTitle = target == .departure ? "출발지로" : "도착지로"
-        // TODO: DIContainer로 대체
-        let searchPlacesUseCase = SearchPlacesUseCase(repository: MockPlaceSearchRepository())
+        let searchPlacesUseCase = SearchPlacesUseCase(repository: DIContainer.shared.resolve(PlaceSearchRepository.self))
         let searchViewModel = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
         let searchVC = SearchPlaceCardViewController(
             viewModel: searchViewModel,

@@ -167,7 +167,7 @@ extension AppointmentCreationViewController {
         let searchPlaceViewController = SearchPlaceCardViewController(
             viewModel: SearchPlaceCardViewModel(
                 searchPlacesUseCase: SearchPlacesUseCase(
-                    repository: MockPlaceSearchRepository()
+                    repository: DIContainer.shared.resolve(PlaceSearchRepository.self)
                 )
             ),
             selectionButtonTitle: "선택하기",
@@ -192,11 +192,11 @@ extension AppointmentCreationViewController {
     private func presentPlaceMapSelection() {
         let placeSelectionViewModel = PlaceSelectionViewModel(
             getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: CoreLocationRepository()
+                repository: DIContainer.shared.resolve(LocationRepository.self)
             ),
             getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
-                nearbyPlaceRepository: MockNearbyPlaceRepository(),
-                reverseGeocodingRepository: MockReverseGeocodingRepository()
+                nearbyPlaceRepository: DIContainer.shared.resolve(NearbyPlaceRepository.self),
+                reverseGeocodingRepository: DIContainer.shared.resolve(ReverseGeocodingRepository.self)
             ),
             initialCoordinate: viewModel.place?.coordinate
         )
