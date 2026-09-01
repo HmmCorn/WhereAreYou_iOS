@@ -19,7 +19,22 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
         }
     }
 
+    func fetchAppointment(
+        code: String,
+        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
+    ) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            guard code == Self.mockCode else {
+                completion(.failure(AppError.notFound))
+                return
+            }
+            let appointment = Self.makeMockAppointment(appointmentID: "appointment_joined")
+            completion(.success((appointment: appointment, currentUserID: Self.currentUserID)))
+        }
+    }
+
     private static let currentUserID = "user_me"
+    private static let mockCode = "MOCK1234"
 
     private static func profileImageURL(_ assetName: String) -> URL {
         URL(string: "asset://\(assetName)")!
@@ -133,7 +148,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
 
         return Appointment(
             id: appointmentID,
-            code: "MOCK1234",
+            code: Self.mockCode,
             name: "고기굽는방앗간 이수역점",
             dateTime: now.addingTimeInterval(13 * 60),
             place: place,

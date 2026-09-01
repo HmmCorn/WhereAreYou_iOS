@@ -119,8 +119,8 @@ extension AppointmentCreationViewController {
         card.onCopyCodeTap = {
             UIPasteboard.general.string = info.code
         }
-        card.onConfirmTap = {
-            // TODO: 약속 화면으로 이동
+        card.onConfirmTap = { [weak self] in
+            self?.presentChat(appointmentInfo: info)
         }
 
         view.addSubview(card)
@@ -139,6 +139,34 @@ extension AppointmentCreationViewController {
             card.transform = .identity
             card.alpha = 1
         }
+    }
+
+    private func presentChat(appointmentInfo: AppointmentInfo) {
+        guard let navigationController else { return }
+
+        let chatRepository = DIContainer.shared.resolve(ChatRepository.self)
+        let chatViewModel = ChatViewModel(
+            appointmentInfo: appointmentInfo,
+            fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
+            sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: DIContainer.shared.resolve(LocationRepository.self)
+            ),
+            shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
+            sharePlaceUseCase: SharePlaceUseCase(
+                chatRepository: chatRepository,
+                sharedPlaceRepository: DIContainer.shared.resolve(SharedPlaceRepository.self)
+            )
+        )
+        let chatViewController = ChatViewController(viewModel: chatViewModel)
+
+        var viewControllers = navigationController.viewControllers
+        if let index = viewControllers.firstIndex(of: self) {
+            viewControllers[index] = chatViewController
+        } else {
+            viewControllers.append(chatViewController)
+        }
+        navigationController.setViewControllers(viewControllers, animated: true)
     }
 
     // MARK: - Date Picker
@@ -167,7 +195,7 @@ extension AppointmentCreationViewController {
         let searchPlaceViewController = SearchPlaceCardViewController(
             viewModel: SearchPlaceCardViewModel(
                 searchPlacesUseCase: SearchPlacesUseCase(
-                    repository: MockPlaceSearchRepository()
+                    repository: DIContainer.shared.resolve(PlaceSearchRepository.self)
                 )
             ),
             selectionButtonTitle: "선택하기",
@@ -192,11 +220,11 @@ extension AppointmentCreationViewController {
     private func presentPlaceMapSelection() {
         let placeSelectionViewModel = PlaceSelectionViewModel(
             getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: CoreLocationRepository()
+                repository: DIContainer.shared.resolve(LocationRepository.self)
             ),
             getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
-                nearbyPlaceRepository: MockNearbyPlaceRepository(),
-                reverseGeocodingRepository: MockReverseGeocodingRepository()
+                nearbyPlaceRepository: DIContainer.shared.resolve(NearbyPlaceRepository.self),
+                reverseGeocodingRepository: DIContainer.shared.resolve(ReverseGeocodingRepository.self)
             ),
             initialCoordinate: viewModel.place?.coordinate
         )

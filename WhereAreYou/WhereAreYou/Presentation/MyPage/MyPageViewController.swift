@@ -13,7 +13,7 @@ final class MyPageViewController: UIViewController {
 
     private let viewModel = MyPageViewModel(
         observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
-            repository: CoreLocationRepository()
+            repository: DIContainer.shared.resolve(LocationPermissionRepository.self)
         )
     )
 

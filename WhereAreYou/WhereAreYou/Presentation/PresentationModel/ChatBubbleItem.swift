@@ -19,11 +19,26 @@ struct ChatBubbleItem: Sendable {
     let contentType: BubbleContentType
 
     /// `nonisolated extension ChatBubbleItem: Hashable`의 `==`에서 비교되므로
-    /// 합성 Equatable/Hashable 준수도 nonisolated여야 한다.
-    nonisolated enum BubbleContentType: Hashable, Sendable {
+    /// 합성 Equatable 준수도 nonisolated여야 한다.
+    nonisolated enum BubbleContentType: Sendable {
         case text
-        case locationShare
-        case placeShare(placeName: String, placeAddress: String, isDuplicate: Bool)
+        case locationShare(coordinate: Coordinate)
+        case placeShare(placeName: String, placeAddress: String, coordinate: Coordinate, isDuplicate: Bool)
+    }
+}
+
+nonisolated extension ChatBubbleItem.BubbleContentType: Equatable {
+    static func == (lhs: ChatBubbleItem.BubbleContentType, rhs: ChatBubbleItem.BubbleContentType) -> Bool {
+        switch (lhs, rhs) {
+        case (.text, .text):
+            return true
+        case (.locationShare, .locationShare):
+            return true
+        case (.placeShare(let lName, let lAddress, _, let lDuplicate), .placeShare(let rName, let rAddress, _, let rDuplicate)):
+            return lName == rName && lAddress == rAddress && lDuplicate == rDuplicate
+        default:
+            return false
+        }
     }
 }
 

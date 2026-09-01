@@ -130,7 +130,7 @@ final class JoinAppointmentSheet: UIView {
     @objc private func dismissKeyboard() { endEditing(true) }
 
     private func pasteTapped() {
-        print("붙여넣기 tapped")
+        codeField.text = UIPasteboard.general.string
     }
 
     private func cancelTapped() {
@@ -138,7 +138,6 @@ final class JoinAppointmentSheet: UIView {
     }
 
     private func joinTapped() {
-        print("참여하기 tapped")
         onJoin?(codeField.text ?? "")
     }
 

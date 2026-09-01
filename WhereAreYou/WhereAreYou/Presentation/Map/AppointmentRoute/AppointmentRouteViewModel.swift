@@ -23,8 +23,12 @@ final class AppointmentRouteViewModel {
     /// 조회 실패 시 사용자에게 보여줄 에러 메시지
     @Published private(set) var errorMessage: String?
 
+    /// 경로 변경 버튼 탭 시 호출
+    var onChangeRouteTap: ((_ destination: Place?) -> Void)?
+
     private let appointmentID: String
     private let getAppointmentDetailUseCase: GetAppointmentDetailUseCase
+    private var place: Place?
 
     init(appointmentID: String, getAppointmentDetailUseCase: GetAppointmentDetailUseCase) {
         self.appointmentID = appointmentID
@@ -48,10 +52,11 @@ final class AppointmentRouteViewModel {
     }
 
     func changeRouteTapped() {
-        print("경로 변경 버튼 탭")
+        onChangeRouteTap?(place)
     }
 
     private func apply(appointment: Appointment, currentUserID: String) {
+        place = appointment.place
         placeName = appointment.place?.name
         placeCoordinate = appointment.place?.coordinate
 

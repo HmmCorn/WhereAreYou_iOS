@@ -244,7 +244,7 @@ final class PlaceSelectionViewController: UIViewController {
         let searchPlaceViewController = SearchPlaceCardViewController(
             viewModel: SearchPlaceCardViewModel(
                 searchPlacesUseCase: SearchPlacesUseCase(
-                    repository: MockPlaceSearchRepository()
+                    repository: DIContainer.shared.resolve(PlaceSearchRepository.self)
                 )
             ),
             selectionButtonTitle: "선택하기",

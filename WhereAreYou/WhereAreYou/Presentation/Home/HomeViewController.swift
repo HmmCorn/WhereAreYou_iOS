@@ -180,8 +180,8 @@ final class HomeViewController: UIViewController {
         let cards = appointments.map { UpcomingAppointmentCard(appointment: $0) }
 
         zip(cards, appointments).forEach { card, appointment in
-            card.onTap = {
-                print(appointment.title)
+            card.onTap = { [weak self] in
+                self?.presentChat(appointmentID: appointment.id)
             }
             upcomingStack.addArrangedSubview(card)
             card.widthAnchor.constraint(equalTo: createButton.widthAnchor).isActive = true
@@ -199,7 +199,7 @@ final class HomeViewController: UIViewController {
     private func presentAppointmentCreation() {
         let viewModel = AppointmentCreationViewModel(
             createAppointmentUseCase: CreateAppointmentUseCase(
-                repository: MockAppointmentCreationRepository()
+                repository: DIContainer.shared.resolve(AppointmentCreationRepository.self)
             )
         )
         let viewController = AppointmentCreationViewController(viewModel)
@@ -215,8 +215,8 @@ final class HomeViewController: UIViewController {
 
         let sheet = JoinAppointmentSheet()
         sheet.onCancel = { [weak self] in self?.dismissJoinSheet() }
-        sheet.onJoin = { code in
-            print("HomeViewController received join code: \(code)")
+        sheet.onJoin = { [weak self] code in
+            self?.joinAppointment(code: code)
         }
 
         overlay.addSubview(sheet)
@@ -238,6 +238,64 @@ final class HomeViewController: UIViewController {
     private func dismissJoinSheet() {
         joinSheetOverlay?.removeFromSuperview()
         joinSheetOverlay = nil
+    }
+
+    private func joinAppointment(code: String) {
+        let useCase = JoinAppointmentUseCase(
+            repository: DIContainer.shared.resolve(AppointmentDetailRepository.self)
+        )
+        useCase.execute(code: code) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                switch result {
+                case .success(let (appointment, _)):
+                    self.dismissJoinSheet()
+                    self.presentChat(appointmentInfo: AppointmentInfo(appointment: appointment))
+                case .failure:
+                    self.presentJoinFailureAlert()
+                }
+            }
+        }
+    }
+
+    private func presentJoinFailureAlert() {
+        let alert = UIAlertController(
+            title: "약속을 찾을 수 없어요",
+            message: "코드를 다시 확인해 주세요.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
+
+    // MARK: - Chat
+
+    private func presentChat(appointmentID: String) {
+        let repository = DIContainer.shared.resolve(AppointmentInfoRepository.self)
+        FetchAppointmentInfoUseCase(repository: repository).execute(appointmentID: appointmentID) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self, case .success(let appointment) = result else { return }
+                self.presentChat(appointmentInfo: AppointmentInfo(appointment: appointment))
+            }
+        }
+    }
+
+    private func presentChat(appointmentInfo: AppointmentInfo) {
+        let chatRepository = DIContainer.shared.resolve(ChatRepository.self)
+        let viewModel = ChatViewModel(
+            appointmentInfo: appointmentInfo,
+            fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
+            sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: DIContainer.shared.resolve(LocationRepository.self)
+            ),
+            shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
+            sharePlaceUseCase: SharePlaceUseCase(
+                chatRepository: chatRepository,
+                sharedPlaceRepository: DIContainer.shared.resolve(SharedPlaceRepository.self)
+            )
+        )
+        navigationController?.pushViewController(ChatViewController(viewModel: viewModel), animated: true)
     }
 
 }

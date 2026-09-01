@@ -43,6 +43,9 @@ class ChatBubbleBase: UIView {
     private(set) var addressLabel: UILabel?
     private(set) var duplicateLabel: UILabel?
 
+    /// "위치 보기" 버튼 탭 시 호출
+    var onMapTap: ((Coordinate) -> Void)?
+
     init(item: ChatBubbleItem) {
         super.init(frame: .zero)
 
@@ -65,11 +68,11 @@ class ChatBubbleBase: UIView {
         switch item.contentType {
         case .text:
             break
-        case .locationShare:
+        case .locationShare(let coordinate):
             bubbleLabel.font = .boldPreferredFont(forTextStyle: .footnote)
-            actionButton = makeMapButton()
+            actionButton = makeMapButton(coordinate: coordinate)
             bubbleContentStack.addArrangedSubview(actionButton!)
-        case .placeShare(let placeName, let placeAddress, let isDuplicate):
+        case .placeShare(let placeName, let placeAddress, let coordinate, let isDuplicate):
             bubbleLabel.text = "📌 " + placeName
             bubbleLabel.font = .boldPreferredFont(forTextStyle: .callout)
             addressLabel = UILabel()
@@ -84,7 +87,7 @@ class ChatBubbleBase: UIView {
                 duplicateLabel?.textColor = .secondaryLabel
                 bubbleContentStack.addArrangedSubview(duplicateLabel!)
             }
-            actionButton = makeMapButton()
+            actionButton = makeMapButton(coordinate: coordinate)
             bubbleContentStack.addArrangedSubview(actionButton!)
         }
 
@@ -96,7 +99,7 @@ class ChatBubbleBase: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func makeMapButton() -> UIButton {
+    private func makeMapButton(coordinate: Coordinate) -> UIButton {
         var config = UIButton.Configuration.plain()
         var attributedTitle = AttributedString("위치 보기")
         attributedTitle.font = .preferredFont(forTextStyle: .caption1)
@@ -108,8 +111,8 @@ class ChatBubbleBase: UIView {
         let button = UIButton(configuration: config)
         button.backgroundColor = .white.withAlphaComponent(0.2)
         button.layer.cornerRadius = 12
-        button.addAction(UIAction { _ in
-            // TODO: 공유된 위치를 중심으로 한 지도 화면 열기
+        button.addAction(UIAction { [weak self] _ in
+            self?.onMapTap?(coordinate)
         }, for: .touchUpInside)
         return button
     }

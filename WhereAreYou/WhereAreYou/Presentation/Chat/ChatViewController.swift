@@ -52,7 +52,9 @@ final class ChatViewController: UIViewController {
                 for: indexPath
             ) as! ChatBubbleCell
             let spacing = self?.topSpacing(at: indexPath.item) ?? 0
-            cell.configure(with: item, topSpacing: spacing)
+            cell.configure(with: item, topSpacing: spacing) { [weak self] _ in
+                self?.presentAppointmentRoute()
+            }
             return cell
         }
     }()
@@ -126,6 +128,7 @@ final class ChatViewController: UIViewController {
     init(viewModel: ChatViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
+        hidesBottomBarWhenPushed = true
     }
 
     required init?(coder: NSCoder) {
@@ -181,12 +184,21 @@ final class ChatViewController: UIViewController {
     }
 
     @objc private func mapButtonTapped() {
-        // TODO: 지도 화면으로 전환
+        presentAppointmentRoute()
+    }
+
+    private func presentAppointmentRoute() {
+        let routeViewModel = AppointmentRouteViewModel(
+            appointmentID: viewModel.appointmentInfo.id,
+            getAppointmentDetailUseCase: GetAppointmentDetailUseCase(
+                repository: DIContainer.shared.resolve(AppointmentDetailRepository.self)
+            )
+        )
+        present(AppointmentRouteViewController(viewModel: routeViewModel), animated: true)
     }
 
     @objc private func moreButtonTapped() {
-        // TODO: DIContainer 도입 시 의존성 주입 방식 변경
-        let repository = MockAppointmentInfoRepository()
+        let repository = DIContainer.shared.resolve(AppointmentInfoRepository.self)
         let fetchUseCase = FetchAppointmentInfoUseCase(repository: repository)
         let updateUseCase = UpdateAppointmentInfoUseCase(repository: repository)
         let appointmentInfoVM = AppointmentInfoViewModel(
@@ -314,8 +326,7 @@ final class ChatViewController: UIViewController {
     }
 
     private func handleSearchPlace() {
-        // TODO: DIContainer 도입 시 의존성 주입 방식 변경
-        let searchPlacesUseCase = SearchPlacesUseCase(repository: MockPlaceSearchRepository())
+        let searchPlacesUseCase = SearchPlacesUseCase(repository: DIContainer.shared.resolve(PlaceSearchRepository.self))
         let searchPlaceCardVM = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
         let shareMeVC = SearchPlaceCardViewController(
             viewModel: searchPlaceCardVM,
@@ -335,8 +346,7 @@ final class ChatViewController: UIViewController {
     }
 
     private func handleViewSharedPlaces() {
-        // TODO: DIContainer 도입 시 의존성 주입 방식 변경
-        let sharedPlaceRepo = MockSharedPlaceRepository()
+        let sharedPlaceRepo = DIContainer.shared.resolve(SharedPlaceRepository.self)
         let fetchUseCase = FetchSharedPlacesUseCase(repository: sharedPlaceRepo)
         let voteUseCase = VotePlaceUseCase(repository: sharedPlaceRepo)
         let sharedPlacesVM = SharedPlacesViewModel(

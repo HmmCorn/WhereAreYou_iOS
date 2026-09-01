@@ -22,6 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         FirebaseApp.configure()
         configureFirebaseEmulators()
+        DIContainer.shared.registerDependencies()
         return true
     }
 

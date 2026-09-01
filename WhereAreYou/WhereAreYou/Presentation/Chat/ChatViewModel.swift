@@ -143,14 +143,19 @@ private extension ChatViewModel {
             case .text(let text):
                 bubbleContent = text
                 contentType = .text
-            case .locationShare:
+            case .locationShare(let coordinate):
                 bubbleContent = "📌 위치를 공유했어요"
-                contentType = .locationShare
+                contentType = .locationShare(coordinate: coordinate)
             case .placeShare(let place):
                 bubbleContent = place.name
                 let isDuplicate = sharedPlaceIDs.contains(place.id)
                 sharedPlaceIDs.insert(place.id)
-                contentType = .placeShare(placeName: place.name, placeAddress: place.address, isDuplicate: isDuplicate)
+                contentType = .placeShare(
+                    placeName: place.name,
+                    placeAddress: place.address,
+                    coordinate: place.coordinate,
+                    isDuplicate: isDuplicate
+                )
             }
 
             let bubbleItem = ChatBubbleItem(

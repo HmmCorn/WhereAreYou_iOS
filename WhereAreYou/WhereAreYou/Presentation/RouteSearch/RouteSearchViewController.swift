@@ -125,6 +125,9 @@ final class RouteSearchViewController: UIViewController {
     private let initialDeparture: Place?
     private let initialDestination: Place?
 
+    /// 경로 선택 완료 시 호출
+    var onRouteSelected: (() -> Void)?
+
     init(viewModel: RouteSearchViewModel, departure: Place? = nil, destination: Place? = nil) {
         self.viewModel = viewModel
         self.initialDeparture = departure
@@ -142,10 +145,24 @@ final class RouteSearchViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .pointBackground
         title = "경로 검색"
+        setUpNavigationBar()
         setUpLayout()
         setUpActions()
         bindViewModel()
         setUpInitialPlaces()
+    }
+
+    private func setUpNavigationBar() {
+        guard presentingViewController != nil else { return }
+        let closeItem = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeTapped)
+        )
+        closeItem.tintColor = .secondaryLabel
+        navigationItem.leftBarButtonItem = closeItem
+    }
+
+    @objc private func closeTapped() {
+        presentingViewController?.dismiss(animated: true)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -289,8 +306,8 @@ final class RouteSearchViewController: UIViewController {
             self?.presentTimePicker()
         }, for: .touchUpInside)
 
-        selectRouteButton.addAction(UIAction { _ in
-            print("경로 선택 tapped")
+        selectRouteButton.addAction(UIAction { [weak self] _ in
+            self?.onRouteSelected?()
         }, for: .touchUpInside)
     }
 
@@ -384,8 +401,7 @@ final class RouteSearchViewController: UIViewController {
         placeSearchTarget = target
 
         let buttonTitle = target == .departure ? "출발지로" : "도착지로"
-        // TODO: DIContainer로 대체
-        let searchPlacesUseCase = SearchPlacesUseCase(repository: MockPlaceSearchRepository())
+        let searchPlacesUseCase = SearchPlacesUseCase(repository: DIContainer.shared.resolve(PlaceSearchRepository.self))
         let searchViewModel = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
         let searchVC = SearchPlaceCardViewController(
             viewModel: searchViewModel,

@@ -198,11 +198,11 @@ final class AppointmentListViewController: UIViewController {
         }()
 
         let card = AppointmentListCard(item: item, accessoryView: remainingTimeLabel)
-        card.onChatTap = {
-            print("\(item.title) 대화 열기")
+        card.onChatTap = { [weak self] in
+            self?.presentChat(appointmentID: item.id)
         }
-        card.onMapTap = {
-            print("\(item.title) 지도 열기")
+        card.onMapTap = { [weak self] in
+            self?.presentAppointmentRoute(appointmentID: item.id)
         }
         card.contextMenuProvider = { [weak self] in
             self?.makeContextMenu(id: item.id) ?? UIMenu(children: [])
@@ -243,6 +243,42 @@ final class AppointmentListViewController: UIViewController {
 
     private func presentPastAppointmentList() {
         navigationController?.pushViewController(PastAppointmentListViewController(), animated: true)
+    }
+
+    // MARK: - Chat / Route
+
+    private func presentChat(appointmentID: String) {
+        let repository = DIContainer.shared.resolve(AppointmentInfoRepository.self)
+        FetchAppointmentInfoUseCase(repository: repository).execute(appointmentID: appointmentID) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self, case .success(let appointment) = result else { return }
+                let chatRepository = DIContainer.shared.resolve(ChatRepository.self)
+                let viewModel = ChatViewModel(
+                    appointmentInfo: AppointmentInfo(appointment: appointment),
+                    fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
+                    sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
+                    getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                        repository: DIContainer.shared.resolve(LocationRepository.self)
+                    ),
+                    shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
+                    sharePlaceUseCase: SharePlaceUseCase(
+                        chatRepository: chatRepository,
+                        sharedPlaceRepository: DIContainer.shared.resolve(SharedPlaceRepository.self)
+                    )
+                )
+                self.navigationController?.pushViewController(ChatViewController(viewModel: viewModel), animated: true)
+            }
+        }
+    }
+
+    private func presentAppointmentRoute(appointmentID: String) {
+        let routeViewModel = AppointmentRouteViewModel(
+            appointmentID: appointmentID,
+            getAppointmentDetailUseCase: GetAppointmentDetailUseCase(
+                repository: DIContainer.shared.resolve(AppointmentDetailRepository.self)
+            )
+        )
+        present(AppointmentRouteViewController(viewModel: routeViewModel), animated: true)
     }
 
 }
