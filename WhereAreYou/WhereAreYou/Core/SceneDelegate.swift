@@ -12,6 +12,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private var homeCoordinator: HomeCoordinator?
     private var appointmentListCoordinator: AppointmentListCoordinator?
+    private var myPageCoordinator: MyPageCoordinator?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -56,7 +57,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             selectedImage: UIImage(systemName: "tray.full.fill")
         )
 
-        let myPageNav = UINavigationController(rootViewController: MyPageViewController())
+        let myPageNav = UINavigationController()
+        myPageCoordinator = MyPageCoordinator(navigationController: myPageNav)
+        myPageCoordinator?.start()
         myPageNav.tabBarItem = UITabBarItem(
             title: "마이페이지",
             image: UIImage(systemName: "person"),

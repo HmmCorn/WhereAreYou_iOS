@@ -11,11 +11,17 @@ final class MyPageViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel = MyPageViewModel(
-        observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
-            repository: DIContainer.shared.resolve(LocationPermissionRepository.self)
-        )
-    )
+    private let viewModel: MyPageViewModel
+    weak var coordinator: MyPageCoordinator?
+
+    init(viewModel: MyPageViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
+    }
 
     private let logoImageView: UIImageView = {
         let imageView = UIImageView(image: .logo)
@@ -200,37 +206,33 @@ final class MyPageViewController: UIViewController {
     }
 
     private func presentProfileEdit() {
-        let editVC = ProfileEditViewController(
+        coordinator?.showProfileEdit(
             nickname: viewModel.profile.nickname,
             profileImageName: viewModel.profile.profileImageName
-        )
-        editVC.onProfileSaved = { [weak self] nickname, profileImageName in
+        ) { [weak self] nickname, profileImageName in
             self?.viewModel.setProfile(nickname: nickname, profileImageName: profileImageName)
             self?.reloadContent()
         }
-        navigationController?.pushViewController(editVC, animated: true)
     }
 
     private func presentLocationSharingSelection() {
-        let selectionVC = LocationSharingSelectionViewController(selectedOption: viewModel.profile.locationSharingOption)
-        selectionVC.onOptionSelected = { [weak self] option in
+        coordinator?.showLocationSharingSelection(
+            selectedOption: viewModel.profile.locationSharingOption
+        ) { [weak self] option in
             self?.viewModel.setLocationSharingOption(option)
             self?.locationSharingRow.value = option.title
         }
-        navigationController?.pushViewController(selectionVC, animated: true)
     }
 
     private func presentLocationPermission() {
-        let permissionVC = LocationPermissionViewController(viewModel: viewModel)
-        navigationController?.pushViewController(permissionVC, animated: true)
+        coordinator?.showLocationPermission(viewModel: viewModel)
     }
 
     private func presentAppointmentNotificationList() {
-        let listVC = AppointmentNotificationListViewController(
+        coordinator?.showAppointmentNotificationList(
             fetchItems: { [weak self] in self?.viewModel.appointmentNotifications ?? [] },
             onToggle: { [weak self] id in self?.viewModel.toggleNotification(id: id) }
         )
-        navigationController?.pushViewController(listVC, animated: true)
     }
 
 }
