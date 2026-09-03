@@ -42,11 +42,10 @@ final class ChatCoordinator: NavigationCoordinator, ChatCoordinating, Appointmen
 
     // MARK: - Appointment Info
 
-    func showAppointmentInfo(appointmentID: String) -> AppointmentInfoViewController {
+    func showAppointmentInfo(appointmentID: String) {
         let viewController = screenFactory.makeAppointmentInfoViewController(appointmentID: appointmentID)
         viewController.coordinator = self
         present(viewController, animated: false)
-        return viewController
     }
 
     // MARK: - Share My Location

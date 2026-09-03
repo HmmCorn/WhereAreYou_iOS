@@ -11,7 +11,7 @@ import Foundation
 protocol ChatCoordinating: AnyObject {
 
     func showAppointmentRoute(appointmentID: String)
-    func showAppointmentInfo(appointmentID: String) -> AppointmentInfoViewController
+    func showAppointmentInfo(appointmentID: String)
     func showShareMyLocationConfirm(address: String, onConfirm: @escaping () -> Void)
     func showSearchPlace(
         selectionButtonTitle: String,

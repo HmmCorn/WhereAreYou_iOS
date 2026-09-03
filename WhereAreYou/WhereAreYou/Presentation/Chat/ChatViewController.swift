@@ -193,7 +193,7 @@ final class ChatViewController: UIViewController {
     }
 
     @objc private func moreButtonTapped() {
-        _ = coordinator?.showAppointmentInfo(appointmentID: viewModel.appointmentInfo.id)
+        coordinator?.showAppointmentInfo(appointmentID: viewModel.appointmentInfo.id)
     }
 
     // MARK: - Layout
