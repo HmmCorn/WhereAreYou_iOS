@@ -10,6 +10,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    private var homeCoordinator: HomeCoordinator?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -36,7 +37,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func makeRootTabBarController() -> UITabBarController {
-        let homeNav = UINavigationController(rootViewController: HomeViewController())
+        let homeNav = UINavigationController()
+        homeCoordinator = HomeCoordinator(navigationController: homeNav)
+        homeCoordinator?.start()
         homeNav.tabBarItem = UITabBarItem(
             title: "홈",
             image: UIImage(systemName: "house"),
