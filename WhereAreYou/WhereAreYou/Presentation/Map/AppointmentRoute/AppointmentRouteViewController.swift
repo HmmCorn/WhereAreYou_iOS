@@ -12,6 +12,7 @@ final class AppointmentRouteViewController: UIViewController {
 
     private let viewModel: AppointmentRouteViewModel
     private var cancellables = Set<AnyCancellable>()
+    private var routeSearchCoordinator: RouteSearchCoordinator?
 
     init(viewModel: AppointmentRouteViewModel) {
         self.viewModel = viewModel
@@ -126,19 +127,9 @@ final class AppointmentRouteViewController: UIViewController {
     // MARK: - Route Search
 
     private func presentRouteSearch(destination: Place?) {
-        let routeSearchViewModel = RouteSearchViewModel(
-            searchRoutesUseCase: SearchRoutesUseCase(
-                repository: DIContainer.shared.resolve(RouteSearchRepository.self)
-            ),
-            getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: DIContainer.shared.resolve(LocationRepository.self)
-            )
-        )
-        let routeSearchViewController = RouteSearchViewController(
-            viewModel: routeSearchViewModel, destination: destination
-        )
-        let navigationController = UINavigationController(rootViewController: routeSearchViewController)
-        present(navigationController, animated: true)
+        let coordinator = RouteSearchCoordinator()
+        routeSearchCoordinator = coordinator
+        coordinator.presentModally(from: self, destination: destination)
     }
 
     // MARK: - Action

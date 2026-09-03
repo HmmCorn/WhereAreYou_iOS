@@ -103,6 +103,15 @@ final class ChatCoordinator: NavigationCoordinator {
     func showPlaceMapSelection(initialCoordinate: Coordinate?, onPlaceConfirmed: @escaping (Place) -> Void) {
         let viewController = screenFactory.makePlaceSelectionViewController(initialCoordinate: initialCoordinate)
         viewController.onPlaceConfirmed = onPlaceConfirmed
+        viewController.onSearchOtherPlace = { [weak self, weak viewController] onPlaceSelected in
+            guard let self else { return }
+            let searchPlaceViewController = self.screenFactory.makeSearchPlaceCardViewController(
+                selectionButtonTitle: "선택하기",
+                style: .onlyHeader(title: "장소 검색")
+            )
+            searchPlaceViewController.onPlaceSelected = onPlaceSelected
+            viewController?.navigationController?.pushViewController(searchPlaceViewController, animated: true)
+        }
 
         presentInNavigationController(viewController) { navigationController in
             navigationController.isModalInPresentation = true
