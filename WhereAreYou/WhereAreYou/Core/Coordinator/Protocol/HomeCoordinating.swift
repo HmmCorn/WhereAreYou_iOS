@@ -11,7 +11,6 @@ import Foundation
 protocol HomeCoordinating: AnyObject {
 
     func showAppointmentCreation()
-    func joinAppointment(code: String, completion: @escaping (Result<Void, Error>) -> Void)
     func showChat(appointmentID: String)
     func showChat(appointmentInfo: AppointmentInfo)
 

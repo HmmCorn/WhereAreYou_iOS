@@ -22,7 +22,7 @@ final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, Appointmen
     }
 
     func start() {
-        let viewController = HomeViewController()
+        let viewController = screenFactory.makeHomeViewController()
         viewController.coordinator = self
         navigationController.setViewControllers([viewController], animated: false)
     }
@@ -52,24 +52,6 @@ final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, Appointmen
             viewControllers.append(chatViewController)
         }
         navigationController.setViewControllers(viewControllers, animated: true)
-    }
-
-    // MARK: - Join
-
-    func joinAppointment(code: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let useCase = JoinAppointmentUseCase(
-            repository: screenFactory.container.resolve(AppointmentDetailRepository.self)
-        )
-        useCase.execute(code: code) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case .success(let (appointment, _)):
-                self.showChat(appointmentInfo: AppointmentInfo(appointment: appointment))
-                completion(.success(()))
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
     }
 
     // MARK: - Chat

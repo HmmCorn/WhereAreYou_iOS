@@ -11,8 +11,17 @@ final class HomeViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel = HomeViewModel()
+    private let viewModel: HomeViewModel
     weak var coordinator: HomeCoordinating?
+
+    init(viewModel: HomeViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
+    }
 
     // MARK: - Logo
 
@@ -236,12 +245,13 @@ final class HomeViewController: UIViewController {
     }
 
     private func joinAppointment(code: String) {
-        coordinator?.joinAppointment(code: code) { [weak self] result in
+        viewModel.joinAppointment(code: code) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
                 switch result {
-                case .success:
+                case .success(let appointmentInfo):
                     self.dismissJoinSheet()
+                    self.presentChat(appointmentInfo: appointmentInfo)
                 case .failure:
                     self.presentJoinFailureAlert()
                 }

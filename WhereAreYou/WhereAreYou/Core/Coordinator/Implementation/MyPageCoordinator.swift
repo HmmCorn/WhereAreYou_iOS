@@ -21,13 +21,7 @@ final class MyPageCoordinator: NavigationCoordinator, MyPageCoordinating {
     }
 
     func start() {
-        let viewController = MyPageViewController(
-            viewModel: MyPageViewModel(
-                observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
-                    repository: screenFactory.container.resolve(LocationPermissionRepository.self)
-                )
-            )
-        )
+        let viewController = screenFactory.makeMyPageViewController()
         viewController.coordinator = self
         navigationController.setViewControllers([viewController], animated: false)
     }
