@@ -1,0 +1,115 @@
+//
+//  ChatCoordinator.swift
+//  WhereAreYou
+//
+//  Created by 김성훈 on 9/3/26.
+//
+
+import UIKit
+
+final class ChatCoordinator: NavigationCoordinator {
+
+    let navigationController: UINavigationController
+    private let screenFactory: ScreenFactory
+
+    init(
+        navigationController: UINavigationController,
+        screenFactory: ScreenFactory = ScreenFactory()
+    ) {
+        self.navigationController = navigationController
+        self.screenFactory = screenFactory
+    }
+
+    func start() {
+        // Chat 화면은 Home/AppointmentList Coordinator가 makeChatVC로 조립해 push하므로,
+        // 이 Coordinator는 별도의 진입점(start)을 갖지 않음
+    }
+
+    // MARK: - Appointment Route
+
+    func showAppointmentRoute(appointmentID: String) {
+        present(screenFactory.makeAppointmentRouteViewController(appointmentID: appointmentID))
+    }
+
+    // MARK: - Appointment Info
+
+    func showAppointmentInfo(appointmentID: String) -> AppointmentInfoViewController {
+        let viewController = screenFactory.makeAppointmentInfoViewController(appointmentID: appointmentID)
+        viewController.coordinator = self
+        present(viewController, animated: false)
+        return viewController
+    }
+
+    // MARK: - Share My Location
+
+    func showShareMyLocationConfirm(address: String, onConfirm: @escaping () -> Void) {
+        let viewController = ShareMyLocationViewController(address: address)
+        viewController.onConfirm = onConfirm
+        present(viewController)
+    }
+
+    // MARK: - Search Place (장소 공유 / 약속 장소 검색 공용)
+
+    func showSearchPlace(
+        selectionButtonTitle: String,
+        style: SearchPlaceCardViewController.Style
+    ) -> SearchPlaceCardViewController {
+        let viewController = screenFactory.makeSearchPlaceCardViewController(
+            selectionButtonTitle: selectionButtonTitle,
+            style: style
+        )
+
+        if let sheet = viewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(viewController)
+        return viewController
+    }
+
+    // MARK: - Shared Places
+
+    func showSharedPlaces(appointmentID: String, currentUserID: String) {
+        let viewController = screenFactory.makeSharedPlacesViewController(
+            appointmentID: appointmentID,
+            currentUserID: currentUserID
+        )
+
+        if let sheet = viewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(viewController)
+    }
+
+    // MARK: - Date Picker (AppointmentInfo 하위)
+
+    func showDatePicker(initialDate: Date?, onDateSelected: @escaping (Date) -> Void) {
+        let viewController = DatePickerSheetViewController(
+            title: "약속 날짜/시간 설정",
+            initialDate: initialDate
+        )
+        viewController.onDateSelected = onDateSelected
+
+        if let sheet = viewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(viewController)
+    }
+
+    // MARK: - Place Map Selection (AppointmentInfo 하위)
+
+    func showPlaceMapSelection(initialCoordinate: Coordinate?, onPlaceConfirmed: @escaping (Place) -> Void) {
+        let viewController = screenFactory.makePlaceSelectionViewController(initialCoordinate: initialCoordinate)
+        viewController.onPlaceConfirmed = onPlaceConfirmed
+
+        presentInNavigationController(viewController) { navigationController in
+            navigationController.isModalInPresentation = true
+            if let sheet = navigationController.sheetPresentationController {
+                sheet.detents = [.large()]
+            }
+        }
+    }
+
+}

@@ -11,6 +11,7 @@ final class HomeCoordinator: NavigationCoordinator {
 
     let navigationController: UINavigationController
     private let screenFactory: ScreenFactory
+    private var chatCoordinator: ChatCoordinator?
 
     init(
         navigationController: UINavigationController,
@@ -55,12 +56,19 @@ final class HomeCoordinator: NavigationCoordinator {
     func showChat(appointmentID: String) {
         screenFactory.makeChatViewController(appointmentID: appointmentID) { [weak self] result in
             guard let self, case .success(let chatViewController) = result else { return }
+            let coordinator = ChatCoordinator(navigationController: self.navigationController, screenFactory: self.screenFactory)
+            self.chatCoordinator = coordinator
+            chatViewController.coordinator = coordinator
             self.push(chatViewController)
         }
     }
 
     func showChat(appointmentInfo: AppointmentInfo) {
-        push(screenFactory.makeChatViewController(appointmentInfo: appointmentInfo))
+        let chatViewController = screenFactory.makeChatViewController(appointmentInfo: appointmentInfo)
+        let coordinator = ChatCoordinator(navigationController: navigationController, screenFactory: screenFactory)
+        chatCoordinator = coordinator
+        chatViewController.coordinator = coordinator
+        push(chatViewController)
     }
 
 }

@@ -27,6 +27,7 @@ final class ChatViewController: UIViewController {
     // MARK: - Dependencies
 
     private let viewModel: ChatViewModel
+    weak var coordinator: ChatCoordinator?
     private var cancellables = Set<AnyCancellable>()
     private var hasLoadedInitialMessages = false
 
@@ -188,26 +189,11 @@ final class ChatViewController: UIViewController {
     }
 
     private func presentAppointmentRoute() {
-        let routeViewModel = AppointmentRouteViewModel(
-            appointmentID: viewModel.appointmentInfo.id,
-            getAppointmentDetailUseCase: GetAppointmentDetailUseCase(
-                repository: DIContainer.shared.resolve(AppointmentDetailRepository.self)
-            )
-        )
-        present(AppointmentRouteViewController(viewModel: routeViewModel), animated: true)
+        coordinator?.showAppointmentRoute(appointmentID: viewModel.appointmentInfo.id)
     }
 
     @objc private func moreButtonTapped() {
-        let repository = DIContainer.shared.resolve(AppointmentInfoRepository.self)
-        let fetchUseCase = FetchAppointmentInfoUseCase(repository: repository)
-        let updateUseCase = UpdateAppointmentInfoUseCase(repository: repository)
-        let appointmentInfoVM = AppointmentInfoViewModel(
-            appointmentID: viewModel.appointmentInfo.id,
-            fetchAppointmentInfoUseCase: fetchUseCase,
-            updateAppointmentInfoUseCase: updateUseCase
-        )
-        let appointmentInfoVC = AppointmentInfoViewController(viewModel: appointmentInfoVM)
-        present(appointmentInfoVC, animated: false)
+        _ = coordinator?.showAppointmentInfo(appointmentID: viewModel.appointmentInfo.id)
     }
 
     // MARK: - Layout
@@ -317,51 +303,27 @@ final class ChatViewController: UIViewController {
 
     private func handleShareLocation() {
         viewModel.fetchCurrentLocation { [weak self] coordinate, address in
-            let confirmVC = ShareMyLocationViewController(address: address)
-            confirmVC.onConfirm = {
+            self?.coordinator?.showShareMyLocationConfirm(address: address) {
                 self?.viewModel.shareLocation(coordinate: coordinate)
             }
-            self?.present(confirmVC, animated: true)
         }
     }
 
     private func handleSearchPlace() {
-        let searchPlacesUseCase = SearchPlacesUseCase(repository: DIContainer.shared.resolve(PlaceSearchRepository.self))
-        let searchPlaceCardVM = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
-        let shareMeVC = SearchPlaceCardViewController(
-            viewModel: searchPlaceCardVM,
+        let searchPlaceViewController = coordinator?.showSearchPlace(
             selectionButtonTitle: "공유하기",
             style: .onlyHeader(title: "모일 장소 검색하기")
         )
-
-        shareMeVC.onPlaceSelected = { [weak self] place in
+        searchPlaceViewController?.onPlaceSelected = { [weak self] place in
             self?.viewModel.sharePlace(place)
         }
-
-        if let sheet = shareMeVC.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(shareMeVC, animated: true)
     }
 
     private func handleViewSharedPlaces() {
-        let sharedPlaceRepo = DIContainer.shared.resolve(SharedPlaceRepository.self)
-        let fetchUseCase = FetchSharedPlacesUseCase(repository: sharedPlaceRepo)
-        let voteUseCase = VotePlaceUseCase(repository: sharedPlaceRepo)
-        let sharedPlacesVM = SharedPlacesViewModel(
+        coordinator?.showSharedPlaces(
             appointmentID: viewModel.appointmentInfo.id,
-            currentUserID: ChatViewModel.currentUserID,
-            fetchSharedPlacesUseCase: fetchUseCase,
-            votePlaceUseCase: voteUseCase
+            currentUserID: ChatViewModel.currentUserID
         )
-        let sharedPlacesVC = SharedPlacesViewController(viewModel: sharedPlacesVM)
-
-        if let sheet = sharedPlacesVC.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(sharedPlacesVC, animated: true)
     }
 
     @objc private func textFieldDidChange() {
@@ -513,5 +475,3 @@ extension ChatViewController: UITextFieldDelegate {
     }
 
 }
-
-
