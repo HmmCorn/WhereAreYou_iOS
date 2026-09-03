@@ -11,6 +11,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     private var homeCoordinator: HomeCoordinator?
+    private var appointmentListCoordinator: AppointmentListCoordinator?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -46,7 +47,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             selectedImage: UIImage(systemName: "house.fill")
         )
 
-        let listNav = UINavigationController(rootViewController: AppointmentListViewController())
+        let listNav = UINavigationController()
+        appointmentListCoordinator = AppointmentListCoordinator(navigationController: listNav)
+        appointmentListCoordinator?.start()
         listNav.tabBarItem = UITabBarItem(
             title: "약속",
             image: UIImage(systemName: "tray.full"),
