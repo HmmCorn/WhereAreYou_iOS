@@ -131,4 +131,18 @@ final class HomeCoordinator: NavigationCoordinator {
         }
     }
 
+    func showDatePicker(initialDate: Date?, onDateSelected: @escaping (Date) -> Void) {
+        let viewController = DatePickerSheetViewController(
+            title: "약속 날짜/시간 설정",
+            initialDate: initialDate
+        )
+        viewController.onDateSelected = onDateSelected
+
+        if let sheet = viewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(viewController)
+    }
+
 }

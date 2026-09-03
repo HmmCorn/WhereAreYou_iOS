@@ -146,20 +146,9 @@ extension AppointmentCreationViewController {
     // MARK: - Date Picker
 
     private func presentDatePicker() {
-        let pickerViewController = DatePickerSheetViewController(
-            title: "약속 날짜/시간 설정",
-            initialDate: viewModel.appointmentDate
-        )
-        pickerViewController.onDateSelected = { [weak self] date in
+        coordinator?.showDatePicker(initialDate: viewModel.appointmentDate) { [weak self] date in
             self?.viewModel.setDate(date)
         }
-
-        if let sheet = pickerViewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-
-        present(pickerViewController, animated: true)
     }
 
 
