@@ -12,7 +12,7 @@ final class MyPageViewController: UIViewController {
     private static let cardSpacing: CGFloat = 16
 
     private let viewModel: MyPageViewModel
-    weak var coordinator: MyPageCoordinator?
+    weak var coordinator: MyPageCoordinating?
 
     init(viewModel: MyPageViewModel) {
         self.viewModel = viewModel

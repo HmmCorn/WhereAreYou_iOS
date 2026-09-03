@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class RouteSearchCoordinator: NavigationCoordinator {
+final class RouteSearchCoordinator: NavigationCoordinator, RouteSearchCoordinating {
 
     let navigationController: UINavigationController
     private let screenFactory: ScreenFactory

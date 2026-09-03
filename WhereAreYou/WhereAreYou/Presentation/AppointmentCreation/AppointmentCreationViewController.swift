@@ -11,7 +11,7 @@ import Combine
 final class AppointmentCreationViewController: UIViewController {
 
     private let viewModel: AppointmentCreationViewModel
-    weak var coordinator: HomeCoordinator?
+    weak var coordinator: AppointmentCreationCoordinating?
     private var cancellables = Set<AnyCancellable>()
 
     private let logoImage: UIImageView = {

@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class MyPageCoordinator: NavigationCoordinator {
+final class MyPageCoordinator: NavigationCoordinator, MyPageCoordinating {
 
     let navigationController: UINavigationController
     private let screenFactory: ScreenFactory

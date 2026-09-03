@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class HomeCoordinator: NavigationCoordinator {
+final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, AppointmentCreationCoordinating {
 
     let navigationController: UINavigationController
     private let screenFactory: ScreenFactory

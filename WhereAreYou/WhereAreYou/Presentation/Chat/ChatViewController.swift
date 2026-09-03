@@ -27,7 +27,7 @@ final class ChatViewController: UIViewController {
     // MARK: - Dependencies
 
     private let viewModel: ChatViewModel
-    weak var coordinator: ChatCoordinator?
+    weak var coordinator: ChatCoordinating?
     private var cancellables = Set<AnyCancellable>()
     private var hasLoadedInitialMessages = false
 

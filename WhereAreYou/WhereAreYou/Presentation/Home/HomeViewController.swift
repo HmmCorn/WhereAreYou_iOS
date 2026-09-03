@@ -12,7 +12,7 @@ final class HomeViewController: UIViewController {
     private static let cardSpacing: CGFloat = 16
 
     private let viewModel = HomeViewModel()
-    weak var coordinator: HomeCoordinator?
+    weak var coordinator: HomeCoordinating?
 
     // MARK: - Logo
 

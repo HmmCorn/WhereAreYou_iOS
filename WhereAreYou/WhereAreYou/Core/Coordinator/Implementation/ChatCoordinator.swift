@@ -7,10 +7,11 @@
 
 import UIKit
 
-final class ChatCoordinator: NavigationCoordinator {
+final class ChatCoordinator: NavigationCoordinator, ChatCoordinating, AppointmentInfoCoordinating, AppointmentRouteCoordinating {
 
     let navigationController: UINavigationController
     private let screenFactory: ScreenFactory
+    private var routeSearchCoordinator: RouteSearchCoordinator?
 
     init(
         navigationController: UINavigationController,
@@ -28,7 +29,15 @@ final class ChatCoordinator: NavigationCoordinator {
     // MARK: - Appointment Route
 
     func showAppointmentRoute(appointmentID: String) {
-        present(screenFactory.makeAppointmentRouteViewController(appointmentID: appointmentID))
+        let viewController = screenFactory.makeAppointmentRouteViewController(appointmentID: appointmentID)
+        viewController.coordinator = self
+        present(viewController)
+    }
+
+    func showRouteSearch(from presentingViewController: UIViewController, destination: Place?) {
+        let coordinator = RouteSearchCoordinator()
+        routeSearchCoordinator = coordinator
+        coordinator.presentModally(from: presentingViewController, destination: destination)
     }
 
     // MARK: - Appointment Info

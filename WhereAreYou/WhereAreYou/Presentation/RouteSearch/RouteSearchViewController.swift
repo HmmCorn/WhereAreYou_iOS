@@ -22,7 +22,7 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Dependencies
 
     private let viewModel: RouteSearchViewModel
-    weak var coordinator: RouteSearchCoordinator?
+    weak var coordinator: RouteSearchCoordinating?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Section 1: Place input

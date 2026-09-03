@@ -11,7 +11,7 @@ import Combine
 final class AppointmentInfoViewController: UIViewController {
 
     private let viewModel: AppointmentInfoViewModel
-    weak var coordinator: ChatCoordinator?
+    weak var coordinator: AppointmentInfoCoordinating?
     private var cancellables = Set<AnyCancellable>()
     private let infoCard = AppointmentInfoCard()
     private var hasConfiguredCard = false

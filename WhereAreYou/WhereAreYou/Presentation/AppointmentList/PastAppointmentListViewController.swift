@@ -12,7 +12,7 @@ final class PastAppointmentListViewController: UIViewController {
     private static let cardSpacing: CGFloat = 16
 
     private let viewModel = PastAppointmentListViewModel()
-    weak var coordinator: AppointmentListCoordinator?
+    weak var coordinator: AppointmentListCoordinating?
 
     private let descriptionLabel: UILabel = {
         let label = UILabel()

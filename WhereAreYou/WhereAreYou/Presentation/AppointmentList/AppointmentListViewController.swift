@@ -16,7 +16,7 @@ final class AppointmentListViewController: UIViewController {
     private static let sectionHeaderBottomSpacing: CGFloat = 10
 
     private let viewModel = AppointmentListViewModel()
-    weak var coordinator: AppointmentListCoordinator?
+    weak var coordinator: AppointmentListCoordinating?
 
     private let logoImageView: UIImageView = {
         let imageView = UIImageView(image: .logo)

@@ -11,8 +11,8 @@ import Combine
 final class AppointmentRouteViewController: UIViewController {
 
     private let viewModel: AppointmentRouteViewModel
+    weak var coordinator: AppointmentRouteCoordinating?
     private var cancellables = Set<AnyCancellable>()
-    private var routeSearchCoordinator: RouteSearchCoordinator?
 
     init(viewModel: AppointmentRouteViewModel) {
         self.viewModel = viewModel
@@ -127,9 +127,7 @@ final class AppointmentRouteViewController: UIViewController {
     // MARK: - Route Search
 
     private func presentRouteSearch(destination: Place?) {
-        let coordinator = RouteSearchCoordinator()
-        routeSearchCoordinator = coordinator
-        coordinator.presentModally(from: self, destination: destination)
+        coordinator?.showRouteSearch(from: self, destination: destination)
     }
 
     // MARK: - Action
