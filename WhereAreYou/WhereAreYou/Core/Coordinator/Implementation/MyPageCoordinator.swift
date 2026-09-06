@@ -14,7 +14,7 @@ final class MyPageCoordinator: NavigationCoordinator, MyPageCoordinating {
 
     init(
         navigationController: UINavigationController,
-        screenFactory: ScreenFactory = ScreenFactory()
+        screenFactory: ScreenFactory = .shared
     ) {
         self.navigationController = navigationController
         self.screenFactory = screenFactory

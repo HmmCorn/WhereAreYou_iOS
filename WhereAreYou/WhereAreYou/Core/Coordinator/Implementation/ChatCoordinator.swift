@@ -15,7 +15,7 @@ final class ChatCoordinator: NavigationCoordinator, ChatCoordinating, Appointmen
 
     init(
         navigationController: UINavigationController,
-        screenFactory: ScreenFactory = ScreenFactory()
+        screenFactory: ScreenFactory = .shared
     ) {
         self.navigationController = navigationController
         self.screenFactory = screenFactory

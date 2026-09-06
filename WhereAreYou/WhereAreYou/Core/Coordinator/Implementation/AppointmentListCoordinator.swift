@@ -16,7 +16,7 @@ final class AppointmentListCoordinator: NavigationCoordinator, AppointmentListCo
 
     init(
         navigationController: UINavigationController,
-        screenFactory: ScreenFactory = ScreenFactory()
+        screenFactory: ScreenFactory = .shared
     ) {
         self.navigationController = navigationController
         self.screenFactory = screenFactory

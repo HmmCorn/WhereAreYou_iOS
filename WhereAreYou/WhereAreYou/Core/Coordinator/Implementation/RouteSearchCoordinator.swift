@@ -12,7 +12,7 @@ final class RouteSearchCoordinator: NavigationCoordinator, RouteSearchCoordinati
     let navigationController: UINavigationController
     private let screenFactory: ScreenFactory
 
-    init(screenFactory: ScreenFactory = ScreenFactory()) {
+    init(screenFactory: ScreenFactory = .shared) {
         self.navigationController = UINavigationController()
         self.screenFactory = screenFactory
     }
