@@ -80,16 +80,7 @@ final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, Appointmen
         selectionButtonTitle: String,
         style: SearchPlaceCardViewController.Style
     ) -> SearchPlaceCardViewController {
-        let viewController = screenFactory.makeSearchPlaceCardViewController(
-            selectionButtonTitle: selectionButtonTitle,
-            style: style
-        )
-        if let sheet = viewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(viewController)
-        return viewController
+        showPlaceSearch(screenFactory: screenFactory, selectionButtonTitle: selectionButtonTitle, style: style)
     }
 
     func showPlaceMapSelection(initialCoordinate: Coordinate?, onPlaceConfirmed: @escaping (Place) -> Void) {
@@ -111,20 +102,6 @@ final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, Appointmen
                 sheet.detents = [.large()]
             }
         }
-    }
-
-    func showDatePicker(initialDate: Date?, onDateSelected: @escaping (Date) -> Void) {
-        let viewController = DatePickerSheetViewController(
-            title: "약속 날짜/시간 설정",
-            initialDate: initialDate
-        )
-        viewController.onDateSelected = onDateSelected
-
-        if let sheet = viewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(viewController)
     }
 
 }

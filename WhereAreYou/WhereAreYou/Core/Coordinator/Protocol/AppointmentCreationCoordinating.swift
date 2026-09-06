@@ -19,6 +19,6 @@ protocol AppointmentCreationCoordinating: AnyObject {
         style: SearchPlaceCardViewController.Style
     ) -> SearchPlaceCardViewController
     func showPlaceMapSelection(initialCoordinate: Coordinate?, onPlaceConfirmed: @escaping (Place) -> Void)
-    func showDatePicker(initialDate: Date?, onDateSelected: @escaping (Date) -> Void)
+    func showDatePicker(title: String, initialDate: Date?, onDateSelected: @escaping (Date) -> Void)
 
 }

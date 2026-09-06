@@ -416,7 +416,7 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Time picker
 
     private func presentTimePicker() {
-        coordinator?.showTimePicker(initialDate: viewModel.departureTime) { [weak self] date in
+        coordinator?.showDatePicker(title: "출발 시간 설정", initialDate: viewModel.departureTime) { [weak self] date in
             self?.viewModel.setDepartureTime(date)
         }
     }

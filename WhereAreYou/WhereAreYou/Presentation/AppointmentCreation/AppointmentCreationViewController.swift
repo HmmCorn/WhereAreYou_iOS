@@ -146,7 +146,7 @@ extension AppointmentCreationViewController {
     // MARK: - Date Picker
 
     private func presentDatePicker() {
-        coordinator?.showDatePicker(initialDate: viewModel.appointmentDate) { [weak self] date in
+        coordinator?.showDatePicker(title: "약속 날짜/시간 설정", initialDate: viewModel.appointmentDate) { [weak self] date in
             self?.viewModel.setDate(date)
         }
     }

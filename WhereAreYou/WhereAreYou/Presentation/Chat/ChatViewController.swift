@@ -310,7 +310,7 @@ final class ChatViewController: UIViewController {
     }
 
     private func handleSearchPlace() {
-        let searchPlaceViewController = coordinator?.showSearchPlace(
+        let searchPlaceViewController = coordinator?.showPlaceSearch(
             selectionButtonTitle: "공유하기",
             style: .onlyHeader(title: "모일 장소 검색하기")
         )

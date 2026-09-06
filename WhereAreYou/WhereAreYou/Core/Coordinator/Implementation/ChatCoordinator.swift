@@ -58,21 +58,11 @@ final class ChatCoordinator: NavigationCoordinator, ChatCoordinating, Appointmen
 
     // MARK: - Search Place (장소 공유 / 약속 장소 검색 공용)
 
-    func showSearchPlace(
+    func showPlaceSearch(
         selectionButtonTitle: String,
         style: SearchPlaceCardViewController.Style
     ) -> SearchPlaceCardViewController {
-        let viewController = screenFactory.makeSearchPlaceCardViewController(
-            selectionButtonTitle: selectionButtonTitle,
-            style: style
-        )
-
-        if let sheet = viewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(viewController)
-        return viewController
+        showPlaceSearch(screenFactory: screenFactory, selectionButtonTitle: selectionButtonTitle, style: style)
     }
 
     // MARK: - Shared Places
@@ -82,22 +72,6 @@ final class ChatCoordinator: NavigationCoordinator, ChatCoordinating, Appointmen
             appointmentID: appointmentID,
             currentUserID: currentUserID
         )
-
-        if let sheet = viewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(viewController)
-    }
-
-    // MARK: - Date Picker (AppointmentInfo 하위)
-
-    func showDatePicker(initialDate: Date?, onDateSelected: @escaping (Date) -> Void) {
-        let viewController = DatePickerSheetViewController(
-            title: "약속 날짜/시간 설정",
-            initialDate: initialDate
-        )
-        viewController.onDateSelected = onDateSelected
 
         if let sheet = viewController.sheetPresentationController {
             sheet.detents = [.medium()]

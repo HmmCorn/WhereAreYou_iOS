@@ -13,7 +13,7 @@ protocol ChatCoordinating: AnyObject {
     func showAppointmentRoute(appointmentID: String)
     func showAppointmentInfo(appointmentID: String)
     func showShareMyLocationConfirm(address: String, onConfirm: @escaping () -> Void)
-    func showSearchPlace(
+    func showPlaceSearch(
         selectionButtonTitle: String,
         style: SearchPlaceCardViewController.Style
     ) -> SearchPlaceCardViewController

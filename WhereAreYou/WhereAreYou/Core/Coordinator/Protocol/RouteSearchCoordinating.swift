@@ -11,6 +11,6 @@ import Foundation
 protocol RouteSearchCoordinating: AnyObject {
 
     func showPlaceSearch(buttonTitle: String, onPlaceSelected: @escaping (Place) -> Void)
-    func showTimePicker(initialDate: Date, onDateSelected: @escaping (Date) -> Void)
+    func showDatePicker(title: String, initialDate: Date?, onDateSelected: @escaping (Date) -> Void)
 
 }

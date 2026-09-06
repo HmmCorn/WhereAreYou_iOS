@@ -39,4 +39,34 @@ extension NavigationCoordinator {
         navigationController.present(wrapped, animated: animated)
     }
 
+    /// 날짜/시간 선택 시트를 모달로 present
+    func showDatePicker(title: String, initialDate: Date?, onDateSelected: @escaping (Date) -> Void) {
+        let viewController = DatePickerSheetViewController(title: title, initialDate: initialDate)
+        viewController.onDateSelected = onDateSelected
+
+        if let sheet = viewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(viewController)
+    }
+
+    /// 장소 검색 화면을 모달로 present, 화면 인스턴스를 반환
+    func showPlaceSearch(
+        screenFactory: ScreenFactory,
+        selectionButtonTitle: String,
+        style: SearchPlaceCardViewController.Style
+    ) -> SearchPlaceCardViewController {
+        let viewController = screenFactory.makeSearchPlaceCardViewController(
+            selectionButtonTitle: selectionButtonTitle,
+            style: style
+        )
+        if let sheet = viewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(viewController)
+        return viewController
+    }
+
 }

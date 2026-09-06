@@ -43,20 +43,4 @@ final class RouteSearchCoordinator: NavigationCoordinator, RouteSearchCoordinati
         present(viewController)
     }
 
-    // MARK: - Time Picker
-
-    func showTimePicker(initialDate: Date, onDateSelected: @escaping (Date) -> Void) {
-        let viewController = DatePickerSheetViewController(
-            title: "출발 시간 설정",
-            initialDate: initialDate
-        )
-        viewController.onDateSelected = onDateSelected
-
-        if let sheet = viewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(viewController)
-    }
-
 }

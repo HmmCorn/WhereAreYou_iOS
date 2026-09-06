@@ -123,7 +123,7 @@ final class AppointmentInfoViewController: UIViewController {
     // MARK: - Date Picker
 
     private func presentDatePicker() {
-        coordinator?.showDatePicker(initialDate: viewModel.appointmentInfo?.date) { [weak self] date in
+        coordinator?.showDatePicker(title: "약속 날짜/시간 설정", initialDate: viewModel.appointmentInfo?.date) { [weak self] date in
             self?.viewModel.updateDate(date)
         }
     }
@@ -131,7 +131,7 @@ final class AppointmentInfoViewController: UIViewController {
     // MARK: - Place Search
 
     private func presentPlaceSearch() {
-        let searchPlaceViewController = coordinator?.showSearchPlace(
+        let searchPlaceViewController = coordinator?.showPlaceSearch(
             selectionButtonTitle: "선택하기",
             style: .onlyHeader(title: "약속 장소 검색")
         )
