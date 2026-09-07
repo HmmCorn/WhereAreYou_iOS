@@ -19,7 +19,7 @@ protocol MyPageCoordinating: AnyObject {
         selectedOption: LocationSharingOption,
         onOptionSelected: @escaping (LocationSharingOption) -> Void
     )
-    func showLocationPermission(viewModel: MyPageViewModel)
+    func showLocationPermission()
     func showAppointmentNotificationList(
         fetchItems: @escaping () -> [AppointmentListItem],
         onToggle: @escaping (String) -> Void

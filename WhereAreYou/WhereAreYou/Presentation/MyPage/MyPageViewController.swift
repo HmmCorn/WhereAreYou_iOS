@@ -225,7 +225,7 @@ final class MyPageViewController: UIViewController {
     }
 
     private func presentLocationPermission() {
-        coordinator?.showLocationPermission(viewModel: viewModel)
+        coordinator?.showLocationPermission()
     }
 
     private func presentAppointmentNotificationList() {

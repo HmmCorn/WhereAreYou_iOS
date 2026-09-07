@@ -8,6 +8,7 @@
 protocol MyPageScreenFactory: AnyObject {
 
     func makeMyPageViewController() -> MyPageViewController
+    func makeLocationPermissionViewController() -> LocationPermissionViewController
 
 }
 

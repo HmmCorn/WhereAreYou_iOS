@@ -51,8 +51,8 @@ final class MyPageCoordinator: NavigationCoordinator, MyPageCoordinating {
 
     // MARK: - Location Permission
 
-    func showLocationPermission(viewModel: MyPageViewModel) {
-        push(LocationPermissionViewController(viewModel: viewModel))
+    func showLocationPermission() {
+        push(screenFactory.makeLocationPermissionViewController())
     }
 
     // MARK: - Appointment Notification List

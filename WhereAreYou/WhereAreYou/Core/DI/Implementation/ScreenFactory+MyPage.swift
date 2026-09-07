@@ -16,4 +16,13 @@ extension ScreenFactory {
         return MyPageViewController(viewModel: viewModel)
     }
 
+    func makeLocationPermissionViewController() -> LocationPermissionViewController {
+        let viewModel = LocationPermissionViewModel(
+            observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
+                repository: container.resolve(LocationPermissionRepository.self)
+            )
+        )
+        return LocationPermissionViewController(viewModel: viewModel)
+    }
+
 }
