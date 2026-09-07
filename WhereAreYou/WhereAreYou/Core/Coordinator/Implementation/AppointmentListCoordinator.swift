@@ -57,9 +57,9 @@ final class AppointmentListCoordinator: NavigationCoordinator, AppointmentListCo
     }
 
     func showRouteSearch(from presentingViewController: UIViewController, destination: Place?) {
-        let coordinator = RouteSearchCoordinator()
+        let coordinator = RouteSearchCoordinator(presentingViewController: presentingViewController, destination: destination)
         routeSearchCoordinator = coordinator
-        coordinator.presentModally(from: presentingViewController, destination: destination)
+        coordinator.start()
     }
 
 }

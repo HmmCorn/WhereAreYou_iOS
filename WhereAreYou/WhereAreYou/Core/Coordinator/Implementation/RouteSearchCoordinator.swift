@@ -11,22 +11,26 @@ final class RouteSearchCoordinator: NavigationCoordinator, RouteSearchCoordinati
 
     let navigationController: UINavigationController
     private let screenFactory: RouteSearchScreenFactory
+    private weak var presentingViewController: UIViewController?
+    private let destination: Place?
 
-    init(screenFactory: ScreenFactory = .shared) {
+    init(
+        presentingViewController: UIViewController,
+        destination: Place?,
+        screenFactory: ScreenFactory = .shared
+    ) {
         self.navigationController = UINavigationController()
+        self.presentingViewController = presentingViewController
+        self.destination = destination
         self.screenFactory = screenFactory
     }
 
-    func start() {
-        // presentModally(from:destination:)를 통해서만 시작되므로 별도 진입점을 갖지 않음
-    }
-
     /// presentingViewController 위에 경로 검색 화면을 모달로 띄운다.
-    func presentModally(from presentingViewController: UIViewController, destination: Place?) {
+    func start() {
         let viewController = screenFactory.makeRouteSearchViewController(departure: nil, destination: destination)
         viewController.coordinator = self
         navigationController.setViewControllers([viewController], animated: false)
-        presentingViewController.present(navigationController, animated: true)
+        presentingViewController?.present(navigationController, animated: true)
     }
 
     // MARK: - Place Search
