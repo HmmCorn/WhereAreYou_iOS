@@ -7,6 +7,8 @@
 
 protocol AppointmentListScreenFactory: AnyObject {
 
+    func makeAppointmentListViewController() -> AppointmentListViewController
+    func makePastAppointmentListViewController() -> PastAppointmentListViewController
     func makeChatViewController(
         appointmentID: String,
         completion: @escaping (Result<ChatViewController, Error>) -> Void

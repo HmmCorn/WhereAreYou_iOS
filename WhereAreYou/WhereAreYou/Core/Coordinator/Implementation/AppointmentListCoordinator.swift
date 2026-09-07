@@ -23,7 +23,7 @@ final class AppointmentListCoordinator: NavigationCoordinator, AppointmentListCo
     }
 
     func start() {
-        let viewController = AppointmentListViewController()
+        let viewController = screenFactory.makeAppointmentListViewController()
         viewController.coordinator = self
         navigationController.setViewControllers([viewController], animated: false)
     }
@@ -31,7 +31,7 @@ final class AppointmentListCoordinator: NavigationCoordinator, AppointmentListCo
     // MARK: - Past Appointment List
 
     func showPastAppointmentList() {
-        let viewController = PastAppointmentListViewController()
+        let viewController = screenFactory.makePastAppointmentListViewController()
         viewController.coordinator = self
         push(viewController)
     }
