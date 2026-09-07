@@ -1,0 +1,132 @@
+//
+//  AppleSignInProvider.swift
+//  WhereAreYou
+//
+//  Created by 이상유 on 2026-09-06.
+//
+
+import Foundation
+import AuthenticationServices
+import CryptoKit
+
+/// SignInService의 Apple Sign In 구현체 — nonce 관리 및 Apple 인증 흐름 처리
+final class AppleSignInProvider: NSObject, SignInService {
+
+    private let windowProvider: () -> ASPresentationAnchor?
+    private var currentNonce: String?
+    private var continuation: CheckedContinuation<SignInCredential, Error>?
+    private var authController: ASAuthorizationController?
+
+    init(windowProvider: @escaping () -> ASPresentationAnchor?) {
+        self.windowProvider = windowProvider
+    }
+
+    // MARK: - SignInService
+
+    func signIn() async throws -> SignInCredential {
+        try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+
+            let nonce = Self.randomNonceString()
+            self.currentNonce = nonce
+
+            DispatchQueue.main.async { [self] in
+                let request = ASAuthorizationAppleIDProvider().createRequest()
+                request.requestedScopes = [.fullName]
+                request.nonce = Self.sha256(nonce)
+
+                let controller = ASAuthorizationController(authorizationRequests: [request])
+                controller.delegate = self
+                controller.presentationContextProvider = self
+                self.authController = controller
+                controller.performRequests()
+            }
+        }
+    }
+
+}
+
+// MARK: - ASAuthorizationControllerDelegate
+
+extension AppleSignInProvider: ASAuthorizationControllerDelegate {
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithAuthorization authorization: ASAuthorization
+    ) {
+        defer { cleanUp() }
+
+        guard let appleCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let idTokenData = appleCredential.identityToken,
+              let idToken = String(data: idTokenData, encoding: .utf8),
+              let nonce = currentNonce else {
+            continuation?.resume(throwing: AppError.notAuthenticated)
+            return
+        }
+
+        let nickname = [appleCredential.fullName?.familyName, appleCredential.fullName?.givenName]
+            .compactMap { $0 }
+            .joined()
+
+        let credential = SignInCredential(
+            idToken: idToken,
+            nonce: nonce,
+            nickname: nickname.isEmpty ? nil : nickname
+        )
+        continuation?.resume(returning: credential)
+    }
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithError error: Error
+    ) {
+        defer { cleanUp() }
+
+        let code = (error as NSError).code
+        if code == ASAuthorizationError.canceled.rawValue {
+            continuation?.resume(throwing: SignInError.cancelled)
+        } else {
+            continuation?.resume(throwing: AppError.unknown(error))
+        }
+    }
+
+    private func cleanUp() {
+        continuation = nil
+        authController = nil
+    }
+
+}
+
+// MARK: - ASAuthorizationControllerPresentationContextProviding
+
+extension AppleSignInProvider: ASAuthorizationControllerPresentationContextProviding {
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        guard let window = windowProvider() else {
+            preconditionFailure("로그인 시점에 window가 존재해야 합니다")
+        }
+        return window
+    }
+
+}
+
+// MARK: - Nonce 생성
+
+private extension AppleSignInProvider {
+
+    static func randomNonceString(length: Int = 32) -> String {
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        precondition(status == errSecSuccess)
+
+        let charset = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        return String(randomBytes.map { charset[Int($0) % charset.count] })
+    }
+
+    static func sha256(_ input: String) -> String {
+        let data = Data(input.utf8)
+        let hash = SHA256.hash(data: data)
+        return hash.compactMap { String(format: "%02x", $0) }.joined()
+    }
+
+}
