@@ -18,6 +18,14 @@ final class AppointmentListViewController: UIViewController {
     private let viewModel = AppointmentListViewModel()
     weak var coordinator: AppointmentListCoordinating?
 
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     private let logoImageView: UIImageView = {
         let imageView = UIImageView(image: .logo)
         imageView.contentMode = .scaleAspectFit

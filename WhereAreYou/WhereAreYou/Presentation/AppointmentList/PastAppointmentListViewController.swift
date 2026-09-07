@@ -14,6 +14,14 @@ final class PastAppointmentListViewController: UIViewController {
     private let viewModel = PastAppointmentListViewModel()
     weak var coordinator: AppointmentListCoordinating?
 
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     private let descriptionLabel: UILabel = {
         let label = UILabel()
         label.text = "30일 이내의 지난 약속이 보관됩니다.\n약속을 길게 눌러 삭제할 수 있습니다."
