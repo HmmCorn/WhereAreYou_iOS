@@ -11,10 +11,12 @@ import UIKit
 final class AppCoordinator: Coordinator {
 
     private let window: UIWindow
+    private let screenFactory: AppScreenFactory
     private var tabBarCoordinator: TabBarCoordinator?
 
-    init(window: UIWindow) {
+    init(window: UIWindow, screenFactory: ScreenFactory = .shared) {
         self.window = window
+        self.screenFactory = screenFactory
     }
 
     func start() {
@@ -23,7 +25,7 @@ final class AppCoordinator: Coordinator {
     }
 
     private func makeLoginViewController() -> UIViewController {
-        let loginViewController = LoginViewController()
+        let loginViewController = screenFactory.makeLoginViewController()
         loginViewController.onAppleLoginTap = { [weak self] in
             self?.switchToHome()
         }
