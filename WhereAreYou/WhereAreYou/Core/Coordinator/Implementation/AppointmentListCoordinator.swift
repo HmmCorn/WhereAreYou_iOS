@@ -10,7 +10,7 @@ import UIKit
 final class AppointmentListCoordinator: NavigationCoordinator, AppointmentListCoordinating, AppointmentRouteCoordinating {
 
     let navigationController: UINavigationController
-    private let screenFactory: ScreenFactory
+    private let screenFactory: AppointmentListScreenFactory
     private var chatCoordinator: ChatCoordinator?
     private var routeSearchCoordinator: RouteSearchCoordinator?
 
@@ -41,7 +41,7 @@ final class AppointmentListCoordinator: NavigationCoordinator, AppointmentListCo
     func showChat(appointmentID: String) {
         screenFactory.makeChatViewController(appointmentID: appointmentID) { [weak self] result in
             guard let self, case .success(let chatViewController) = result else { return }
-            let coordinator = ChatCoordinator(navigationController: self.navigationController, screenFactory: self.screenFactory)
+            let coordinator = ChatCoordinator(navigationController: self.navigationController)
             self.chatCoordinator = coordinator
             chatViewController.coordinator = coordinator
             self.push(chatViewController)

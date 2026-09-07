@@ -10,7 +10,7 @@ import UIKit
 final class ChatCoordinator: NavigationCoordinator, ChatCoordinating, AppointmentInfoCoordinating, AppointmentRouteCoordinating {
 
     let navigationController: UINavigationController
-    private let screenFactory: ScreenFactory
+    private let screenFactory: ChatScreenFactory
     private var routeSearchCoordinator: RouteSearchCoordinator?
 
     init(

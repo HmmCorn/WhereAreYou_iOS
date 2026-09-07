@@ -10,7 +10,7 @@ import UIKit
 final class MyPageCoordinator: NavigationCoordinator, MyPageCoordinating {
 
     let navigationController: UINavigationController
-    private let screenFactory: ScreenFactory
+    private let screenFactory: MyPageScreenFactory
 
     init(
         navigationController: UINavigationController,

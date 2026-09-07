@@ -10,7 +10,7 @@ import UIKit
 final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, AppointmentCreationCoordinating {
 
     let navigationController: UINavigationController
-    private let screenFactory: ScreenFactory
+    private let screenFactory: HomeScreenFactory
     private var chatCoordinator: ChatCoordinator?
 
     init(
@@ -41,7 +41,7 @@ final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, Appointmen
         withChatFor appointmentInfo: AppointmentInfo
     ) {
         let chatViewController = screenFactory.makeChatViewController(appointmentInfo: appointmentInfo)
-        let coordinator = ChatCoordinator(navigationController: navigationController, screenFactory: screenFactory)
+        let coordinator = ChatCoordinator(navigationController: navigationController)
         chatCoordinator = coordinator
         chatViewController.coordinator = coordinator
 
@@ -59,7 +59,7 @@ final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, Appointmen
     func showChat(appointmentID: String) {
         screenFactory.makeChatViewController(appointmentID: appointmentID) { [weak self] result in
             guard let self, case .success(let chatViewController) = result else { return }
-            let coordinator = ChatCoordinator(navigationController: self.navigationController, screenFactory: self.screenFactory)
+            let coordinator = ChatCoordinator(navigationController: self.navigationController)
             self.chatCoordinator = coordinator
             chatViewController.coordinator = coordinator
             self.push(chatViewController)
@@ -68,7 +68,7 @@ final class HomeCoordinator: NavigationCoordinator, HomeCoordinating, Appointmen
 
     func showChat(appointmentInfo: AppointmentInfo) {
         let chatViewController = screenFactory.makeChatViewController(appointmentInfo: appointmentInfo)
-        let coordinator = ChatCoordinator(navigationController: navigationController, screenFactory: screenFactory)
+        let coordinator = ChatCoordinator(navigationController: navigationController)
         chatCoordinator = coordinator
         chatViewController.coordinator = coordinator
         push(chatViewController)

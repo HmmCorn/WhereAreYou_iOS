@@ -10,7 +10,7 @@ import UIKit
 final class RouteSearchCoordinator: NavigationCoordinator, RouteSearchCoordinating {
 
     let navigationController: UINavigationController
-    private let screenFactory: ScreenFactory
+    private let screenFactory: RouteSearchScreenFactory
 
     init(screenFactory: ScreenFactory = .shared) {
         self.navigationController = UINavigationController()
@@ -23,7 +23,7 @@ final class RouteSearchCoordinator: NavigationCoordinator, RouteSearchCoordinati
 
     /// presentingViewController 위에 경로 검색 화면을 모달로 띄운다.
     func presentModally(from presentingViewController: UIViewController, destination: Place?) {
-        let viewController = screenFactory.makeRouteSearchViewController(destination: destination)
+        let viewController = screenFactory.makeRouteSearchViewController(departure: nil, destination: destination)
         viewController.coordinator = self
         navigationController.setViewControllers([viewController], animated: false)
         presentingViewController.present(navigationController, animated: true)

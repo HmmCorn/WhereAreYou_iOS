@@ -53,7 +53,7 @@ extension NavigationCoordinator {
 
     /// 장소 검색 화면을 모달로 present, 화면 인스턴스를 반환
     func showPlaceSearch(
-        screenFactory: ScreenFactory,
+        screenFactory: SearchPlaceScreenFactory,
         selectionButtonTitle: String,
         style: SearchPlaceCardViewController.Style
     ) -> SearchPlaceCardViewController {
