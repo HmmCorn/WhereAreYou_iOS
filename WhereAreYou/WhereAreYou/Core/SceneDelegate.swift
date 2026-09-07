@@ -14,22 +14,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = makeRootLoginViewController()
-        window?.makeKeyAndVisible()
 
-        attemptAutoLogin()
+        let authRepository: AuthRepository = DIContainer.shared.resolve()
+        if let userID = authRepository.currentUserID {
+            window?.rootViewController = makeRootTabBarController()
+            window?.makeKeyAndVisible()
+            validateUser(userID: userID)
+        } else {
+            window?.rootViewController = makeRootLoginViewController()
+            window?.makeKeyAndVisible()
+        }
     }
 
-    // MARK: - 자동 로그인
+    // MARK: - 자동 로그인 검증
 
-    private func attemptAutoLogin() {
-        let authRepository: AuthRepository = DIContainer.shared.resolve()
-        guard let userID = authRepository.currentUserID else { return }
-
+    private func validateUser(userID: String) {
         let userRepository: UserRepository = DIContainer.shared.resolve()
         Task { @MainActor in
-            guard let _ = try? await userRepository.fetchUser(userID: userID) else { return }
-            switchToHome()
+            guard let _ = try? await userRepository.fetchUser(userID: userID) else {
+                switchToLogin()
+                return
+            }
         }
     }
 
@@ -60,6 +65,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
             window.rootViewController = tabBarController
+        }
+    }
+
+    private func switchToLogin() {
+        guard let window else { return }
+        let loginViewController = makeRootLoginViewController()
+
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
+            window.rootViewController = loginViewController
         }
     }
 
