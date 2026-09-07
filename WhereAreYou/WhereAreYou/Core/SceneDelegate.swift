@@ -57,6 +57,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         return loginViewController
     }
 
+    // MARK: - 마이페이지 화면 생성
+
+    private func makeMyPageViewController() -> MyPageViewController {
+        let authRepository: AuthRepository = DIContainer.shared.resolve()
+        let viewModel = MyPageViewModel(
+            observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
+                repository: DIContainer.shared.resolve(LocationPermissionRepository.self)
+            ),
+            signOutUseCase: SignOutUseCase(authRepository: authRepository)
+        )
+        let myPageViewController = MyPageViewController(viewModel: viewModel)
+        myPageViewController.onSignOut = { [weak self] in
+            self?.switchToLogin()
+        }
+        return myPageViewController
+    }
+
     // MARK: - 화면 전환
 
     private func switchToHome() {
@@ -92,7 +109,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             selectedImage: UIImage(systemName: "tray.full.fill")
         )
 
-        let myPageNav = UINavigationController(rootViewController: MyPageViewController())
+        let myPageViewController = makeMyPageViewController()
+        let myPageNav = UINavigationController(rootViewController: myPageViewController)
         myPageNav.tabBarItem = UITabBarItem(
             title: "마이페이지",
             image: UIImage(systemName: "person"),

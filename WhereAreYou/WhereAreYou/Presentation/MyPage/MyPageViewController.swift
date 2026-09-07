@@ -11,11 +11,16 @@ final class MyPageViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel = MyPageViewModel(
-        observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
-            repository: DIContainer.shared.resolve(LocationPermissionRepository.self)
-        )
-    )
+    private let viewModel: MyPageViewModel
+
+    init(viewModel: MyPageViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     private let logoImageView: UIImageView = {
         let imageView = UIImageView(image: .logo)
@@ -86,6 +91,9 @@ final class MyPageViewController: UIViewController {
 
     private let etcCard = MyPageCardView()
     private let appInfoRow = MyPageRow(icon: UIImage(systemName: "info.circle"), title: "앱 정보")
+    private let signOutRow = MyPageRow(icon: UIImage(systemName: "rectangle.portrait.and.arrow.right"), title: "로그아웃")
+
+    var onSignOut: (() -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,7 +120,7 @@ final class MyPageViewController: UIViewController {
         setUpCard(profileCard, rows: [profileRow])
         setUpCard(locationCard, rows: [locationSharingRow, locationPermissionRow])
         setUpCard(notificationCard, rows: [notificationRow, appointmentNotificationRow])
-        setUpCard(etcCard, rows: [appInfoRow])
+        setUpCard(etcCard, rows: [appInfoRow, signOutRow])
 
         [profileCard, locationCard, notificationCard, etcCard].forEach {
             contentStack.addArrangedSubview($0)
@@ -176,6 +184,9 @@ final class MyPageViewController: UIViewController {
         appInfoRow.onTap = {
             print("앱 정보 탭")
         }
+        signOutRow.onTap = { [weak self] in
+            self?.confirmSignOut()
+        }
 
         notificationSwitch.addAction(UIAction { [weak self] _ in
             guard let self else { return }
@@ -197,6 +208,7 @@ final class MyPageViewController: UIViewController {
         appointmentNotificationRow.value = "\(enabledCount)개의 약속 알림 켜짐"
 
         appInfoRow.value = "버전 정보"
+        signOutRow.value = "현재 계정에서 나가기"
     }
 
     private func presentProfileEdit() {
@@ -223,6 +235,26 @@ final class MyPageViewController: UIViewController {
     private func presentLocationPermission() {
         let permissionVC = LocationPermissionViewController(viewModel: viewModel)
         navigationController?.pushViewController(permissionVC, animated: true)
+    }
+
+    private func confirmSignOut() {
+        let alert = UIAlertController(title: "로그아웃", message: "정말 로그아웃하시겠습니까?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { [weak self] _ in
+            self?.performSignOut()
+        })
+        present(alert, animated: true)
+    }
+
+    private func performSignOut() {
+        do {
+            try viewModel.signOut()
+            onSignOut?()
+        } catch {
+            let alert = UIAlertController(title: "로그아웃 실패", message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "확인", style: .default))
+            present(alert, animated: true)
+        }
     }
 
     private func presentAppointmentNotificationList() {

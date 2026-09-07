@@ -22,15 +22,25 @@ final class MyPageViewModel {
     @Published private(set) var locationPermissionState: LocationPermissionState
 
     private let observeLocationPermissionUseCase: ObserveLocationPermissionUseCase
+    private let signOutUseCase: SignOutUseCase
     private var cancellables = Set<AnyCancellable>()
 
-    init(profile: MyPageProfile? = nil, observeLocationPermissionUseCase: ObserveLocationPermissionUseCase) {
+    init(
+        profile: MyPageProfile? = nil,
+        observeLocationPermissionUseCase: ObserveLocationPermissionUseCase,
+        signOutUseCase: SignOutUseCase
+    ) {
         self.profile = profile ?? Self.makeDummyProfile()
         self.observeLocationPermissionUseCase = observeLocationPermissionUseCase
+        self.signOutUseCase = signOutUseCase
         self.locationPermissionState = LocationPermissionState(observeLocationPermissionUseCase.currentStatus)
 
         loadDummyAppointmentNotifications()
         bindLocationPermission()
+    }
+
+    func signOut() throws {
+        try signOutUseCase.execute()
     }
 
 }
