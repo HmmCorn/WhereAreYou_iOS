@@ -5,9 +5,23 @@
 //  Created by 김성훈 on 8/26/26.
 //
 
+import UIKit
+
 extension DIContainer {
 
     func registerDependencies() {
+        // 인증
+        register(AuthRepository.self, instance: FirebaseAuthRepository())
+        register(UserRepository.self, instance: FirestoreUserRepository())
+        register(SignInService.self, instance: AppleSignInProvider(
+            windowProvider: {
+                UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }
+                    .flatMap { $0.windows }
+                    .first { $0.isKeyWindow }
+            }
+        ))
+
         // 위치
         let coreLocationRepository = CoreLocationRepository()
         register(LocationRepository.self, instance: coreLocationRepository)

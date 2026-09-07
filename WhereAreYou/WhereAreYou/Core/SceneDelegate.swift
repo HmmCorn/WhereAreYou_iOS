@@ -16,15 +16,43 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window = UIWindow(windowScene: windowScene)
         window?.rootViewController = makeRootLoginViewController()
         window?.makeKeyAndVisible()
+
+        attemptAutoLogin()
     }
 
+    // MARK: - 자동 로그인
+
+    private func attemptAutoLogin() {
+        let authRepository: AuthRepository = DIContainer.shared.resolve()
+        guard let userID = authRepository.currentUserID else { return }
+
+        let userRepository: UserRepository = DIContainer.shared.resolve()
+        Task { @MainActor in
+            guard let _ = try? await userRepository.fetchUser(userID: userID) else { return }
+            switchToHome()
+        }
+    }
+
+    // MARK: - 로그인 화면 생성
+
     private func makeRootLoginViewController() -> UIViewController {
-        let loginViewController = LoginViewController()
-        loginViewController.onAppleLoginTap = { [weak self] in
+        let signInService: SignInService = DIContainer.shared.resolve()
+        let authRepository: AuthRepository = DIContainer.shared.resolve()
+        let userRepository: UserRepository = DIContainer.shared.resolve()
+        let useCase = SignInUseCase(
+            signInService: signInService,
+            authRepository: authRepository,
+            userRepository: userRepository
+        )
+        let viewModel = LoginViewModel(signInUseCase: useCase)
+        let loginViewController = LoginViewController(viewModel: viewModel)
+        loginViewController.onLoginSuccess = { [weak self] _ in
             self?.switchToHome()
         }
         return loginViewController
     }
+
+    // MARK: - 화면 전환
 
     private func switchToHome() {
         guard let window else { return }
