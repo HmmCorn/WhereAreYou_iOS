@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ChatCoordinator: NavigationCoordinator, ChatCoordinating, AppointmentInfoCoordinating, AppointmentRouteCoordinating {
+final class ChatCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceSearchPresenting, ChatCoordinating, AppointmentInfoCoordinating, AppointmentRouteCoordinating {
 
     let navigationController: UINavigationController
     private let screenFactory: ChatScreenFactory

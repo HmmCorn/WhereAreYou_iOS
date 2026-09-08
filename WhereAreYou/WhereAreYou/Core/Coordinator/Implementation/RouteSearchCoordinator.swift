@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class RouteSearchCoordinator: NavigationCoordinator, RouteSearchCoordinating {
+final class RouteSearchCoordinator: NavigationCoordinator, DatePickerPresenting, RouteSearchCoordinating {
 
     let navigationController: UINavigationController
     private let screenFactory: RouteSearchScreenFactory
