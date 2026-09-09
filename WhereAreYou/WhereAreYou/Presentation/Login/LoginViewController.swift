@@ -14,6 +14,16 @@ final class LoginViewController: UIViewController {
 
     var onAppleLoginTap: (() -> Void)?
 
+    // MARK: - Init
+
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     // MARK: - UI
 
     private let backgroundImageView: UIImageView = {

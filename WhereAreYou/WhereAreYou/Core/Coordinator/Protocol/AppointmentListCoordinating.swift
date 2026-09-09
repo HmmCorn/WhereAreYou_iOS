@@ -1,0 +1,18 @@
+//
+//  AppointmentListCoordinating.swift
+//  WhereAreYou
+//
+//  Created by 김성훈 on 9/3/26.
+//
+
+import Foundation
+
+/// AppointmentListViewController / PastAppointmentListViewController가
+/// 필요로 하는 화면전환만 선언한 프로토콜
+protocol AppointmentListCoordinating: AnyObject {
+
+    func showPastAppointmentList()
+    func showChat(appointmentID: String)
+    func showAppointmentRoute(appointmentID: String)
+
+}

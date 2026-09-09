@@ -22,6 +22,7 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Dependencies
 
     private let viewModel: RouteSearchViewModel
+    weak var coordinator: RouteSearchCoordinating?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Section 1: Place input
@@ -399,17 +400,9 @@ final class RouteSearchViewController: UIViewController {
 
     private func presentPlaceSearch(target: PlaceSearchTarget) {
         placeSearchTarget = target
-
         let buttonTitle = target == .departure ? "출발지로" : "도착지로"
-        let searchPlacesUseCase = SearchPlacesUseCase(repository: DIContainer.shared.resolve(PlaceSearchRepository.self))
-        let searchViewModel = SearchPlaceCardViewModel(searchPlacesUseCase: searchPlacesUseCase)
-        let searchVC = SearchPlaceCardViewController(
-            viewModel: searchViewModel,
-            selectionButtonTitle: buttonTitle,
-            style: .dimmed(title: "장소 검색")
-        )
 
-        searchVC.onPlaceSelected = { [weak self] place in
+        coordinator?.showPlaceSearch(buttonTitle: buttonTitle) { [weak self] place in
             guard let self else { return }
             switch self.placeSearchTarget {
             case .departure:
@@ -418,27 +411,14 @@ final class RouteSearchViewController: UIViewController {
                 self.viewModel.setDestination(place)
             }
         }
-
-        present(searchVC, animated: true)
     }
 
     // MARK: - Time picker
 
     private func presentTimePicker() {
-        let pickerViewController = DatePickerSheetViewController(
-            title: "출발 시간 설정",
-            initialDate: viewModel.departureTime
-        )
-        pickerViewController.onDateSelected = { [weak self] date in
+        coordinator?.showDatePicker(title: "출발 시간 설정", initialDate: viewModel.departureTime) { [weak self] date in
             self?.viewModel.setDepartureTime(date)
         }
-
-        if let sheet = pickerViewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-
-        present(pickerViewController, animated: true)
     }
 
 }

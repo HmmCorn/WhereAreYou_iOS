@@ -11,6 +11,7 @@ import Combine
 final class AppointmentCreationViewController: UIViewController {
 
     private let viewModel: AppointmentCreationViewModel
+    weak var coordinator: AppointmentCreationCoordinating?
     private var cancellables = Set<AnyCancellable>()
 
     private let logoImage: UIImageView = {
@@ -27,7 +28,7 @@ final class AppointmentCreationViewController: UIViewController {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -120,7 +121,8 @@ extension AppointmentCreationViewController {
             UIPasteboard.general.string = info.code
         }
         card.onConfirmTap = { [weak self] in
-            self?.presentChat(appointmentInfo: info)
+            guard let self else { return }
+            self.coordinator?.replaceAppointmentCreation(self, withChatFor: info)
         }
 
         view.addSubview(card)
@@ -141,107 +143,36 @@ extension AppointmentCreationViewController {
         }
     }
 
-    private func presentChat(appointmentInfo: AppointmentInfo) {
-        guard let navigationController else { return }
-
-        let chatRepository = DIContainer.shared.resolve(ChatRepository.self)
-        let chatViewModel = ChatViewModel(
-            appointmentInfo: appointmentInfo,
-            fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
-            sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
-            getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: DIContainer.shared.resolve(LocationRepository.self)
-            ),
-            shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
-            sharePlaceUseCase: SharePlaceUseCase(
-                chatRepository: chatRepository,
-                sharedPlaceRepository: DIContainer.shared.resolve(SharedPlaceRepository.self)
-            )
-        )
-        let chatViewController = ChatViewController(viewModel: chatViewModel)
-
-        var viewControllers = navigationController.viewControllers
-        if let index = viewControllers.firstIndex(of: self) {
-            viewControllers[index] = chatViewController
-        } else {
-            viewControllers.append(chatViewController)
-        }
-        navigationController.setViewControllers(viewControllers, animated: true)
-    }
-
     // MARK: - Date Picker
 
     private func presentDatePicker() {
-        let pickerViewController = DatePickerSheetViewController(
-            title: "약속 날짜/시간 설정",
-            initialDate: viewModel.appointmentDate
-        )
-        pickerViewController.onDateSelected = { [weak self] date in
+        coordinator?.showDatePicker(title: "약속 날짜/시간 설정", initialDate: viewModel.appointmentDate) { [weak self] date in
             self?.viewModel.setDate(date)
         }
-
-        if let sheet = pickerViewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-
-        present(pickerViewController, animated: true)
     }
 
 
     // MARK: - Search Place Card
 
     private func presentPlaceSearch() {
-        let searchPlaceViewController = SearchPlaceCardViewController(
-            viewModel: SearchPlaceCardViewModel(
-                searchPlacesUseCase: SearchPlacesUseCase(
-                    repository: DIContainer.shared.resolve(PlaceSearchRepository.self)
-                )
-            ),
+        let searchPlaceViewController = coordinator?.showPlaceSearch(
             selectionButtonTitle: "선택하기",
             style: .onlyHeader(title: "약속 장소 검색")
         )
-
-        searchPlaceViewController.onPlaceSelected = { [weak self] place in
+        searchPlaceViewController?.onPlaceSelected = { [weak self, weak searchPlaceViewController] place in
             self?.viewModel.setPlace(place)
-            searchPlaceViewController.dismiss(animated: true)
+            searchPlaceViewController?.dismiss(animated: true)
         }
-
-        if let sheet = searchPlaceViewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-
-        present(searchPlaceViewController, animated: true)
     }
 
     // MARK: - Place Map Selection
 
     private func presentPlaceMapSelection() {
-        let placeSelectionViewModel = PlaceSelectionViewModel(
-            getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: DIContainer.shared.resolve(LocationRepository.self)
-            ),
-            getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
-                nearbyPlaceRepository: DIContainer.shared.resolve(NearbyPlaceRepository.self),
-                reverseGeocodingRepository: DIContainer.shared.resolve(ReverseGeocodingRepository.self)
-            ),
+        coordinator?.showPlaceMapSelection(
             initialCoordinate: viewModel.place?.coordinate
-        )
-        let placeSelectionViewController = PlaceSelectionViewController(viewModel: placeSelectionViewModel)
-
-        placeSelectionViewController.onPlaceConfirmed = { [weak self] place in
+        ) { [weak self] place in
             self?.viewModel.setPlace(place)
         }
-
-        let navigationController = UINavigationController(rootViewController: placeSelectionViewController)
-        navigationController.isModalInPresentation = true
-
-        if let sheet = navigationController.sheetPresentationController {
-            sheet.detents = [.large()]
-        }
-
-        present(navigationController, animated: true)
     }
 
 }
