@@ -115,12 +115,25 @@ extension AppleSignInProvider: ASAuthorizationControllerPresentationContextProvi
 private extension AppleSignInProvider {
 
     static func randomNonceString(length: Int = 32) -> String {
-        var randomBytes = [UInt8](repeating: 0, count: length)
-        let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
-        precondition(status == errSecSuccess)
-
         let charset = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
-        return String(randomBytes.map { charset[Int($0) % charset.count] })
+        let maxValue = (256 / charset.count) * charset.count
+
+        var result = [Character]()
+        result.reserveCapacity(length)
+
+        while result.count < length {
+            var randomBytes = [UInt8](repeating: 0, count: 16)
+            let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+            precondition(status == errSecSuccess)
+
+            for byte in randomBytes where result.count < length {
+                if Int(byte) < maxValue {
+                    result.append(charset[Int(byte) % charset.count])
+                }
+            }
+        }
+
+        return String(result)
     }
 
     static func sha256(_ input: String) -> String {
