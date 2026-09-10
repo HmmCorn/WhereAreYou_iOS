@@ -27,8 +27,8 @@ final class FirestoreUserRepository: UserRepository {
                 }
 
                 if let data = snapshot.data(), snapshot.exists,
-                   let user = self.makeUser(id: userID, data: data) {
-                    return user
+                   let dto = UserDTO(data: data) {
+                    return dto.toDomain(id: userID)
                 }
 
                 let userData: [String: Any] = [
@@ -72,10 +72,10 @@ final class FirestoreUserRepository: UserRepository {
             let snapshot = try await db.collection("users").document(userID).getDocument()
 
             guard let data = snapshot.data(), snapshot.exists,
-                  let user = makeUser(id: userID, data: data) else {
+                  let dto = UserDTO(data: data) else {
                 throw AppError.notFound
             }
-            return user
+            return dto.toDomain(id: userID)
         } catch let error as AppError {
             throw error
         } catch {
@@ -83,40 +83,5 @@ final class FirestoreUserRepository: UserRepository {
         }
     }
 
-    // MARK: - Firestore → User 변환
-
-    private func makeUser(id: String, data: [String: Any]) -> User? {
-        guard let nickname = data["nickname"] as? String,
-              let profileImageString = data["profileImage"] as? String else {
-            return nil
-        }
-
-        let transportMode: TransportType = {
-            switch data["defaultTransportMode"] as? String {
-            case "WALK": return .walk
-            case "CAR": return .car
-            default: return .transit
-            }
-        }()
-
-        let sharingScope: LocationSharingScope = {
-            switch data["locationSharingScope"] as? String {
-            case "ALWAYS": return .always
-            case "NEVER": return .never
-            default: return .onlyDuringAppointment
-            }
-        }()
-
-        return User(
-            id: id,
-            nickname: nickname,
-            // TODO: Firebase Storage 전환 시 실제 URL로 교체
-            profileImage: URL(string: profileImageString)!,
-            defaultTransportMode: transportMode,
-            locationSharingScope: sharingScope,
-            isNotificationEnabled: data["isNotificationEnabled"] as? Bool ?? true,
-            appointmentsNotification: data["appointmentsNotification"] as? [String: Bool] ?? [:]
-        )
-    }
 
 }
