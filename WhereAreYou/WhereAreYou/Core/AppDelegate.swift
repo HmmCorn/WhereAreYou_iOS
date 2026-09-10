@@ -26,8 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    // 로컬 네트워크 IP — 기기마다 다르므로 본인의 IP로 변경하여 사용 (터미널: ipconfig getifaddr en0)
-    private static let emulatorHost = "192.168.45.234"
+    private static var emulatorHost: String {
+        ProcessInfo.processInfo.environment["FIREBASE_EMULATOR_HOST"] ?? "localhost"
+    }
 
     private func configureFirebaseEmulators() {
         #if DEBUG
