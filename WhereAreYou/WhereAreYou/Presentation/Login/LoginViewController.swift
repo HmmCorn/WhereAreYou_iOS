@@ -149,7 +149,7 @@ final class LoginViewController: UIViewController {
     private func showLoginError(_ error: AppError) {
         let alert = UIAlertController(
             title: "로그인 실패",
-            message: "다시 시도해 주세요.",
+            message: error.localizedDescription,
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))
