@@ -13,6 +13,7 @@ import Combine
 final class LoginViewModel {
 
     @Published private(set) var loginResult: Result<User, AppError>?
+    @Published private(set) var isSigningIn = false
 
     private let signInUseCase: SignInUseCase
 
@@ -23,7 +24,11 @@ final class LoginViewModel {
     // MARK: - 로그인
 
     func signIn() {
+        guard !isSigningIn else { return }
+        isSigningIn = true
+
         Task {
+            defer { isSigningIn = false }
             do {
                 let user = try await signInUseCase.execute()
                 loginResult = .success(user)

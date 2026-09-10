@@ -136,6 +136,12 @@ final class LoginViewController: UIViewController {
                 }
             }
             .store(in: &cancellables)
+
+        viewModel.$isSigningIn
+            .sink { [weak self] isSigningIn in
+                self?.appleLoginButton.isUserInteractionEnabled = !isSigningIn
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Error
