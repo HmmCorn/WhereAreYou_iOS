@@ -6,12 +6,14 @@
 //
 
 import UIKit
+import Combine
 
 final class MyPageViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
     private let viewModel: MyPageViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     init(viewModel: MyPageViewModel) {
         self.viewModel = viewModel
@@ -100,6 +102,7 @@ final class MyPageViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
+        bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -237,24 +240,38 @@ final class MyPageViewController: UIViewController {
         navigationController?.pushViewController(permissionVC, animated: true)
     }
 
+    private func bindViewModel() {
+        viewModel.$signOutResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.onSignOut?()
+                case .failure(let error):
+                    self?.showSignOutError(error)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     private func confirmSignOut() {
         let alert = UIAlertController(title: "로그아웃", message: "정말 로그아웃하시겠습니까?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "취소", style: .cancel))
         alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { [weak self] _ in
-            self?.performSignOut()
+            self?.viewModel.signOut()
         })
         present(alert, animated: true)
     }
 
-    private func performSignOut() {
-        do {
-            try viewModel.signOut()
-            onSignOut?()
-        } catch {
-            let alert = UIAlertController(title: "로그아웃 실패", message: error.localizedDescription, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "확인", style: .default))
-            present(alert, animated: true)
-        }
+    private func showSignOutError(_ error: Error) {
+        let alert = UIAlertController(
+            title: "로그아웃 실패",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     private func presentAppointmentNotificationList() {
