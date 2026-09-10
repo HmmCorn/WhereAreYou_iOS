@@ -31,11 +31,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func validateUser(userID: String) {
         let userRepository: UserRepository = DIContainer.shared.resolve()
         Task { @MainActor in
-            guard let _ = try? await userRepository.fetchUser(userID: userID) else {
+            do {
+                _ = try await userRepository.fetchUser(userID: userID)
+            } catch AppError.network {
+                showNetworkErrorAlert { [weak self] in
+                    self?.validateUser(userID: userID)
+                }
+            } catch {
                 switchToLogin()
-                return
             }
         }
+    }
+
+    private func showNetworkErrorAlert(retryHandler: @escaping () -> Void) {
+        let alert = UIAlertController(
+            title: "연결 오류",
+            message: "네트워크 연결을 확인 후 다시 시도해 주세요.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "재시도", style: .default) { _ in
+            retryHandler()
+        })
+        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { [weak self] _ in
+            self?.switchToLogin()
+        })
+        window?.rootViewController?.present(alert, animated: true)
     }
 
     // MARK: - 로그인 화면 생성
