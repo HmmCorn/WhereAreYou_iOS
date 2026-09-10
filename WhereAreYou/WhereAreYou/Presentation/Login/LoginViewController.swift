@@ -18,6 +18,17 @@ final class LoginViewController: UIViewController {
     private let viewModel: LoginViewModel
     private var cancellables = Set<AnyCancellable>()
 
+    // MARK: - Init
+
+    init(viewModel: LoginViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
+    }
+
     // MARK: - UI
 
     private let backgroundImageView: UIImageView = {
@@ -57,17 +68,6 @@ final class LoginViewController: UIViewController {
     }()
 
     private let appleLoginButton: AppleLoginButton = AppleLoginButton()
-
-    // MARK: - Init
-
-    init(viewModel: LoginViewModel) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
-    }
 
     // MARK: - Life Cycle
 

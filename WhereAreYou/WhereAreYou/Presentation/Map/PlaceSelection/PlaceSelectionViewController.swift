@@ -11,6 +11,7 @@ import Combine
 final class PlaceSelectionViewController: UIViewController {
 
     var onPlaceConfirmed: ((Place) -> Void)?
+    var onSearchOtherPlace: ((@escaping (Place) -> Void) -> Void)?
 
     private var isInitialCameraMoveHandled = false
 
@@ -241,21 +242,11 @@ final class PlaceSelectionViewController: UIViewController {
     }
 
     private func searchOtherPlaceTapped() {
-        let searchPlaceViewController = SearchPlaceCardViewController(
-            viewModel: SearchPlaceCardViewModel(
-                searchPlacesUseCase: SearchPlacesUseCase(
-                    repository: DIContainer.shared.resolve(PlaceSearchRepository.self)
-                )
-            ),
-            selectionButtonTitle: "선택하기",
-            style: .onlyHeader(title: "장소 검색")
-        )
-        searchPlaceViewController.onPlaceSelected = { [weak self] place in
+        navigationController?.setNavigationBarHidden(false, animated: false)
+        onSearchOtherPlace?({ [weak self] place in
             self?.navigationController?.popViewController(animated: true)
             self?.naverMapView.moveCamera(to: place.coordinate)
-        }
-        navigationController?.setNavigationBarHidden(false, animated: false)
-        navigationController?.pushViewController(searchPlaceViewController, animated: true)
+        })
     }
 
     // MARK: - Layout

@@ -11,8 +11,22 @@ final class HomeViewModel {
 
     private(set) var upcomingAppointments: [UpcomingAppointment] = []
 
-    init() {
+    private let joinAppointmentUseCase: JoinAppointmentUseCase
+
+    init(joinAppointmentUseCase: JoinAppointmentUseCase) {
+        self.joinAppointmentUseCase = joinAppointmentUseCase
         loadDummyData()
+    }
+
+    func joinAppointment(code: String, completion: @escaping (Result<AppointmentInfo, Error>) -> Void) {
+        joinAppointmentUseCase.execute(code: code) { result in
+            switch result {
+            case .success(let (appointment, _)):
+                completion(.success(AppointmentInfo(appointment: appointment)))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
     private func loadDummyData() {

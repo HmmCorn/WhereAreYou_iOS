@@ -13,6 +13,7 @@ final class MyPageViewController: UIViewController {
     private static let cardSpacing: CGFloat = 16
 
     private let viewModel: MyPageViewModel
+    weak var coordinator: MyPageCoordinating?
     private var cancellables = Set<AnyCancellable>()
 
     init(viewModel: MyPageViewModel) {
@@ -21,7 +22,7 @@ final class MyPageViewController: UIViewController {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
     }
 
     private let logoImageView: UIImageView = {
@@ -94,8 +95,6 @@ final class MyPageViewController: UIViewController {
     private let etcCard = MyPageCardView()
     private let appInfoRow = MyPageRow(icon: UIImage(systemName: "info.circle"), title: "앱 정보")
     private let signOutRow = MyPageRow(icon: UIImage(systemName: "rectangle.portrait.and.arrow.right"), title: "로그아웃")
-
-    var onSignOut: (() -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -215,29 +214,26 @@ final class MyPageViewController: UIViewController {
     }
 
     private func presentProfileEdit() {
-        let editVC = ProfileEditViewController(
+        coordinator?.showProfileEdit(
             nickname: viewModel.profile.nickname,
             profileImageName: viewModel.profile.profileImageName
-        )
-        editVC.onProfileSaved = { [weak self] nickname, profileImageName in
+        ) { [weak self] nickname, profileImageName in
             self?.viewModel.setProfile(nickname: nickname, profileImageName: profileImageName)
             self?.reloadContent()
         }
-        navigationController?.pushViewController(editVC, animated: true)
     }
 
     private func presentLocationSharingSelection() {
-        let selectionVC = LocationSharingSelectionViewController(selectedOption: viewModel.profile.locationSharingOption)
-        selectionVC.onOptionSelected = { [weak self] option in
+        coordinator?.showLocationSharingSelection(
+            selectedOption: viewModel.profile.locationSharingOption
+        ) { [weak self] option in
             self?.viewModel.setLocationSharingOption(option)
             self?.locationSharingRow.value = option.title
         }
-        navigationController?.pushViewController(selectionVC, animated: true)
     }
 
     private func presentLocationPermission() {
-        let permissionVC = LocationPermissionViewController(viewModel: viewModel)
-        navigationController?.pushViewController(permissionVC, animated: true)
+        coordinator?.showLocationPermission()
     }
 
     private func bindViewModel() {
@@ -247,7 +243,7 @@ final class MyPageViewController: UIViewController {
             .sink { [weak self] result in
                 switch result {
                 case .success:
-                    self?.onSignOut?()
+                    self?.coordinator?.signOut()
                 case .failure(let error):
                     self?.showSignOutError(error)
                 }
@@ -275,11 +271,10 @@ final class MyPageViewController: UIViewController {
     }
 
     private func presentAppointmentNotificationList() {
-        let listVC = AppointmentNotificationListViewController(
+        coordinator?.showAppointmentNotificationList(
             fetchItems: { [weak self] in self?.viewModel.appointmentNotifications ?? [] },
             onToggle: { [weak self] id in self?.viewModel.toggleNotification(id: id) }
         )
-        navigationController?.pushViewController(listVC, animated: true)
     }
 
 }

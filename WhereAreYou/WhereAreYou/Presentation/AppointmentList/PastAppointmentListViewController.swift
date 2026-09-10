@@ -12,6 +12,15 @@ final class PastAppointmentListViewController: UIViewController {
     private static let cardSpacing: CGFloat = 16
 
     private let viewModel = PastAppointmentListViewModel()
+    weak var coordinator: AppointmentListCoordinating?
+
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     private let descriptionLabel: UILabel = {
         let label = UILabel()
@@ -147,37 +156,11 @@ final class PastAppointmentListViewController: UIViewController {
     // MARK: - Chat / Route
 
     private func presentChat(appointmentID: String) {
-        let repository = DIContainer.shared.resolve(AppointmentInfoRepository.self)
-        FetchAppointmentInfoUseCase(repository: repository).execute(appointmentID: appointmentID) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self, case .success(let appointment) = result else { return }
-                let chatRepository = DIContainer.shared.resolve(ChatRepository.self)
-                let viewModel = ChatViewModel(
-                    appointmentInfo: AppointmentInfo(appointment: appointment),
-                    fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
-                    sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
-                    getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                        repository: DIContainer.shared.resolve(LocationRepository.self)
-                    ),
-                    shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
-                    sharePlaceUseCase: SharePlaceUseCase(
-                        chatRepository: chatRepository,
-                        sharedPlaceRepository: DIContainer.shared.resolve(SharedPlaceRepository.self)
-                    )
-                )
-                self.navigationController?.pushViewController(ChatViewController(viewModel: viewModel), animated: true)
-            }
-        }
+        coordinator?.showChat(appointmentID: appointmentID)
     }
 
     private func presentAppointmentRoute(appointmentID: String) {
-        let routeViewModel = AppointmentRouteViewModel(
-            appointmentID: appointmentID,
-            getAppointmentDetailUseCase: GetAppointmentDetailUseCase(
-                repository: DIContainer.shared.resolve(AppointmentDetailRepository.self)
-            )
-        )
-        present(AppointmentRouteViewController(viewModel: routeViewModel), animated: true)
+        coordinator?.showAppointmentRoute(appointmentID: appointmentID)
     }
 
 }

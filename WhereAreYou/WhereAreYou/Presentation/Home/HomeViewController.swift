@@ -11,7 +11,17 @@ final class HomeViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel = HomeViewModel()
+    private let viewModel: HomeViewModel
+    weak var coordinator: HomeCoordinating?
+
+    init(viewModel: HomeViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
+    }
 
     // MARK: - Logo
 
@@ -197,13 +207,7 @@ final class HomeViewController: UIViewController {
     // MARK: - Appointment Creation
 
     private func presentAppointmentCreation() {
-        let viewModel = AppointmentCreationViewModel(
-            createAppointmentUseCase: CreateAppointmentUseCase(
-                repository: DIContainer.shared.resolve(AppointmentCreationRepository.self)
-            )
-        )
-        let viewController = AppointmentCreationViewController(viewModel)
-        navigationController?.pushViewController(viewController, animated: true)
+        coordinator?.showAppointmentCreation()
     }
 
     // MARK: - Join sheet
@@ -241,16 +245,13 @@ final class HomeViewController: UIViewController {
     }
 
     private func joinAppointment(code: String) {
-        let useCase = JoinAppointmentUseCase(
-            repository: DIContainer.shared.resolve(AppointmentDetailRepository.self)
-        )
-        useCase.execute(code: code) { [weak self] result in
+        viewModel.joinAppointment(code: code) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
                 switch result {
-                case .success(let (appointment, _)):
+                case .success(let appointmentInfo):
                     self.dismissJoinSheet()
-                    self.presentChat(appointmentInfo: AppointmentInfo(appointment: appointment))
+                    self.presentChat(appointmentInfo: appointmentInfo)
                 case .failure:
                     self.presentJoinFailureAlert()
                 }
@@ -271,31 +272,11 @@ final class HomeViewController: UIViewController {
     // MARK: - Chat
 
     private func presentChat(appointmentID: String) {
-        let repository = DIContainer.shared.resolve(AppointmentInfoRepository.self)
-        FetchAppointmentInfoUseCase(repository: repository).execute(appointmentID: appointmentID) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self, case .success(let appointment) = result else { return }
-                self.presentChat(appointmentInfo: AppointmentInfo(appointment: appointment))
-            }
-        }
+        coordinator?.showChat(appointmentID: appointmentID)
     }
 
     private func presentChat(appointmentInfo: AppointmentInfo) {
-        let chatRepository = DIContainer.shared.resolve(ChatRepository.self)
-        let viewModel = ChatViewModel(
-            appointmentInfo: appointmentInfo,
-            fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
-            sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
-            getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: DIContainer.shared.resolve(LocationRepository.self)
-            ),
-            shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
-            sharePlaceUseCase: SharePlaceUseCase(
-                chatRepository: chatRepository,
-                sharedPlaceRepository: DIContainer.shared.resolve(SharedPlaceRepository.self)
-            )
-        )
-        navigationController?.pushViewController(ChatViewController(viewModel: viewModel), animated: true)
+        coordinator?.showChat(appointmentInfo: appointmentInfo)
     }
 
 }

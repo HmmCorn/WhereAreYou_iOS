@@ -10,7 +10,7 @@ import UIKit
 
 final class LocationPermissionViewController: UIViewController {
 
-    private let viewModel: MyPageViewModel
+    private let viewModel: LocationPermissionViewModel
     private var cancellables = Set<AnyCancellable>()
 
     private let card = MyPageCardView()
@@ -44,7 +44,7 @@ final class LocationPermissionViewController: UIViewController {
         font: .body
     )
 
-    init(viewModel: MyPageViewModel) {
+    init(viewModel: LocationPermissionViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
