@@ -54,13 +54,11 @@ extension AppleSignInProvider: ASAuthorizationControllerDelegate {
         controller: ASAuthorizationController,
         didCompleteWithAuthorization authorization: ASAuthorization
     ) {
-        defer { cleanUp() }
-
         guard let appleCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
               let idTokenData = appleCredential.identityToken,
               let idToken = String(data: idTokenData, encoding: .utf8),
               let nonce = currentNonce else {
-            continuation?.resume(throwing: AppError.notAuthenticated)
+            consumeContinuation { $0.resume(throwing: AppError.notAuthenticated) }
             return
         }
 
@@ -73,26 +71,29 @@ extension AppleSignInProvider: ASAuthorizationControllerDelegate {
             nonce: nonce,
             nickname: nickname.isEmpty ? nil : nickname
         )
-        continuation?.resume(returning: credential)
+        consumeContinuation { $0.resume(returning: credential) }
     }
 
     func authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithError error: Error
     ) {
-        defer { cleanUp() }
-
         let code = (error as NSError).code
         if code == ASAuthorizationError.canceled.rawValue {
-            continuation?.resume(throwing: SignInError.cancelled)
+            consumeContinuation { $0.resume(throwing: SignInError.cancelled) }
         } else {
-            continuation?.resume(throwing: AppError.unknown(error))
+            consumeContinuation { $0.resume(throwing: AppError.unknown(error)) }
         }
     }
 
-    private func cleanUp() {
+    /// continuation을 nil로 교체한 뒤 resume — 비정상적 이중 콜백 시 중복 resume 방지
+    private func consumeContinuation(
+        _ body: (CheckedContinuation<SignInCredential, Error>) -> Void
+    ) {
+        guard let captured = continuation else { return }
         continuation = nil
         authController = nil
+        body(captured)
     }
 
 }
