@@ -14,10 +14,18 @@ extension UIImageView {
     func setProfileImage(_ identifier: String) {
         currentProfileIdentifier = identifier
         image = nil
+        hideLoadingIndicator()
+
+        let showTask = Task { [weak self] in
+            try await Task.sleep(for: .milliseconds(150))
+            self?.showLoadingIndicator()
+        }
 
         Task { [weak self] in
             let loaded = await ProfileImageLoader.shared.load(identifier: identifier)
+            showTask.cancel()
             guard self?.currentProfileIdentifier == identifier else { return }
+            self?.hideLoadingIndicator()
             self?.image = loaded
         }
     }
