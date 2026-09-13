@@ -179,10 +179,10 @@ final class ProfileEditViewController: UIViewController {
     // MARK: - Data
 
     private func loadAvailableImages() {
-        Task {
+        Task { [weak self] in
             let names = (try? await ProfileImageLoader.shared.fetchAvailableImageNames()) ?? []
-            availableImageNames = names
-            applySnapshot()
+            self?.availableImageNames = names
+            self?.applySnapshot()
         }
     }
 
