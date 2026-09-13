@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 final class MyPageViewController: UIViewController {
 
@@ -13,6 +14,7 @@ final class MyPageViewController: UIViewController {
 
     private let viewModel: MyPageViewModel
     weak var coordinator: MyPageCoordinating?
+    private var cancellables = Set<AnyCancellable>()
 
     init(viewModel: MyPageViewModel) {
         self.viewModel = viewModel
@@ -92,12 +94,14 @@ final class MyPageViewController: UIViewController {
 
     private let etcCard = MyPageCardView()
     private let appInfoRow = MyPageRow(icon: UIImage(systemName: "info.circle"), title: "앱 정보")
+    private let signOutRow = MyPageRow(icon: UIImage(systemName: "rectangle.portrait.and.arrow.right"), title: "로그아웃")
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
+        bindViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -118,7 +122,7 @@ final class MyPageViewController: UIViewController {
         setUpCard(profileCard, rows: [profileRow])
         setUpCard(locationCard, rows: [locationSharingRow, locationPermissionRow])
         setUpCard(notificationCard, rows: [notificationRow, appointmentNotificationRow])
-        setUpCard(etcCard, rows: [appInfoRow])
+        setUpCard(etcCard, rows: [appInfoRow, signOutRow])
 
         [profileCard, locationCard, notificationCard, etcCard].forEach {
             contentStack.addArrangedSubview($0)
@@ -182,6 +186,9 @@ final class MyPageViewController: UIViewController {
         appInfoRow.onTap = {
             print("앱 정보 탭")
         }
+        signOutRow.onTap = { [weak self] in
+            self?.confirmSignOut()
+        }
 
         notificationSwitch.addAction(UIAction { [weak self] _ in
             guard let self else { return }
@@ -203,6 +210,7 @@ final class MyPageViewController: UIViewController {
         appointmentNotificationRow.value = "\(enabledCount)개의 약속 알림 켜짐"
 
         appInfoRow.value = "버전 정보"
+        signOutRow.value = "현재 계정에서 나가기"
     }
 
     private func presentProfileEdit() {
@@ -226,6 +234,40 @@ final class MyPageViewController: UIViewController {
 
     private func presentLocationPermission() {
         coordinator?.showLocationPermission()
+    }
+
+    private func bindViewModel() {
+        viewModel.$signOutResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.coordinator?.signOut()
+                case .failure(let error):
+                    self?.showSignOutError(error)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func confirmSignOut() {
+        let alert = UIAlertController(title: "로그아웃", message: "정말 로그아웃하시겠습니까?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { [weak self] _ in
+            self?.viewModel.signOut()
+        })
+        present(alert, animated: true)
+    }
+
+    private func showSignOutError(_ error: Error) {
+        let alert = UIAlertController(
+            title: "로그아웃 실패",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
     private func presentAppointmentNotificationList() {

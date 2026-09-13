@@ -11,6 +11,7 @@ final class MyPageCoordinator: NavigationCoordinator, MyPageCoordinating {
 
     let navigationController: UINavigationController
     private let screenFactory: MyPageScreenFactory
+    var onSignOut: (() -> Void)?
 
     init(
         navigationController: UINavigationController,
@@ -53,6 +54,12 @@ final class MyPageCoordinator: NavigationCoordinator, MyPageCoordinating {
 
     func showLocationPermission() {
         push(screenFactory.makeLocationPermissionViewController())
+    }
+
+    // MARK: - Sign Out
+
+    func signOut() {
+        onSignOut?()
     }
 
     // MARK: - Appointment Notification List

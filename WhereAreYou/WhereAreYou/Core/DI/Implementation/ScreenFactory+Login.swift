@@ -8,7 +8,16 @@
 extension ScreenFactory {
 
     func makeLoginViewController() -> LoginViewController {
-        LoginViewController()
+        let signInService: SignInService = container.resolve()
+        let authRepository: AuthRepository = container.resolve()
+        let userRepository: UserRepository = container.resolve()
+        let useCase = SignInUseCase(
+            signInService: signInService,
+            authRepository: authRepository,
+            userRepository: userRepository
+        )
+        let viewModel = LoginViewModel(signInUseCase: useCase)
+        return LoginViewController(viewModel: viewModel)
     }
 
 }

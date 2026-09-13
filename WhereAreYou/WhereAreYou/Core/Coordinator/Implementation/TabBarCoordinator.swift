@@ -12,6 +12,7 @@ import UIKit
 final class TabBarCoordinator: Coordinator {
 
     let tabBarController = UITabBarController()
+    var onSignOut: (() -> Void)?
 
     private var homeCoordinator: HomeCoordinator?
     private var appointmentListCoordinator: AppointmentListCoordinator?
@@ -37,8 +38,12 @@ final class TabBarCoordinator: Coordinator {
         )
 
         let myPageNav = UINavigationController()
-        myPageCoordinator = MyPageCoordinator(navigationController: myPageNav)
-        myPageCoordinator?.start()
+        let myPageCoord = MyPageCoordinator(navigationController: myPageNav)
+        myPageCoord.onSignOut = { [weak self] in
+            self?.onSignOut?()
+        }
+        myPageCoordinator = myPageCoord
+        myPageCoord.start()
         myPageNav.tabBarItem = UITabBarItem(
             title: "마이페이지",
             image: UIImage(systemName: "person"),

@@ -24,5 +24,6 @@ protocol MyPageCoordinating: AnyObject {
         fetchItems: @escaping () -> [AppointmentListItem],
         onToggle: @escaping (String) -> Void
     )
+    func signOut()
 
 }

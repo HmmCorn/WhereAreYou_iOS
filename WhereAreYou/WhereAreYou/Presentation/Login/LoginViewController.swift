@@ -6,22 +6,27 @@
 //
 
 import UIKit
+import Combine
 
 /// 로그인 화면 — 앱 진입 시 최초로 표시되는 화면
 final class LoginViewController: UIViewController {
 
     // MARK: - Properties
 
-    var onAppleLoginTap: (() -> Void)?
+    var onLoginSuccess: ((User) -> Void)?
+
+    private let viewModel: LoginViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
 
-    init() {
+    init(viewModel: LoginViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
     }
 
     // MARK: - UI
@@ -71,6 +76,7 @@ final class LoginViewController: UIViewController {
         setUpView()
         setUpLayout()
         setUpActions()
+        bindViewModel()
     }
 
     // MARK: - Set Up
@@ -114,9 +120,40 @@ final class LoginViewController: UIViewController {
 
     private func setUpActions() {
         appleLoginButton.onTap = { [weak self] in
-            // TODO: Apple 로그인 인증 로직 연결 필요
-            self?.onAppleLoginTap?()
+            self?.viewModel.signIn()
         }
+    }
+
+    private func bindViewModel() {
+        viewModel.$loginResult
+            .compactMap { $0 }
+            .sink { [weak self] result in
+                switch result {
+                case .success(let user):
+                    self?.onLoginSuccess?(user)
+                case .failure(let error):
+                    self?.showLoginError(error)
+                }
+            }
+            .store(in: &cancellables)
+
+        viewModel.$isSigningIn
+            .sink { [weak self] isSigningIn in
+                self?.appleLoginButton.isUserInteractionEnabled = !isSigningIn
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Error
+
+    private func showLoginError(_ error: AppError) {
+        let alert = UIAlertController(
+            title: "로그인 실패",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 
 }

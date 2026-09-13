@@ -11,6 +11,9 @@ extension ScreenFactory {
         let viewModel = MyPageViewModel(
             observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
                 repository: container.resolve(LocationPermissionRepository.self)
+            ),
+            signOutUseCase: SignOutUseCase(
+                authRepository: container.resolve(AuthRepository.self)
             )
         )
         return MyPageViewController(viewModel: viewModel)
