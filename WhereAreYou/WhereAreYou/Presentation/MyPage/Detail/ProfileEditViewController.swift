@@ -51,6 +51,8 @@ final class ProfileEditViewController: UIViewController {
         field.layer.shadowOffset = CGSize(width: 0, height: 2)
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
         field.leftViewMode = .always
+        field.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        field.rightViewMode = .always
         field.returnKeyType = .done
         field.enablesReturnKeyAutomatically = true
         return field
