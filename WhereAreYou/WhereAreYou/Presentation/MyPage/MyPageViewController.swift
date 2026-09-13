@@ -58,12 +58,16 @@ final class MyPageViewController: UIViewController {
         imageView.widthAnchor.constraint(equalToConstant: 16).isActive = true
         return imageView
     }()
-    private lazy var profileRow = MyPageRow(
-        icon: UIImage(named: viewModel.profile.profileImageName) ?? UIImage(systemName: viewModel.profile.profileImageName),
-        title: "닉네임",
-        isCircularImage: true,
-        accessoryView: profileEditIcon
-    )
+    private lazy var profileRow: MyPageRow = {
+        let row = MyPageRow(
+            icon: nil,
+            title: "닉네임",
+            isCircularImage: true,
+            accessoryView: profileEditIcon
+        )
+        row.setProfileIcon(viewModel.profile.profileImageName)
+        return row
+    }()
 
     // MARK: - 위치 카드
 
@@ -200,7 +204,7 @@ final class MyPageViewController: UIViewController {
         let profile = viewModel.profile
 
         profileRow.value = profile.nickname
-        profileRow.setIcon(UIImage(named: profile.profileImageName) ?? UIImage(systemName: profile.profileImageName))
+        profileRow.setProfileIcon(profile.profileImageName)
         locationSharingRow.value = profile.locationSharingOption.title
         locationPermissionRow.value = viewModel.locationPermissionState.title
         notificationSwitch.isOn = profile.isNotificationEnabled

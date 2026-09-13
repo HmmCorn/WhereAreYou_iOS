@@ -17,7 +17,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
     private static let currentUser = User(
         id: currentUserID,
         nickname: "나",
-        profileImage: URL(string: "https://placeholder")!,
+        profileImage: "otter",
         defaultTransportMode: .transit,
         locationSharingScope: .onlyDuringAppointment,
         isNotificationEnabled: true,
@@ -27,7 +27,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
     private static let user2 = User(
         id: "user2",
         nickname: "김길동",
-        profileImage: URL(string: "shark")!,
+        profileImage: "shark",
         defaultTransportMode: .transit,
         locationSharingScope: .onlyDuringAppointment,
         isNotificationEnabled: true,
@@ -37,7 +37,7 @@ final class MockSharedPlaceRepository: SharedPlaceRepository {
     private static let user3 = User(
         id: "user3",
         nickname: "홍길동",
-        profileImage: URL(string: "turtle")!,
+        profileImage: "turtle",
         defaultTransportMode: .transit,
         locationSharingScope: .onlyDuringAppointment,
         isNotificationEnabled: true,

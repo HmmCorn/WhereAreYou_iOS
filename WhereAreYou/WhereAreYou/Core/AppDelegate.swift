@@ -39,7 +39,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         firestoreSettings.cacheSettings = MemoryCacheSettings()
         Firestore.firestore().settings = firestoreSettings
         Database.database().useEmulator(withHost: host, port: 9000)
-        Storage.storage().useEmulator(withHost: host, port: 9199)
         #endif
     }
 

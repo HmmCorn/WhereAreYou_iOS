@@ -11,7 +11,7 @@ struct User: Hashable {
 
     let id: String
     let nickname: String
-    let profileImage: URL
+    let profileImage: String
     let defaultTransportMode: TransportType
     let locationSharingScope: LocationSharingScope
     let isNotificationEnabled: Bool

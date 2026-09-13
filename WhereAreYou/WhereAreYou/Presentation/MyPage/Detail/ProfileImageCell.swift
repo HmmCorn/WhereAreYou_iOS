@@ -39,8 +39,7 @@ final class ProfileImageCell: UICollectionViewCell {
     }
 
     func configure(imageName: String) {
-        imageView.image = UIImage(named: imageName) ?? UIImage(systemName: imageName)
-        imageView.tintColor = .blue2
+        imageView.setProfileImage(imageName)
     }
 
     private func setUp() {

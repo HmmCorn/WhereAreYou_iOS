@@ -50,8 +50,7 @@ struct UserDTO {
         return User(
             id: id,
             nickname: nickname,
-            // TODO: Firebase Storage 전환 시 실제 URL로 교체
-            profileImage: URL(string: profileImage)!,
+            profileImage: profileImage,
             defaultTransportMode: transportMode,
             locationSharingScope: sharingScope,
             isNotificationEnabled: isNotificationEnabled,
