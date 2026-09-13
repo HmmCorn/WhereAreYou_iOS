@@ -36,10 +36,6 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
     private static let currentUserID = "user_me"
     private static let mockCode = "MOCK1234"
 
-    private static func profileImageURL(_ assetName: String) -> URL {
-        URL(string: "asset://\(assetName)")!
-    }
-
     private static func makeMockAppointment(appointmentID: String) -> Appointment {
         let place = Place(
             id: "place_starbucks_gangnam",
@@ -55,7 +51,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
             User(
                 id: currentUserID,
                 nickname: "나",
-                profileImage: profileImageURL("shark"),
+                profileImage: "shark",
                 defaultTransportMode: .car,
                 locationSharingScope: .onlyDuringAppointment,
                 isNotificationEnabled: true,
@@ -64,7 +60,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
             User(
                 id: "user_minji",
                 nickname: "김민지",
-                profileImage: profileImageURL("turtle"),
+                profileImage: "turtle",
                 defaultTransportMode: .transit,
                 locationSharingScope: .onlyDuringAppointment,
                 isNotificationEnabled: true,
@@ -73,7 +69,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
             User(
                 id: "user_seoyeon",
                 nickname: "이서연",
-                profileImage: profileImageURL("shark"),
+                profileImage: "shark",
                 defaultTransportMode: .car,
                 locationSharingScope: .onlyDuringAppointment,
                 isNotificationEnabled: true,
@@ -82,7 +78,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
             User(
                 id: "user_junwoo",
                 nickname: "박준우",
-                profileImage: profileImageURL("turtle"),
+                profileImage: "turtle",
                 defaultTransportMode: .transit,
                 locationSharingScope: .onlyDuringAppointment,
                 isNotificationEnabled: true,
@@ -91,7 +87,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
             User(
                 id: "user_gildong",
                 nickname: "최길동",
-                profileImage: profileImageURL("shark"),
+                profileImage: "shark",
                 defaultTransportMode: .walk,
                 locationSharingScope: .onlyDuringAppointment,
                 isNotificationEnabled: true,
@@ -100,7 +96,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
             User(
                 id: "user_subin",
                 nickname: "정수빈",
-                profileImage: profileImageURL("turtle"),
+                profileImage: "turtle",
                 defaultTransportMode: .car,
                 locationSharingScope: .onlyDuringAppointment,
                 isNotificationEnabled: true,

@@ -33,7 +33,6 @@ final class FirestoreUserRepository: UserRepository {
 
                 let userData: [String: Any] = [
                     "nickname": nickname,
-                    // TODO: Firebase Storage 전환 시 실제 URL로 교체
                     "profileImage": "basic",
                     "defaultTransportMode": "TRANSIT",
                     "locationSharingScope": "ONLY_DURING_APPOINTMENT",
@@ -47,8 +46,7 @@ final class FirestoreUserRepository: UserRepository {
                 return User(
                     id: userID,
                     nickname: nickname,
-                    // TODO: Firebase Storage 전환 시 실제 URL로 교체
-                    profileImage: URL(string: "basic")!,
+                    profileImage: "basic",
                     defaultTransportMode: .transit,
                     locationSharingScope: .onlyDuringAppointment,
                     isNotificationEnabled: true,

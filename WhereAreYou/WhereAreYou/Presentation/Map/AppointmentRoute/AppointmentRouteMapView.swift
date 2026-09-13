@@ -62,7 +62,12 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         let colors = UIColor.participantColors(count: participants.count)
         for (index, participant) in participants.enumerated() {
             addPolyline(for: participant, color: colors[index])
-            addMarker(for: participant, color: colors[index])
+        }
+
+        Task {
+            for (index, participant) in participants.enumerated() {
+                await addMarker(for: participant, color: colors[index])
+            }
         }
     }
 
@@ -97,13 +102,11 @@ private extension AppointmentRouteMapView {
         participantPolylines.append(overlay)
     }
 
-    func addMarker(for participant: AppointmentRouteParticipant, color: UIColor) {
+    func addMarker(for participant: AppointmentRouteParticipant, color: UIColor) async {
         guard let position = participant.path.first else { return }
 
-        let kind = MapMarker.Kind.participant(
-            profileImage: UIImage(named: participant.profileImageURL.host ?? ""),
-            tintColor: color
-        )
+        let profileImage = await ProfileImageLoader.shared.load(identifier: participant.profileImage)
+        let kind = MapMarker.Kind.participant(profileImage: profileImage, tintColor: color)
         let markerImage = MapMarker.renderImage(kind: kind, name: participant.nickname)
 
         let marker = NMFMarker(position: NMGLatLng(lat: position.latitude, lng: position.longitude))

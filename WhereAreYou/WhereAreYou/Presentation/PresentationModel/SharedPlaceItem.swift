@@ -21,7 +21,7 @@ struct SharedPlaceItem {
         id = sharedPlace.id
         placeName = sharedPlace.place.name
         placeAddress = sharedPlace.place.address
-        voterProfileImages = sharedPlace.voters.map { $0.profileImageName }
+        voterProfileImages = sharedPlace.voters.map(\.profileImage)
         hasVoted = sharedPlace.voters.contains { $0.id == currentUserID }
         sharedAt = sharedPlace.sharedAt
     }
