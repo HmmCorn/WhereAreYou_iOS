@@ -70,7 +70,7 @@ class ChatBubbleBase: UIView {
             break
         case .locationShare(let coordinate):
             bubbleLabel.font = .boldPreferredFont(forTextStyle: .footnote)
-            actionButton = makeMapButton(title: "위치", subtitle: nil, coordinate: coordinate)
+            actionButton = makeMapButton(title: item.senderNickname, subtitle: "위치", coordinate: coordinate)
             bubbleContentStack.addArrangedSubview(actionButton!)
         case .placeShare(let placeName, let placeAddress, let coordinate, let isDuplicate):
             bubbleLabel.text = "📌 " + placeName
