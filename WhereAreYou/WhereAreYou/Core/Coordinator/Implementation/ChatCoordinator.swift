@@ -40,6 +40,17 @@ final class ChatCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
         coordinator.start()
     }
 
+    // MARK: - Location Preview
+
+    func showLocationPreview(title: String, subtitle: String?, coordinate: Coordinate) {
+        let viewController = screenFactory.makeLocationPreviewViewController(
+            title: title,
+            subtitle: subtitle,
+            coordinate: coordinate
+        )
+        present(viewController)
+    }
+
     // MARK: - Appointment Info
 
     func showAppointmentInfo(appointmentID: String) {
