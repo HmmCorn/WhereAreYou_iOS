@@ -42,11 +42,12 @@ final class ChatCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
 
     // MARK: - Location Preview
 
-    func showLocationPreview(title: String, subtitle: String?, coordinate: Coordinate) {
+    func showLocationPreview(title: String, subtitle: String?, coordinate: Coordinate, accentColor: ColorAsset) {
         let viewController = screenFactory.makeLocationPreviewViewController(
             title: title,
             subtitle: subtitle,
-            coordinate: coordinate
+            coordinate: coordinate,
+            accentColor: accentColor
         )
         present(viewController)
     }

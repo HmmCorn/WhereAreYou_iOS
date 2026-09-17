@@ -12,11 +12,13 @@ final class LocationPreviewViewController: UIViewController {
     private let previewTitle: String
     private let previewSubtitle: String?
     private let coordinate: Coordinate
+    private let accentColor: ColorAsset
 
-    init(title: String, subtitle: String?, coordinate: Coordinate) {
+    init(title: String, subtitle: String?, coordinate: Coordinate, accentColor: ColorAsset) {
         self.previewTitle = title
         self.previewSubtitle = subtitle
         self.coordinate = coordinate
+        self.accentColor = accentColor
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -70,7 +72,7 @@ final class LocationPreviewViewController: UIViewController {
         subtitleLabel.text = previewSubtitle
         subtitleLabel.isHidden = previewSubtitle == nil
         setUpLayout()
-        mapView.setMarker(coordinate: coordinate, name: previewTitle)
+        mapView.setMarker(coordinate: coordinate, name: previewTitle, accentColor: accentColor.uiColor)
     }
 
     // MARK: - Action

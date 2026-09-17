@@ -12,7 +12,7 @@ protocol ChatCoordinating: AnyObject {
 
     func showAppointmentRoute(appointmentID: String)
     func showAppointmentInfo(appointmentID: String)
-    func showLocationPreview(title: String, subtitle: String?, coordinate: Coordinate)
+    func showLocationPreview(title: String, subtitle: String?, coordinate: Coordinate, accentColor: ColorAsset)
     func showShareMyLocationConfirm(address: String, onConfirm: @escaping () -> Void)
     func showPlaceSearch(
         selectionButtonTitle: String,

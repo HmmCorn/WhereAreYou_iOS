@@ -16,5 +16,6 @@ enum ColorAsset {
     case blue
     case red
     case brown
+    case pointBlue
 
 }

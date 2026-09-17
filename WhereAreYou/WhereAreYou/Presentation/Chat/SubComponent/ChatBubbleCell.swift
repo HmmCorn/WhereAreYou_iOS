@@ -15,7 +15,7 @@ final class ChatBubbleCell: UICollectionViewCell {
     func configure(
         with item: ChatDisplayItem,
         topSpacing: CGFloat,
-        onMapTap: ((String, String?, Coordinate) -> Void)? = nil
+        onMapTap: ((String, String?, Coordinate, ColorAsset) -> Void)? = nil
     ) {
         contentView.subviews.forEach { $0.removeFromSuperview() }
 

@@ -33,17 +33,16 @@ final class LocationPreviewMapView: NMFNaverMapView {
         mapView.moveCamera(NMFCameraUpdate(position: cameraPosition))
     }
 
-    func setMarker(coordinate: Coordinate, name: String) {
+    func setMarker(coordinate: Coordinate, name: String, accentColor: UIColor) {
         marker?.mapView = nil
 
-        let kind = MapMarker.Kind.place
-        let markerImage = MapMarker.renderImage(kind: kind, name: name)
+        let markerImage = MapAccentMarker.renderImage(accentColor: accentColor, name: name)
 
         let newMarker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
         newMarker.iconImage = NMFOverlayImage(image: markerImage)
-        newMarker.width = MapMarker.size(for: kind).width
-        newMarker.height = MapMarker.size(for: kind).height
-        newMarker.anchor = MapMarker.anchor(for: kind)
+        newMarker.width = MapAccentMarker.size(for: name).width
+        newMarker.height = MapAccentMarker.size(for: name).height
+        newMarker.anchor = MapAccentMarker.anchor(for: name)
         newMarker.mapView = mapView
 
         marker = newMarker

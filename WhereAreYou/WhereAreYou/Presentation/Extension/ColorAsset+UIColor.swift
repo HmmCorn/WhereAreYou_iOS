@@ -18,6 +18,7 @@ extension ColorAsset {
         case .blue: return .systemBlue
         case .red: return .systemRed
         case .brown: return .systemBrown
+        case .pointBlue: return .pointBlue
         }
     }
 
