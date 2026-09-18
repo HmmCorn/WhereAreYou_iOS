@@ -67,9 +67,11 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         }
 
         markerLoadTask = Task { [weak self] in
+            let images = await self?.loadProfileImages(for: participants) ?? []
+            guard !Task.isCancelled, !images.isEmpty else { return }
+
             for (index, participant) in participants.enumerated() {
-                guard !Task.isCancelled else { return }
-                await self?.addMarker(for: participant, color: colors[index])
+                self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
             }
         }
     }
@@ -105,10 +107,26 @@ private extension AppointmentRouteMapView {
         participantPolylines.append(overlay)
     }
 
-    func addMarker(for participant: AppointmentRouteParticipant, color: UIColor) async {
+    func loadProfileImages(for participants: [AppointmentRouteParticipant]) async -> [UIImage] {
+        await withTaskGroup(of: (Int, UIImage).self) { group in
+            for (index, participant) in participants.enumerated() {
+                group.addTask {
+                    let image = await ProfileImageLoader.shared.load(identifier: participant.profileImage)
+                    return (index, image)
+                }
+            }
+
+            var images = [UIImage](repeating: ProfileImageLoader.failureImage, count: participants.count)
+            for await (index, image) in group {
+                images[index] = image
+            }
+            return images
+        }
+    }
+
+    func addMarker(for participant: AppointmentRouteParticipant, color: UIColor, profileImage: UIImage) {
         guard let position = participant.path.first else { return }
 
-        let profileImage = await ProfileImageLoader.shared.load(identifier: participant.profileImage)
         let kind = MapMarker.Kind.participant(profileImage: profileImage, tintColor: color)
         let markerImage = MapMarker.renderImage(kind: kind, name: participant.nickname)
 
