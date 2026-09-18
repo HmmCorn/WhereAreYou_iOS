@@ -12,18 +12,22 @@ import ObjectiveC
 extension UIImageView {
 
     func setProfileImage(_ identifier: String) {
+        profileLoadTask?.cancel()
+        indicatorDelayTask?.cancel()
         currentProfileIdentifier = identifier
         image = nil
         hideLoadingIndicator()
 
-        let showTask = Task { [weak self] in
+        indicatorDelayTask = Task { [weak self] in
             try await Task.sleep(for: .milliseconds(150))
             self?.showLoadingIndicator()
         }
 
-        Task { [weak self] in
+        let showTask = indicatorDelayTask
+        profileLoadTask = Task { [weak self] in
             let loaded = await ProfileImageLoader.shared.load(identifier: identifier)
-            showTask.cancel()
+            showTask?.cancel()
+            guard !Task.isCancelled else { return }
             guard self?.currentProfileIdentifier == identifier else { return }
             self?.hideLoadingIndicator()
             self?.image = loaded
@@ -33,12 +37,24 @@ extension UIImageView {
 }
 
 private var profileIdentifierKey: UInt8 = 0
+private var profileLoadTaskKey: UInt8 = 0
+private var indicatorDelayTaskKey: UInt8 = 0
 
 private extension UIImageView {
 
     var currentProfileIdentifier: String? {
         get { objc_getAssociatedObject(self, &profileIdentifierKey) as? String }
         set { objc_setAssociatedObject(self, &profileIdentifierKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+    }
+
+    var profileLoadTask: Task<Void, Never>? {
+        get { objc_getAssociatedObject(self, &profileLoadTaskKey) as? Task<Void, Never> }
+        set { objc_setAssociatedObject(self, &profileLoadTaskKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+    }
+
+    var indicatorDelayTask: Task<Void, Error>? {
+        get { objc_getAssociatedObject(self, &indicatorDelayTaskKey) as? Task<Void, Error> }
+        set { objc_setAssociatedObject(self, &indicatorDelayTaskKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
     }
 
 }

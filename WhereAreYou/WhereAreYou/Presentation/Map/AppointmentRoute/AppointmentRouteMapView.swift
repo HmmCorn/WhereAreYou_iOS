@@ -13,6 +13,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var placeMarker: NMFMarker?
     private var participantMarkers: [NMFMarker] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
+    private var markerLoadTask: Task<Void, Never>?
     private var hasMovedToInitialPosition = false
 
     override init(frame: CGRect) {
@@ -57,6 +58,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     }
 
     func setParticipants(_ participants: [AppointmentRouteParticipant]) {
+        markerLoadTask?.cancel()
         clearParticipantOverlays()
 
         let colors = UIColor.participantColors(count: participants.count)
@@ -64,9 +66,10 @@ final class AppointmentRouteMapView: NMFNaverMapView {
             addPolyline(for: participant, color: colors[index])
         }
 
-        Task {
+        markerLoadTask = Task { [weak self] in
             for (index, participant) in participants.enumerated() {
-                await addMarker(for: participant, color: colors[index])
+                guard !Task.isCancelled else { return }
+                await self?.addMarker(for: participant, color: colors[index])
             }
         }
     }
