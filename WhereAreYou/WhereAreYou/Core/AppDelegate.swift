@@ -70,6 +70,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - APNs 토큰
 
+    /// APNs 서버에 디바이스 등록이 성공했을 때 시스템이 호출
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
         if let token = latestFCMToken {
@@ -95,6 +96,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 extension AppDelegate: UNUserNotificationCenterDelegate {
 
+    /// 앱이 포그라운드일 때 알림이 도착하면 호출 — 표시 방식을 결정
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -109,6 +111,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
 extension AppDelegate: MessagingDelegate {
 
+    /// FCM 토큰이 새로 발급되거나 갱신될 때 호출
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         guard let token = fcmToken else { return }
         latestFCMToken = token
