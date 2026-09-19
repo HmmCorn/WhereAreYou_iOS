@@ -13,11 +13,13 @@ final class AppCoordinator: Coordinator {
 
     private let window: UIWindow
     private let screenFactory: ScreenFactory
+    private let fcmTokenService: FCMTokenService
     private var tabBarCoordinator: TabBarCoordinator?
 
     init(window: UIWindow, screenFactory: ScreenFactory = .shared) {
         self.window = window
         self.screenFactory = screenFactory
+        self.fcmTokenService = screenFactory.container.resolve()
     }
 
     func start() {
@@ -80,7 +82,7 @@ final class AppCoordinator: Coordinator {
         }
         coordinator.start()
         window.rootViewController = coordinator.tabBarController
-        requestNotificationPermission()
+        registerNotificationIfAuthorized()
     }
 
     // MARK: - 화면 전환
@@ -96,7 +98,7 @@ final class AppCoordinator: Coordinator {
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
             self.window.rootViewController = coordinator.tabBarController
         }
-        requestNotificationPermission()
+        registerNotificationIfAuthorized()
     }
 
     private func switchToLogin() {
@@ -111,17 +113,14 @@ final class AppCoordinator: Coordinator {
     // MARK: - 알림 권한
 
     func registerNotificationIfAuthorized() {
-        let authRepository: AuthRepository = screenFactory.container.resolve()
-        guard let userID = authRepository.currentUserID else { return }
-
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional:
                 self?.requestNotificationPermission()
             case .denied:
-                self?.deleteFCMToken(forUserID: userID)
+                self?.deleteFCMToken()
             default:
-                break
+                self?.requestNotificationPermission()
             }
         }
     }
@@ -135,10 +134,9 @@ final class AppCoordinator: Coordinator {
         }
     }
 
-    private func deleteFCMToken(forUserID userID: String) {
-        let fcmTokenRepository: FCMTokenRepository = screenFactory.container.resolve()
+    private func deleteFCMToken() {
         Task {
-            try? await fcmTokenRepository.delete(forUserID: userID)
+            try? await fcmTokenService.deleteForCurrentUser()
         }
     }
 

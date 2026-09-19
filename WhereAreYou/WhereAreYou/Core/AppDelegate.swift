@@ -81,12 +81,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - FCM 토큰 저장
 
     private func saveFCMToken(_ token: String) {
-        let authRepository: AuthRepository = DIContainer.shared.resolve()
-        guard let userID = authRepository.currentUserID else { return }
-
-        let fcmTokenRepository: FCMTokenRepository = DIContainer.shared.resolve()
+        let fcmTokenService: FCMTokenService = DIContainer.shared.resolve()
         Task {
-            try? await fcmTokenRepository.save(token: token, forUserID: userID)
+            try? await fcmTokenService.save(token: token)
         }
     }
 
