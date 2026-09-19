@@ -12,9 +12,13 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseDatabase
 import FirebaseStorage
+import FirebaseMessaging
+import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    private var latestFCMToken: String?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if let clientId = Bundle.main.object(forInfoDictionaryKey: "NMFClientId") as? String {
@@ -23,6 +27,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         configureFirebaseEmulators()
         DIContainer.shared.registerDependencies()
+
+        UNUserNotificationCenter.current().delegate = self
+        Messaging.messaging().delegate = self
+
         return true
     }
 
@@ -50,5 +58,51 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) { }
 
+    // MARK: - APNs 토큰
+
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
+        if let token = latestFCMToken {
+            saveFCMToken(token)
+        }
+    }
+
+    // MARK: - FCM 토큰 저장
+
+    private func saveFCMToken(_ token: String) {
+        let authRepository: AuthRepository = DIContainer.shared.resolve()
+        guard let userID = authRepository.currentUserID else { return }
+
+        let fcmTokenRepository: FCMTokenRepository = DIContainer.shared.resolve()
+        Task {
+            try? await fcmTokenRepository.save(token: token, forUserID: userID)
+        }
+    }
+
 }
 
+// MARK: - UNUserNotificationCenterDelegate
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound])
+    }
+
+}
+
+// MARK: - MessagingDelegate
+
+extension AppDelegate: MessagingDelegate {
+
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        guard let token = fcmToken else { return }
+        latestFCMToken = token
+        saveFCMToken(token)
+    }
+
+}

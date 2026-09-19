@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import UserNotifications
 
 /// 로그인 화면 표시, 로그인 성공 시 탭바로 전환 등 앱 최상위 화면전환을 담당
 final class AppCoordinator: Coordinator {
@@ -79,6 +80,7 @@ final class AppCoordinator: Coordinator {
         }
         coordinator.start()
         window.rootViewController = coordinator.tabBarController
+        requestNotificationPermission()
     }
 
     // MARK: - 화면 전환
@@ -94,6 +96,7 @@ final class AppCoordinator: Coordinator {
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
             self.window.rootViewController = coordinator.tabBarController
         }
+        requestNotificationPermission()
     }
 
     private func switchToLogin() {
@@ -102,6 +105,40 @@ final class AppCoordinator: Coordinator {
 
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
             self.window.rootViewController = loginViewController
+        }
+    }
+
+    // MARK: - 알림 권한
+
+    func registerNotificationIfAuthorized() {
+        let authRepository: AuthRepository = screenFactory.container.resolve()
+        guard let userID = authRepository.currentUserID else { return }
+
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                self?.requestNotificationPermission()
+            case .denied:
+                self?.deleteFCMToken(forUserID: userID)
+            default:
+                break
+            }
+        }
+    }
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            guard granted else { return }
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+    }
+
+    private func deleteFCMToken(forUserID userID: String) {
+        let fcmTokenRepository: FCMTokenRepository = screenFactory.container.resolve()
+        Task {
+            try? await fcmTokenRepository.delete(forUserID: userID)
         }
     }
 
