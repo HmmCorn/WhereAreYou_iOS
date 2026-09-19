@@ -13,7 +13,8 @@ extension ScreenFactory {
                 repository: container.resolve(LocationPermissionRepository.self)
             ),
             signOutUseCase: SignOutUseCase(
-                authRepository: container.resolve(AuthRepository.self)
+                authRepository: container.resolve(AuthRepository.self),
+                fcmTokenRepository: container.resolve(FCMTokenRepository.self)
             )
         )
         return MyPageViewController(viewModel: viewModel)
