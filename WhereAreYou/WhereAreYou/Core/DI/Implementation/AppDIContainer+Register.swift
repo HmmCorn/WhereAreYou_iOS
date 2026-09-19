@@ -22,6 +22,9 @@ extension DIContainer {
             }
         ))
 
+        // 푸시 알림
+        register(FCMTokenRepository.self, instance: FirestoreFCMTokenRepository())
+
         // 프로필 이미지
         register(ProfileImageRepository.self, instance: StorageProfileImageRepository())
 
