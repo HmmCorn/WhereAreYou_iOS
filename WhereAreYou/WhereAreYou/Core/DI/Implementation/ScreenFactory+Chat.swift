@@ -48,4 +48,8 @@ extension ScreenFactory {
         }
     }
 
+    func makeLocationPreviewViewController(title: String, subtitle: String?, coordinate: Coordinate, accentColor: ColorAsset) -> LocationPreviewViewController {
+        LocationPreviewViewController(title: title, subtitle: subtitle, coordinate: coordinate, accentColor: accentColor)
+    }
+
 }

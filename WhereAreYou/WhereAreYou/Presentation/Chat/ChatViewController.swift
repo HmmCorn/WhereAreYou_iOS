@@ -53,8 +53,8 @@ final class ChatViewController: UIViewController {
                 for: indexPath
             ) as! ChatBubbleCell
             let spacing = self?.topSpacing(at: indexPath.item) ?? 0
-            cell.configure(with: item, topSpacing: spacing) { [weak self] _ in
-                self?.presentAppointmentRoute()
+            cell.configure(with: item, topSpacing: spacing) { [weak self] title, subtitle, coordinate, accentColor in
+                self?.coordinator?.showLocationPreview(title: title, subtitle: subtitle, coordinate: coordinate, accentColor: accentColor)
             }
             return cell
         }

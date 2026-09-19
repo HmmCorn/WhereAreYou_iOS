@@ -43,8 +43,8 @@ class ChatBubbleBase: UIView {
     private(set) var addressLabel: UILabel?
     private(set) var duplicateLabel: UILabel?
 
-    /// "위치 보기" 버튼 탭 시 호출
-    var onMapTap: ((Coordinate) -> Void)?
+    /// "위치 보기" 버튼 탭 시 호출 — (제목, 부제목, 좌표, 마커 강조색)
+    var onMapTap: ((String, String?, Coordinate, ColorAsset) -> Void)?
 
     init(item: ChatBubbleItem) {
         super.init(frame: .zero)
@@ -70,7 +70,7 @@ class ChatBubbleBase: UIView {
             break
         case .locationShare(let coordinate):
             bubbleLabel.font = .boldPreferredFont(forTextStyle: .footnote)
-            actionButton = makeMapButton(coordinate: coordinate)
+            actionButton = makeMapButton(title: item.senderNickname, subtitle: "위치", coordinate: coordinate, accentColor: .green)
             bubbleContentStack.addArrangedSubview(actionButton!)
         case .placeShare(let placeName, let placeAddress, let coordinate, let isDuplicate):
             bubbleLabel.text = "📌 " + placeName
@@ -87,7 +87,7 @@ class ChatBubbleBase: UIView {
                 duplicateLabel?.textColor = .secondaryLabel
                 bubbleContentStack.addArrangedSubview(duplicateLabel!)
             }
-            actionButton = makeMapButton(coordinate: coordinate)
+            actionButton = makeMapButton(title: placeName, subtitle: placeAddress, coordinate: coordinate, accentColor: .pointBlue)
             bubbleContentStack.addArrangedSubview(actionButton!)
         }
 
@@ -99,7 +99,7 @@ class ChatBubbleBase: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func makeMapButton(coordinate: Coordinate) -> UIButton {
+    private func makeMapButton(title: String, subtitle: String?, coordinate: Coordinate, accentColor: ColorAsset) -> UIButton {
         var config = UIButton.Configuration.plain()
         var attributedTitle = AttributedString("위치 보기")
         attributedTitle.font = .preferredFont(forTextStyle: .caption1)
@@ -112,7 +112,7 @@ class ChatBubbleBase: UIView {
         button.backgroundColor = .white.withAlphaComponent(0.2)
         button.layer.cornerRadius = 12
         button.addAction(UIAction { [weak self] _ in
-            self?.onMapTap?(coordinate)
+            self?.onMapTap?(title, subtitle, coordinate, accentColor)
         }, for: .touchUpInside)
         return button
     }

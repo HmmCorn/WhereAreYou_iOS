@@ -11,6 +11,7 @@ protocol ChatScreenFactory: SearchPlaceScreenFactory {
     func makeAppointmentRouteViewController(appointmentID: String) -> AppointmentRouteViewController
     func makePlaceSelectionViewController(initialCoordinate: Coordinate?) -> PlaceSelectionViewController
     func makeSharedPlacesViewController(appointmentID: String, currentUserID: String) -> SharedPlacesViewController
+    func makeLocationPreviewViewController(title: String, subtitle: String?, coordinate: Coordinate, accentColor: ColorAsset) -> LocationPreviewViewController
 
 }
 
