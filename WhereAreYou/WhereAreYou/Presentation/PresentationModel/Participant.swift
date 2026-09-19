@@ -14,7 +14,7 @@ struct Participant {
     init(user: User) {
         id = user.id
         nickname = user.nickname
-        profileImage = user.profileImageName
+        self.profileImage = user.profileImage
     }
 
     init(id: String, nickname: String, profileImage: String) {

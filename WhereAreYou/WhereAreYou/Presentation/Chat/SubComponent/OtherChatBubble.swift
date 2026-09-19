@@ -83,7 +83,8 @@ final class OtherChatBubble: ChatBubbleBase {
     }
 
     private func makeAvatarView(imageName: String) -> UIImageView {
-        let imageView = UIImageView(image: UIImage(named: imageName))
+        let imageView = UIImageView()
+        imageView.setProfileImage(imageName)
         imageView.contentMode = .scaleAspectFit
         imageView.layer.cornerRadius = Self.avatarSize / 2
         imageView.clipsToBounds = true

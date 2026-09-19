@@ -73,7 +73,8 @@ final class SharedPlaceRow: UIView {
 
     private func setUpVoterImages(_ images: [String]) {
         for imageName in images {
-            let imageView = UIImageView(image: UIImage(named: imageName))
+            let imageView = UIImageView()
+            imageView.setProfileImage(imageName)
             imageView.contentMode = .scaleAspectFit
             imageView.layer.cornerRadius = Self.profileSize / 2
             imageView.clipsToBounds = true

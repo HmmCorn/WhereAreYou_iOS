@@ -11,7 +11,7 @@ struct AppointmentRouteParticipant {
 
     let id: String
     let nickname: String
-    let profileImageURL: URL
+    let profileImage: String
     let isMe: Bool
     let path: [Coordinate]
     let transportName: String
@@ -28,7 +28,7 @@ struct AppointmentRouteParticipant {
         let transport = route.step.last?.transportType ?? user.defaultTransportMode
         id = user.id
         nickname = user.nickname
-        profileImageURL = user.profileImage
+        profileImage = user.profileImage
         isMe = user.id == currentUserID
         path = route.step.flatMap(\.path)
         transportName = transport.name

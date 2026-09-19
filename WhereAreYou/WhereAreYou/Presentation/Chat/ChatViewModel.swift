@@ -162,7 +162,7 @@ private extension ChatViewModel {
                 id: message.id,
                 senderID: message.sender.id,
                 senderNickname: message.sender.nickname,
-                senderProfileImage: message.sender.profileImageName,
+                senderProfileImage: message.sender.profileImage,
                 content: bubbleContent,
                 timeText: timeText,
                 sentAt: message.sentAt,

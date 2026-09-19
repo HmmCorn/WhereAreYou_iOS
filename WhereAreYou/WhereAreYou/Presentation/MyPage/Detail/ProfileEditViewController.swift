@@ -14,16 +14,7 @@ final class ProfileEditViewController: UIViewController {
     private static let profileImageCellSize: CGFloat = 90
     private static let previewImageSize: CGFloat = 96
 
-    private static let availableProfileImageNames: [String] = {
-        let assetImageNames = ["shark", "turtle"]
-        let symbolImageNames = [
-            "pawprint.fill", "tortoise.fill", "hare.fill", "bird.fill", "fish.fill",
-            "ladybug.fill", "ant.fill", "lizard.fill", "cat.fill", "dog.fill",
-            "bee.fill", "butterfly.fill", "leaf.fill", "pawprint", "tortoise",
-            "hare", "bird", "fish", "ladybug", "ant"
-        ]
-        return assetImageNames + symbolImageNames
-    }()
+    private var availableImageNames: [String] = []
 
     private var selectedImageName: String {
         didSet { updatePreviewImage() }
@@ -43,7 +34,6 @@ final class ProfileEditViewController: UIViewController {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.backgroundColor = .pointBackground
-        imageView.tintColor = .blue2
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -61,6 +51,8 @@ final class ProfileEditViewController: UIViewController {
         field.layer.shadowOffset = CGSize(width: 0, height: 2)
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
         field.leftViewMode = .always
+        field.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        field.rightViewMode = .always
         field.returnKeyType = .done
         field.enablesReturnKeyAutomatically = true
         return field
@@ -106,8 +98,8 @@ final class ProfileEditViewController: UIViewController {
         setUpLayout()
         setUpDismissKeyboardGesture()
         setUpActions()
-        applySnapshot()
         updatePreviewImage()
+        loadAvailableImages()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -184,13 +176,23 @@ final class ProfileEditViewController: UIViewController {
         }
     }
 
+    // MARK: - Data
+
+    private func loadAvailableImages() {
+        Task { [weak self] in
+            let names = (try? await ProfileImageLoader.shared.fetchAvailableImageNames()) ?? []
+            self?.availableImageNames = names
+            self?.applySnapshot()
+        }
+    }
+
     private func applySnapshot() {
         var snapshot = NSDiffableDataSourceSnapshot<Int, String>()
         snapshot.appendSections([0])
-        snapshot.appendItems(Self.availableProfileImageNames, toSection: 0)
+        snapshot.appendItems(availableImageNames, toSection: 0)
         dataSource.apply(snapshot, animatingDifferences: false)
 
-        if let selectedIndex = Self.availableProfileImageNames.firstIndex(of: selectedImageName) {
+        if let selectedIndex = availableImageNames.firstIndex(of: selectedImageName) {
             collectionView.selectItem(
                 at: IndexPath(item: selectedIndex, section: 0),
                 animated: false,
@@ -200,7 +202,7 @@ final class ProfileEditViewController: UIViewController {
     }
 
     private func updatePreviewImage() {
-        previewImageView.image = UIImage(named: selectedImageName) ?? UIImage(systemName: selectedImageName)
+        previewImageView.setProfileImage(selectedImageName)
         previewImageView.layer.cornerRadius = Self.previewImageSize / 2
     }
 
@@ -233,7 +235,7 @@ final class ProfileEditViewController: UIViewController {
 extension ProfileEditViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        selectedImageName = Self.availableProfileImageNames[indexPath.item]
+        selectedImageName = availableImageNames[indexPath.item]
     }
 
 }

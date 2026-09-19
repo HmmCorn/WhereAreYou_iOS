@@ -84,6 +84,10 @@ final class MyPageRow: UIControl {
         iconView.image = newIcon
     }
 
+    func setProfileIcon(_ identifier: String) {
+        iconView.setProfileImage(identifier)
+    }
+
     private func setUp(accessoryView: UIView?, accessoryHasOwnInteraction: Bool) {
         let iconSize: CGFloat = 22
         iconView.widthAnchor.constraint(equalToConstant: iconSize).isActive = true

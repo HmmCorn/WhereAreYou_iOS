@@ -13,6 +13,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var placeMarker: NMFMarker?
     private var participantMarkers: [NMFMarker] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
+    private var markerLoadTask: Task<Void, Never>?
     private var hasMovedToInitialPosition = false
 
     override init(frame: CGRect) {
@@ -57,12 +58,21 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     }
 
     func setParticipants(_ participants: [AppointmentRouteParticipant]) {
+        markerLoadTask?.cancel()
         clearParticipantOverlays()
 
         let colors = UIColor.participantColors(count: participants.count)
         for (index, participant) in participants.enumerated() {
             addPolyline(for: participant, color: colors[index])
-            addMarker(for: participant, color: colors[index])
+        }
+
+        markerLoadTask = Task { [weak self] in
+            let images = await self?.loadProfileImages(for: participants) ?? []
+            guard !Task.isCancelled, !images.isEmpty else { return }
+
+            for (index, participant) in participants.enumerated() {
+                self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
+            }
         }
     }
 
@@ -97,13 +107,27 @@ private extension AppointmentRouteMapView {
         participantPolylines.append(overlay)
     }
 
-    func addMarker(for participant: AppointmentRouteParticipant, color: UIColor) {
+    func loadProfileImages(for participants: [AppointmentRouteParticipant]) async -> [UIImage] {
+        await withTaskGroup(of: (Int, UIImage).self) { group in
+            for (index, participant) in participants.enumerated() {
+                group.addTask {
+                    let image = await ProfileImageLoader.shared.load(identifier: participant.profileImage)
+                    return (index, image)
+                }
+            }
+
+            var images = [UIImage](repeating: ProfileImageLoader.failureImage, count: participants.count)
+            for await (index, image) in group {
+                images[index] = image
+            }
+            return images
+        }
+    }
+
+    func addMarker(for participant: AppointmentRouteParticipant, color: UIColor, profileImage: UIImage) {
         guard let position = participant.path.first else { return }
 
-        let kind = MapMarker.Kind.participant(
-            profileImage: UIImage(named: participant.profileImageURL.host ?? ""),
-            tintColor: color
-        )
+        let kind = MapMarker.Kind.participant(profileImage: profileImage, tintColor: color)
         let markerImage = MapMarker.renderImage(kind: kind, name: participant.nickname)
 
         let marker = NMFMarker(position: NMGLatLng(lat: position.latitude, lng: position.longitude))

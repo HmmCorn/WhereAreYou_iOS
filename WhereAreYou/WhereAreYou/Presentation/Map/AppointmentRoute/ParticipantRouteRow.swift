@@ -32,7 +32,8 @@ final class ParticipantRouteRow: UIView {
         avatarContainer.heightAnchor.constraint(equalToConstant: Self.avatarDiameter).isActive = true
 
         let avatarInset = Self.avatarDiameter * 0.15
-        let avatar = UIImageView(image: UIImage(named: participant.profileImageURL.host ?? ""))
+        let avatar = UIImageView()
+        avatar.setProfileImage(participant.profileImage)
         avatar.contentMode = .scaleAspectFit
         avatar.translatesAutoresizingMaskIntoConstraints = false
         avatarContainer.addSubview(avatar)
