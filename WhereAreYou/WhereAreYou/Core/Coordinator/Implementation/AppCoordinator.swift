@@ -13,18 +13,19 @@ final class AppCoordinator: Coordinator {
 
     private let window: UIWindow
     private let screenFactory: ScreenFactory
+    private let sessionValidationService: SessionValidationService
     private let fcmTokenService: FCMTokenService
     private var tabBarCoordinator: TabBarCoordinator?
 
     init(window: UIWindow, screenFactory: ScreenFactory = .shared) {
         self.window = window
         self.screenFactory = screenFactory
+        self.sessionValidationService = screenFactory.container.resolve()
         self.fcmTokenService = screenFactory.container.resolve()
     }
 
     func start() {
-        let authRepository: AuthRepository = screenFactory.container.resolve()
-        if authRepository.currentUserID != nil {
+        if sessionValidationService.currentUserID != nil {
             showHome()
             validateUser()
         } else {
@@ -36,18 +37,14 @@ final class AppCoordinator: Coordinator {
     // MARK: - 자동 로그인 검증
 
     private func validateUser() {
-        let authRepository: AuthRepository = screenFactory.container.resolve()
-        let userRepository: UserRepository = screenFactory.container.resolve()
-        guard let userID = authRepository.currentUserID else {
-            switchToLogin()
-            return
-        }
         Task { @MainActor in
-            do {
-                _ = try await userRepository.fetchUser(userID: userID)
-            } catch AppError.network {
+            let result = await sessionValidationService.validate()
+            switch result {
+            case .valid:
+                break
+            case .networkError:
                 self.showNetworkErrorAlert()
-            } catch {
+            case .invalid:
                 self.switchToLogin()
             }
         }

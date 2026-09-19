@@ -29,6 +29,12 @@ extension DIContainer {
             fcmTokenRepository: resolve(FCMTokenRepository.self)
         ))
 
+        // 세션 검증
+        register(SessionValidationService.self, instance: SessionValidationService(
+            authRepository: resolve(AuthRepository.self),
+            userRepository: resolve(UserRepository.self)
+        ))
+
         // 프로필 이미지
         register(ProfileImageRepository.self, instance: StorageProfileImageRepository())
 
