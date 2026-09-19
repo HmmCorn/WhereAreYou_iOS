@@ -12,6 +12,7 @@
 		8C332F22303DEABA008375EC /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8C332F21303DEABA008375EC /* FirebaseDatabase */; };
 		8C332F24303DEAC3008375EC /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8C332F23303DEAC3008375EC /* FirebaseAuth */; };
 		8C332F26303DED5E008375EC /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8C332F25303DED5E008375EC /* FirebaseStorage */; };
+		8CA7E506305E84B000A37397 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA7E505305E84B000A37397 /* FirebaseMessaging */; };
 		BCAC3F343017B45700EC9102 /* NMapsMap in Frameworks */ = {isa = PBXBuildFile; productRef = BCAC3F333017B45700EC9102 /* NMapsMap */; };
 /* End PBXBuildFile section */
 
@@ -47,6 +48,7 @@
 			files = (
 				8C332F1D303DDB39008375EC /* FirebaseAnalytics in Frameworks */,
 				8C332F24303DEAC3008375EC /* FirebaseAuth in Frameworks */,
+				8CA7E506305E84B000A37397 /* FirebaseMessaging in Frameworks */,
 				BCAC3F343017B45700EC9102 /* NMapsMap in Frameworks */,
 				8C332F22303DEABA008375EC /* FirebaseDatabase in Frameworks */,
 				8C332F20303DEAB1008375EC /* FirebaseFirestore in Frameworks */,
@@ -107,6 +109,7 @@
 				8C332F21303DEABA008375EC /* FirebaseDatabase */,
 				8C332F23303DEAC3008375EC /* FirebaseAuth */,
 				8C332F25303DED5E008375EC /* FirebaseStorage */,
+				8CA7E505305E84B000A37397 /* FirebaseMessaging */,
 			);
 			productName = WhereAreYou;
 			productReference = 8C44C1DC2FFCF585006DA2FC /* WhereAreYou.app */;
@@ -223,7 +226,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = WhereAreYou/WhereAreYou.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WhereAreYou/WhereAreYouRelease.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -453,6 +456,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8C332F1B303DDB39008375EC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		8CA7E505305E84B000A37397 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8C332F1B303DDB39008375EC /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 		BCAC3F333017B45700EC9102 /* NMapsMap */ = {
 			isa = XCSwiftPackageProductDependency;
