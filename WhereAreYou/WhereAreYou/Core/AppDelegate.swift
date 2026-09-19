@@ -25,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             NMFAuthManager.shared().ncpKeyId = clientId
         }
         FirebaseApp.configure()
+        clearKeychainOnReinstall()
         configureFirebaseEmulators()
         DIContainer.shared.registerDependencies()
 
@@ -32,6 +33,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Messaging.messaging().delegate = self
 
         return true
+    }
+
+    /// 앱 재설치 시 Keychain에 남은 Firebase Auth 인증 정보를 제거
+    private func clearKeychainOnReinstall() {
+        let hasLaunchedKey = "hasLaunchedBefore"
+        if !UserDefaults.standard.bool(forKey: hasLaunchedKey) {
+            try? Auth.auth().signOut()
+            UserDefaults.standard.set(true, forKey: hasLaunchedKey)
+        }
     }
 
     private static var emulatorHost: String {
