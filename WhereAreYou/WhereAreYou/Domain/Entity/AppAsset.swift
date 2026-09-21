@@ -8,7 +8,7 @@
 import Foundation
 
 /// Firebase Storage에서 받아오는 앱 정적 이미지 에셋
-enum AppAsset: CaseIterable {
+enum AppAsset: CaseIterable, Hashable {
 
     case pin
     case logo
