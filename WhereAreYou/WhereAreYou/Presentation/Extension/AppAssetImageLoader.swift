@@ -20,21 +20,21 @@ final class AppAssetImageLoader {
 
     /// 실패 시 nil 반환 — 정적 UI 요소이므로 별도 실패 이미지 없이 빈 상태 유지
     ///
-    /// UIImage 변환 실패(캐시된 데이터 손상 등) 시 캐시 무효화 후 1회 재시도
+    /// UIImage 변환에 성공한 데이터만 캐시에 커밋
     func load(_ asset: AppAsset) async -> UIImage? {
-        guard let data = try? await repository.downloadImageData(asset) else {
+        guard let result = try? await repository.loadImageData(asset) else {
             return nil
         }
 
-        if let image = UIImage(data: data) {
-            return image
-        }
-
-        repository.invalidateCache(asset)
-        guard let retriedData = try? await repository.downloadImageData(asset) else {
+        guard let image = UIImage(data: result.data) else {
+            if result.isAlreadyCached {
+                repository.invalidateCache(asset)
+            }
             return nil
         }
-        return UIImage(data: retriedData)
+
+        repository.commitCache(asset, data: result)
+        return image
     }
 
 }

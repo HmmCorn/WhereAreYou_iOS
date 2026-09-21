@@ -23,27 +23,36 @@ final class StorageAppAssetRepository: AppAssetRepository {
     private let fileManager = FileManager.default
     /// 다운로드한 이미지 데이터의 메모리 캐시
     private let memoryCache = NSCache<NSString, NSData>()
-    /// downloadTasks 동시 접근 보호용 lock
-    private let downloadTasksLock = NSLock()
-    /// asset별 진행 중인 다운로드 Task
-    private var downloadTasks: [AppAsset: Task<Data, Error>] = [:]
+    /// loadTasks 동시 접근 보호용 lock
+    private let loadTasksLock = NSLock()
+    /// asset별 진행 중인 로드 Task
+    private var loadTasks: [AppAsset: Task<AppAssetData, Error>] = [:]
 
-    func downloadImageData(_ asset: AppAsset) async throws -> Data {
+    func loadImageData(_ asset: AppAsset) async throws -> AppAssetData {
         let key = asset.cacheFileName as NSString
         if let cached = memoryCache.object(forKey: key) {
-            return cached as Data
+            return AppAssetData(data: cached as Data, remoteHash: nil, isAlreadyCached: true)
         }
 
-        let task = existingOrNewDownloadTask(for: asset)
+        let task = existingOrNewLoadTask(for: asset)
 
         do {
-            let data = try await task.value
-            memoryCache.setObject(data as NSData, forKey: key)
-            removeDownloadTask(for: asset)
-            return data
+            let result = try await task.value
+            removeLoadTask(for: asset)
+            return result
         } catch {
-            removeDownloadTask(for: asset)
+            removeLoadTask(for: asset)
             throw error
+        }
+    }
+
+    func commitCache(_ asset: AppAsset, data: AppAssetData) {
+        guard !data.isAlreadyCached else { return }
+
+        memoryCache.setObject(data.data as NSData, forKey: asset.cacheFileName as NSString)
+        try? data.data.write(to: cacheFileURL(for: asset), options: .atomic)
+        if let remoteHash = data.remoteHash {
+            userDefaults.set(remoteHash, forKey: asset.cachedHashKey)
         }
     }
 
@@ -55,46 +64,41 @@ final class StorageAppAssetRepository: AppAssetRepository {
 
     // MARK: - Private
 
-    private func existingOrNewDownloadTask(for asset: AppAsset) -> Task<Data, Error> {
-        downloadTasksLock.lock()
-        defer { downloadTasksLock.unlock() }
+    private func existingOrNewLoadTask(for asset: AppAsset) -> Task<AppAssetData, Error> {
+        loadTasksLock.lock()
+        defer { loadTasksLock.unlock() }
 
-        if let existing = downloadTasks[asset] {
+        if let existing = loadTasks[asset] {
             return existing
         }
 
-        let task = Task<Data, Error> { [weak self] in
+        let task = Task<AppAssetData, Error> { [weak self] in
             guard let self else { throw CancellationError() }
             return try await self.fetchData(for: asset)
         }
-        downloadTasks[asset] = task
+        loadTasks[asset] = task
         return task
     }
 
-    private func removeDownloadTask(for asset: AppAsset) {
-        downloadTasksLock.lock()
-        downloadTasks[asset] = nil
-        downloadTasksLock.unlock()
+    private func removeLoadTask(for asset: AppAsset) {
+        loadTasksLock.lock()
+        loadTasks[asset] = nil
+        loadTasksLock.unlock()
     }
 
-    private func fetchData(for asset: AppAsset) async throws -> Data {
+    /// 디스크 캐시(해시 일치) 또는 원격에서 데이터 조회
+    private func fetchData(for asset: AppAsset) async throws -> AppAssetData {
         let ref = storage.reference().child(asset.storagePath)
         let remoteHash = try? await ref.getMetadata().md5Hash
 
         if let remoteHash,
            remoteHash == userDefaults.string(forKey: asset.cachedHashKey),
            let cachedData = try? Data(contentsOf: cacheFileURL(for: asset)) {
-            return cachedData
+            return AppAssetData(data: cachedData, remoteHash: remoteHash, isAlreadyCached: true)
         }
 
         let data = try await ref.data(maxSize: maxImageSize)
-
-        try? data.write(to: cacheFileURL(for: asset), options: .atomic)
-        if let remoteHash {
-            userDefaults.set(remoteHash, forKey: asset.cachedHashKey)
-        }
-
-        return data
+        return AppAssetData(data: data, remoteHash: remoteHash, isAlreadyCached: false)
     }
 
     private func cacheFileURL(for asset: AppAsset) -> URL {
