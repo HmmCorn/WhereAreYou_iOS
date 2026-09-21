@@ -132,7 +132,7 @@ private final class RouteSummaryCardView: UIView {
     }()
 
     private let placeIconImageView: UIImageView = {
-        let imageView = UIImageView(image: .pin)
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.widthAnchor.constraint(equalToConstant: 18).isActive = true
@@ -299,6 +299,8 @@ private final class RouteSummaryCardView: UIView {
     // MARK: - Layout
 
     private func setUpLayout() {
+        placeIconImageView.setAppAsset(.pin)
+
         let placeTitleStack = UIStackView(arrangedSubviews: [placeIconImageView, placeNameLabel])
         placeTitleStack.axis = .horizontal
         placeTitleStack.spacing = 6

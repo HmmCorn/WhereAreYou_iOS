@@ -11,6 +11,7 @@ import NMapsMap
 final class LocationPreviewMapView: NMFNaverMapView {
 
     private var marker: NMFMarker?
+    private var markerLoadTask: Task<Void, Never>?
     private var hasMovedToInitialPosition = false
 
     override init(frame: CGRect) {
@@ -34,18 +35,14 @@ final class LocationPreviewMapView: NMFNaverMapView {
     }
 
     func setMarker(coordinate: Coordinate, name: String, accentColor: UIColor) {
+        markerLoadTask?.cancel()
         marker?.mapView = nil
 
-        let markerImage = MapAccentMarker.renderImage(accentColor: accentColor, name: name)
-
-        let newMarker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
-        newMarker.iconImage = NMFOverlayImage(image: markerImage)
-        newMarker.width = MapAccentMarker.size(for: name).width
-        newMarker.height = MapAccentMarker.size(for: name).height
-        newMarker.anchor = MapAccentMarker.anchor(for: name)
-        newMarker.mapView = mapView
-
-        marker = newMarker
+        markerLoadTask = Task { [weak self] in
+            let pinImage = await AppAssetImageLoader.shared.load(.pin)
+            guard !Task.isCancelled else { return }
+            self?.addMarker(coordinate: coordinate, name: name, accentColor: accentColor, pinImage: pinImage)
+        }
 
         if !hasMovedToInitialPosition {
             hasMovedToInitialPosition = true
@@ -63,6 +60,19 @@ private extension LocationPreviewMapView {
         showLocationButton = true
         showScaleBar = false
         showZoomControls = true
+    }
+
+    func addMarker(coordinate: Coordinate, name: String, accentColor: UIColor, pinImage: UIImage?) {
+        let markerImage = MapAccentMarker.renderImage(accentColor: accentColor, name: name, pinImage: pinImage)
+
+        let newMarker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
+        newMarker.iconImage = NMFOverlayImage(image: markerImage)
+        newMarker.width = MapAccentMarker.size(for: name).width
+        newMarker.height = MapAccentMarker.size(for: name).height
+        newMarker.anchor = MapAccentMarker.anchor(for: name)
+        newMarker.mapView = mapView
+
+        marker = newMarker
     }
 
 }

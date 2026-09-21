@@ -13,6 +13,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var placeMarker: NMFMarker?
     private var participantMarkers: [NMFMarker] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
+    private var placeMarkerLoadTask: Task<Void, Never>?
     private var markerLoadTask: Task<Void, Never>?
     private var hasMovedToInitialPosition = false
 
@@ -37,19 +38,14 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     }
 
     func setPlaceMarker(coordinate: Coordinate, name: String) {
+        placeMarkerLoadTask?.cancel()
         placeMarker?.mapView = nil
 
-        let kind = MapMarker.Kind.place
-        let markerImage = MapMarker.renderImage(kind: kind, name: name)
-
-        let marker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
-        marker.iconImage = NMFOverlayImage(image: markerImage)
-        marker.width = MapMarker.size(for: kind).width
-        marker.height = MapMarker.size(for: kind).height
-        marker.anchor = MapMarker.anchor(for: kind)
-        marker.mapView = mapView
-
-        placeMarker = marker
+        placeMarkerLoadTask = Task { [weak self] in
+            let pinImage = await AppAssetImageLoader.shared.load(.pin)
+            guard !Task.isCancelled else { return }
+            self?.addPlaceMarker(coordinate: coordinate, name: name, pinImage: pinImage)
+        }
 
         if !hasMovedToInitialPosition {
             hasMovedToInitialPosition = true
@@ -122,6 +118,20 @@ private extension AppointmentRouteMapView {
             }
             return images
         }
+    }
+
+    func addPlaceMarker(coordinate: Coordinate, name: String, pinImage: UIImage?) {
+        let kind = MapMarker.Kind.place(pinImage: pinImage)
+        let markerImage = MapMarker.renderImage(kind: kind, name: name)
+
+        let marker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
+        marker.iconImage = NMFOverlayImage(image: markerImage)
+        marker.width = MapMarker.size(for: kind).width
+        marker.height = MapMarker.size(for: kind).height
+        marker.anchor = MapMarker.anchor(for: kind)
+        marker.mapView = mapView
+
+        placeMarker = marker
     }
 
     func addMarker(for participant: AppointmentRouteParticipant, color: UIColor, profileImage: UIImage) {

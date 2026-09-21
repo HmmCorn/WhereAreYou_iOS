@@ -25,9 +25,9 @@ enum MapAccentMarker {
         CGPoint(x: 0.5, y: 1.0)
     }
 
-    static func renderImage(accentColor: UIColor, name: String) -> UIImage {
+    static func renderImage(accentColor: UIColor, name: String, pinImage: UIImage?) -> UIImage {
         let size = size(for: name)
-        let container = makeView(accentColor: accentColor, name: name, size: size)
+        let container = makeView(accentColor: accentColor, name: name, size: size, pinImage: pinImage)
         container.frame = CGRect(origin: .zero, size: size)
         container.layoutIfNeeded()
 
@@ -68,7 +68,7 @@ private extension MapAccentMarker {
 
     // MARK: - View Building
 
-    static func makeView(accentColor: UIColor, name: String, size: CGSize) -> UIView {
+    static func makeView(accentColor: UIColor, name: String, size: CGSize, pinImage: UIImage?) -> UIView {
         let container = UIView(frame: CGRect(origin: .zero, size: size))
         let bubbleSize = bubbleSize(for: name)
 
@@ -90,7 +90,7 @@ private extension MapAccentMarker {
         )
         container.addSubview(tailView)
 
-        let pinImageView = UIImageView(image: .pin)
+        let pinImageView = UIImageView(image: pinImage)
         pinImageView.contentMode = .scaleAspectFit
         pinImageView.frame = CGRect(
             x: (size.width - pinSize.width) / 2,

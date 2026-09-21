@@ -13,7 +13,7 @@ final class PlaceSelectionMapView: NMFNaverMapView {
     var onCameraIdle: ((Coordinate) -> Void)?
 
     private let centerPinImageView: UIImageView = {
-        let imageView = UIImageView(image: .pin)
+        let imageView = UIImageView()
         imageView.tintColor = .customRed
         imageView.contentMode = .scaleAspectFit
         return imageView
@@ -37,6 +37,7 @@ final class PlaceSelectionMapView: NMFNaverMapView {
     }
 
     private func setUpCenterPin() {
+        centerPinImageView.setAppAsset(.pin, renderingMode: .alwaysTemplate)
         centerPinImageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(centerPinImageView)
 
