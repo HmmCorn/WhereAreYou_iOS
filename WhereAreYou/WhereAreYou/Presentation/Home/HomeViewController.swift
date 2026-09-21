@@ -26,7 +26,7 @@ final class HomeViewController: UIViewController {
     // MARK: - Logo
 
     private let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "Logo"))
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -128,6 +128,7 @@ final class HomeViewController: UIViewController {
 
     private func setUpLayout() {
         upcomingScrollView.delegate = self
+        logoImageView.setAppAsset(.logo)
 
         [logoImageView, logoTitleLabel, createButton,
          joinButton, upcomingSectionLabel, upcomingScrollView]

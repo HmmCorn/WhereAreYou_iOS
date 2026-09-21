@@ -40,7 +40,7 @@ final class LoginViewController: UIViewController {
     }()
 
     private let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: .logo)
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -86,6 +86,8 @@ final class LoginViewController: UIViewController {
     }
 
     private func setUpLayout() {
+        logoImageView.setAppAsset(.logo)
+
         view.addSubview(backgroundImageView)
         view.addSubview(logoImageView)
         view.addSubview(titleLabel)
