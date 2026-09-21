@@ -12,4 +12,7 @@ protocol AppAssetRepository {
 
     func downloadImageData(_ asset: AppAsset) async throws -> Data
 
+    /// 메모리/디스크 캐시 무효화
+    func invalidateCache(_ asset: AppAsset)
+
 }

@@ -47,6 +47,12 @@ final class StorageAppAssetRepository: AppAssetRepository {
         }
     }
 
+    func invalidateCache(_ asset: AppAsset) {
+        memoryCache.removeObject(forKey: asset.cacheFileName as NSString)
+        userDefaults.removeObject(forKey: asset.cachedHashKey)
+        try? fileManager.removeItem(at: cacheFileURL(for: asset))
+    }
+
     // MARK: - Private
 
     private func existingOrNewDownloadTask(for asset: AppAsset) -> Task<Data, Error> {
