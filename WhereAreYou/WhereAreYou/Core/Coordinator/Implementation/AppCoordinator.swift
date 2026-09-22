@@ -113,7 +113,9 @@ final class AppCoordinator: Coordinator {
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional:
-                self?.requestNotificationPermission()
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
             case .denied:
                 self?.deleteFCMToken()
             default:
