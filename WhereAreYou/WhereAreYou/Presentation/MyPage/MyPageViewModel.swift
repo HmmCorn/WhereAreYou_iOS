@@ -41,11 +41,13 @@ final class MyPageViewModel {
     }
 
     func signOut() {
-        do {
-            try signOutUseCase.execute()
-            signOutResult = .success(())
-        } catch {
-            signOutResult = .failure(error)
+        Task { @MainActor in
+            do {
+                try await signOutUseCase.execute()
+                signOutResult = .success(())
+            } catch {
+                signOutResult = .failure(error)
+            }
         }
     }
 

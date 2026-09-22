@@ -6,22 +6,26 @@
 //
 
 import UIKit
+import UserNotifications
 
 /// 로그인 화면 표시, 로그인 성공 시 탭바로 전환 등 앱 최상위 화면전환을 담당
 final class AppCoordinator: Coordinator {
 
     private let window: UIWindow
     private let screenFactory: ScreenFactory
+    private let sessionValidationService: SessionValidationService
+    private let fcmTokenService: FCMTokenService
     private var tabBarCoordinator: TabBarCoordinator?
 
     init(window: UIWindow, screenFactory: ScreenFactory = .shared) {
         self.window = window
         self.screenFactory = screenFactory
+        self.sessionValidationService = screenFactory.container.resolve()
+        self.fcmTokenService = screenFactory.container.resolve()
     }
 
     func start() {
-        let authRepository: AuthRepository = screenFactory.container.resolve()
-        if authRepository.currentUserID != nil {
+        if sessionValidationService.currentUserID != nil {
             showHome()
             validateUser()
         } else {
@@ -33,18 +37,14 @@ final class AppCoordinator: Coordinator {
     // MARK: - 자동 로그인 검증
 
     private func validateUser() {
-        let authRepository: AuthRepository = screenFactory.container.resolve()
-        let userRepository: UserRepository = screenFactory.container.resolve()
-        guard let userID = authRepository.currentUserID else {
-            switchToLogin()
-            return
-        }
         Task { @MainActor in
-            do {
-                _ = try await userRepository.fetchUser(userID: userID)
-            } catch AppError.network {
+            let result = await sessionValidationService.validate()
+            switch result {
+            case .valid:
+                break
+            case .networkError:
                 self.showNetworkErrorAlert()
-            } catch {
+            case .invalid:
                 self.switchToLogin()
             }
         }
@@ -79,6 +79,7 @@ final class AppCoordinator: Coordinator {
         }
         coordinator.start()
         window.rootViewController = coordinator.tabBarController
+        registerNotificationIfAuthorized()
     }
 
     // MARK: - 화면 전환
@@ -94,6 +95,7 @@ final class AppCoordinator: Coordinator {
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
             self.window.rootViewController = coordinator.tabBarController
         }
+        registerNotificationIfAuthorized()
     }
 
     private func switchToLogin() {
@@ -102,6 +104,38 @@ final class AppCoordinator: Coordinator {
 
         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
             self.window.rootViewController = loginViewController
+        }
+    }
+
+    // MARK: - 알림 권한
+
+    func registerNotificationIfAuthorized() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            case .denied:
+                self?.deleteFCMToken()
+            default:
+                self?.requestNotificationPermission()
+            }
+        }
+    }
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            guard granted else { return }
+            DispatchQueue.main.async {
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
+    }
+
+    private func deleteFCMToken() {
+        Task {
+            try? await fcmTokenService.deleteForCurrentUser()
         }
     }
 
