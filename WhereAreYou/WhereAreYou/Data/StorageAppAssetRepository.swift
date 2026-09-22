@@ -63,9 +63,11 @@ final class StorageAppAssetRepository: AppAssetRepository {
     }
 
     private func commitCache(_ asset: AppAsset, data: AppAssetData) {
+        // 디스크 캐시 히트로 얻은 데이터라도 메모리 캐시엔 아직 없을 수 있으므로 항상 저장
+        memoryCache.setObject(data.data as NSData, forKey: cacheFileName(for: asset) as NSString)
+
         guard !data.isAlreadyCached else { return }
 
-        memoryCache.setObject(data.data as NSData, forKey: cacheFileName(for: asset) as NSString)
         try? data.data.write(to: cacheFileURL(for: asset), options: .atomic)
         if let remoteHash = data.remoteHash {
             userDefaults.set(remoteHash, forKey: cachedHashKey(for: asset))
