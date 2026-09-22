@@ -15,7 +15,7 @@ final class AppointmentCreationViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
 
     private let logoImage: UIImageView = {
-        let imageView = UIImageView(image: .logo)
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -43,6 +43,7 @@ final class AppointmentCreationViewController: UIViewController {
     }
 
     private func setUpLayout() {
+        logoImage.setAppAsset(.logo)
         logoImage.translatesAutoresizingMaskIntoConstraints = false
         creationCard.translatesAutoresizingMaskIntoConstraints = false
 

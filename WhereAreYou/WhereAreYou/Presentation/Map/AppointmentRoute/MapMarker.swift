@@ -12,7 +12,7 @@ enum MapMarker {
 
     enum Kind {
         case participant(profileImage: UIImage?, tintColor: UIColor)
-        case place
+        case place(pinImage: UIImage?)
     }
 
     // MARK: - Public
@@ -144,8 +144,8 @@ private extension MapMarker {
 
             return circleView
 
-        case .place:
-            let pinImageView = UIImageView(image: .pin)
+        case .place(let pinImage):
+            let pinImageView = UIImageView(image: pinImage)
             pinImageView.contentMode = .scaleAspectFit
             return pinImageView
         }

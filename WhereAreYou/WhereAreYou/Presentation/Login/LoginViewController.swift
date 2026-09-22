@@ -32,7 +32,7 @@ final class LoginViewController: UIViewController {
     // MARK: - UI
 
     private let backgroundImageView: UIImageView = {
-        let imageView = UIImageView(image: .loginBackground)
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +40,7 @@ final class LoginViewController: UIViewController {
     }()
 
     private let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: .logo)
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -86,6 +86,9 @@ final class LoginViewController: UIViewController {
     }
 
     private func setUpLayout() {
+        backgroundImageView.setAppAsset(.loginBackground)
+        logoImageView.setAppAsset(.logo)
+
         view.addSubview(backgroundImageView)
         view.addSubview(logoImageView)
         view.addSubview(titleLabel)

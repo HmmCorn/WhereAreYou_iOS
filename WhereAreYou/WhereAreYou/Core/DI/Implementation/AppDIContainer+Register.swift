@@ -38,6 +38,9 @@ extension DIContainer {
         // 프로필 이미지
         register(ProfileImageRepository.self, instance: StorageProfileImageRepository())
 
+        // 앱 정적 에셋
+        register(AppAssetRepository.self, instance: StorageAppAssetRepository())
+
         // 위치
         let coreLocationRepository = CoreLocationRepository()
         register(LocationRepository.self, instance: coreLocationRepository)

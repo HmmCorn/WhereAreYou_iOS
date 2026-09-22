@@ -27,7 +27,7 @@ final class AppointmentListViewController: UIViewController {
     }
 
     private let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: .logo)
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -96,6 +96,8 @@ final class AppointmentListViewController: UIViewController {
     }
 
     private func setUpLayout() {
+        logoImageView.setAppAsset(.logo)
+
         [logoImageView, titleLabel, scrollView, emptyLabel, pastAppointmentButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)

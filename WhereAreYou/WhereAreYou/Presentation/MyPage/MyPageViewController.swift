@@ -26,7 +26,7 @@ final class MyPageViewController: UIViewController {
     }
 
     private let logoImageView: UIImageView = {
-        let imageView = UIImageView(image: .logo)
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -115,6 +115,8 @@ final class MyPageViewController: UIViewController {
     }
 
     private func setUpLayout() {
+        logoImageView.setAppAsset(.logo)
+
         [logoImageView, titleLabel, scrollView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
