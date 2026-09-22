@@ -28,7 +28,23 @@ final class StorageAppAssetRepository: AppAssetRepository {
     /// asset별 진행 중인 로드 Task
     private var loadTasks: [AppAsset: Task<AppAssetData, Error>] = [:]
 
-    func loadImageData(_ asset: AppAsset) async throws -> AppAssetData {
+    func loadValidatedImageData(_ asset: AppAsset, isValid: (Data) -> Bool) async throws -> Data {
+        let result = try await loadImageData(asset)
+
+        guard isValid(result.data) else {
+            if result.isAlreadyCached {
+                invalidateCache(asset)
+            }
+            throw AppAssetValidationError.invalidData
+        }
+
+        commitCache(asset, data: result)
+        return result.data
+    }
+
+    // MARK: - Private
+
+    private func loadImageData(_ asset: AppAsset) async throws -> AppAssetData {
         let key = cacheFileName(for: asset) as NSString
         if let cached = memoryCache.object(forKey: key) {
             return AppAssetData(data: cached as Data, remoteHash: nil, isAlreadyCached: true)
@@ -46,7 +62,7 @@ final class StorageAppAssetRepository: AppAssetRepository {
         }
     }
 
-    func commitCache(_ asset: AppAsset, data: AppAssetData) {
+    private func commitCache(_ asset: AppAsset, data: AppAssetData) {
         guard !data.isAlreadyCached else { return }
 
         memoryCache.setObject(data.data as NSData, forKey: cacheFileName(for: asset) as NSString)
@@ -56,13 +72,11 @@ final class StorageAppAssetRepository: AppAssetRepository {
         }
     }
 
-    func invalidateCache(_ asset: AppAsset) {
+    private func invalidateCache(_ asset: AppAsset) {
         memoryCache.removeObject(forKey: cacheFileName(for: asset) as NSString)
         userDefaults.removeObject(forKey: cachedHashKey(for: asset))
         try? fileManager.removeItem(at: cacheFileURL(for: asset))
     }
-
-    // MARK: - Private
 
     private func existingOrNewLoadTask(for asset: AppAsset) -> Task<AppAssetData, Error> {
         loadTasksLock.lock()
@@ -133,5 +147,21 @@ final class StorageAppAssetRepository: AppAssetRepository {
             return "loginBackground"
         }
     }
+
+}
+
+/// loadValidatedImageData 검증 실패 시 던지는 에러
+private enum AppAssetValidationError: Error {
+    case invalidData
+}
+
+/// 캐시(디스크/원격) 조회 결과 — 캐시 확정 저장에 필요한 정보 포함
+private struct AppAssetData {
+
+    let data: Data
+    /// 원격에서 조회한 해시 — 캐시 커밋 시 저장할 값
+    let remoteHash: String?
+    /// 이미 검증되어 디스크에 저장된 상태인지 여부
+    let isAlreadyCached: Bool
 
 }
