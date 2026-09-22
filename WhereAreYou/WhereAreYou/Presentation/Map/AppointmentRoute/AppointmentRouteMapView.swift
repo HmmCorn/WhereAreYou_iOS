@@ -44,7 +44,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         placeMarkerLoadTask = Task { [weak self] in
             let pinImage = await AppAssetImageLoader.shared.load(.pin)
             guard !Task.isCancelled else { return }
-            self?.addPlaceMarker(coordinate: coordinate, name: name, pinImage: pinImage)
+            await self?.addPlaceMarker(coordinate: coordinate, name: name, pinImage: pinImage)
         }
 
         if !hasMovedToInitialPosition {
@@ -67,7 +67,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
             guard !Task.isCancelled, !images.isEmpty else { return }
 
             for (index, participant) in participants.enumerated() {
-                self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
+                await self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
             }
         }
     }
@@ -120,6 +120,7 @@ private extension AppointmentRouteMapView {
         }
     }
 
+    @MainActor
     func addPlaceMarker(coordinate: Coordinate, name: String, pinImage: UIImage?) {
         let kind = MapMarker.Kind.place(pinImage: pinImage)
         let markerImage = MapMarker.renderImage(kind: kind, name: name)
@@ -134,6 +135,7 @@ private extension AppointmentRouteMapView {
         placeMarker = marker
     }
 
+    @MainActor
     func addMarker(for participant: AppointmentRouteParticipant, color: UIColor, profileImage: UIImage) {
         guard let position = participant.path.first else { return }
 

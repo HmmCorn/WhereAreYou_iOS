@@ -41,7 +41,7 @@ final class LocationPreviewMapView: NMFNaverMapView {
         markerLoadTask = Task { [weak self] in
             let pinImage = await AppAssetImageLoader.shared.load(.pin)
             guard !Task.isCancelled else { return }
-            self?.addMarker(coordinate: coordinate, name: name, accentColor: accentColor, pinImage: pinImage)
+            await self?.addMarker(coordinate: coordinate, name: name, accentColor: accentColor, pinImage: pinImage)
         }
 
         if !hasMovedToInitialPosition {
@@ -62,6 +62,7 @@ private extension LocationPreviewMapView {
         showZoomControls = true
     }
 
+    @MainActor
     func addMarker(coordinate: Coordinate, name: String, accentColor: UIColor, pinImage: UIImage?) {
         let markerImage = MapAccentMarker.renderImage(accentColor: accentColor, name: name, pinImage: pinImage)
 
