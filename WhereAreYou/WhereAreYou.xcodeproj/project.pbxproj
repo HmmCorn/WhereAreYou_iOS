@@ -13,11 +13,37 @@
 		8C332F24303DEAC3008375EC /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8C332F23303DEAC3008375EC /* FirebaseAuth */; };
 		8C332F26303DED5E008375EC /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8C332F25303DED5E008375EC /* FirebaseStorage */; };
 		8CA7E506305E84B000A37397 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 8CA7E505305E84B000A37397 /* FirebaseMessaging */; };
+		8CF0A0022F90000100A1B2C3 /* WhereAreYouWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8CF0A0012F90000100A1B2C3 /* WhereAreYouWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BCAC3F343017B45700EC9102 /* NMapsMap in Frameworks */ = {isa = PBXBuildFile; productRef = BCAC3F333017B45700EC9102 /* NMapsMap */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		8CF0A0042F90000100A1B2C3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8C44C1D42FFCF585006DA2FC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8CF0A0092F90000100A1B2C3;
+			remoteInfo = WhereAreYouWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8CF0A0032F90000100A1B2C3 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8CF0A0022F90000100A1B2C3 /* WhereAreYouWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		8C44C1DC2FFCF585006DA2FC /* WhereAreYou.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhereAreYou.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8CF0A0012F90000100A1B2C3 /* WhereAreYouWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WhereAreYouWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -28,6 +54,13 @@
 			);
 			target = 8C44C1DB2FFCF585006DA2FC /* WhereAreYou */;
 		};
+		8CF0A0082F90000100A1B2C3 /* Exceptions for "WhereAreYouWidget" folder in "WhereAreYouWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8CF0A0092F90000100A1B2C3 /* WhereAreYouWidget */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -37,6 +70,19 @@
 				8C44C1EE2FFCF586006DA2FC /* Exceptions for "WhereAreYou" folder in "WhereAreYou" target */,
 			);
 			path = WhereAreYou;
+			sourceTree = "<group>";
+		};
+		8CF0A0062F90000100A1B2C3 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		8CF0A0072F90000100A1B2C3 /* WhereAreYouWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8CF0A0082F90000100A1B2C3 /* Exceptions for "WhereAreYouWidget" folder in "WhereAreYouWidget" target */,
+			);
+			path = WhereAreYouWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -56,6 +102,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8CF0A00B2F90000100A1B2C3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -70,6 +123,8 @@
 			isa = PBXGroup;
 			children = (
 				8C44C1DE2FFCF585006DA2FC /* WhereAreYou */,
+				8CF0A0062F90000100A1B2C3 /* Shared */,
+				8CF0A0072F90000100A1B2C3 /* WhereAreYouWidget */,
 				8C332F1E303DEAB1008375EC /* Frameworks */,
 				8C44C1DD2FFCF585006DA2FC /* Products */,
 			);
@@ -79,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				8C44C1DC2FFCF585006DA2FC /* WhereAreYou.app */,
+				8CF0A0012F90000100A1B2C3 /* WhereAreYouWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -93,13 +149,16 @@
 				8C44C1D82FFCF585006DA2FC /* Sources */,
 				8C44C1D92FFCF585006DA2FC /* Frameworks */,
 				8C44C1DA2FFCF585006DA2FC /* Resources */,
+				8CF0A0032F90000100A1B2C3 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8CF0A0052F90000100A1B2C3 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				8C44C1DE2FFCF585006DA2FC /* WhereAreYou */,
+				8CF0A0062F90000100A1B2C3 /* Shared */,
 			);
 			name = WhereAreYou;
 			packageProductDependencies = (
@@ -115,6 +174,29 @@
 			productReference = 8C44C1DC2FFCF585006DA2FC /* WhereAreYou.app */;
 			productType = "com.apple.product-type.application";
 		};
+		8CF0A0092F90000100A1B2C3 /* WhereAreYouWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8CF0A00D2F90000100A1B2C3 /* Build configuration list for PBXNativeTarget "WhereAreYouWidget" */;
+			buildPhases = (
+				8CF0A00A2F90000100A1B2C3 /* Sources */,
+				8CF0A00B2F90000100A1B2C3 /* Frameworks */,
+				8CF0A00C2F90000100A1B2C3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8CF0A0062F90000100A1B2C3 /* Shared */,
+				8CF0A0072F90000100A1B2C3 /* WhereAreYouWidget */,
+			);
+			name = WhereAreYouWidget;
+			packageProductDependencies = (
+			);
+			productName = WhereAreYouWidget;
+			productReference = 8CF0A0012F90000100A1B2C3 /* WhereAreYouWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -126,6 +208,9 @@
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					8C44C1DB2FFCF585006DA2FC = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
+					8CF0A0092F90000100A1B2C3 = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
 				};
@@ -149,12 +234,20 @@
 			projectRoot = "";
 			targets = (
 				8C44C1DB2FFCF585006DA2FC /* WhereAreYou */,
+				8CF0A0092F90000100A1B2C3 /* WhereAreYouWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8C44C1DA2FFCF585006DA2FC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8CF0A00C2F90000100A1B2C3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -171,7 +264,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8CF0A00A2F90000100A1B2C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8CF0A0052F90000100A1B2C3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8CF0A0092F90000100A1B2C3 /* WhereAreYouWidget */;
+			targetProxy = 8CF0A0042F90000100A1B2C3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8C44C1F02FFCF586006DA2FC /* Debug */ = {
@@ -389,6 +497,80 @@
 			};
 			name = Release;
 		};
+		8CF0A00E2F90000100A1B2C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 2ZF894QLGK;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WhereAreYouWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WhereAreYouWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.syl.WhereAreYou.WhereAreYouWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = whereareyouWidget;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) WIDGET_EXTENSION";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		8CF0A00F2F90000100A1B2C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 2ZF894QLGK;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WhereAreYouWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WhereAreYouWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kr.syl.WhereAreYou.WhereAreYouWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = whereareyouWidget;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) WIDGET_EXTENSION";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -406,6 +588,15 @@
 			buildConfigurations = (
 				8C44C1F02FFCF586006DA2FC /* Debug */,
 				8C44C1F12FFCF586006DA2FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8CF0A00D2F90000100A1B2C3 /* Build configuration list for PBXNativeTarget "WhereAreYouWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8CF0A00E2F90000100A1B2C3 /* Debug */,
+				8CF0A00F2F90000100A1B2C3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
