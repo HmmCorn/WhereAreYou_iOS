@@ -28,7 +28,6 @@ final class MyPageViewModel {
     private let observeLocationPermissionUseCase: ObserveLocationPermissionUseCase
     private let observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase
     private let signOutUseCase: SignOutUseCase
-    private var cancellables = Set<AnyCancellable>()
 
     init(
         profile: MyPageProfile? = nil,
@@ -166,23 +165,6 @@ extension MyPageViewModel {
 // MARK: - 위치 권한
 
 extension MyPageViewModel {
-
-    enum LocationPermissionAction {
-        case requested
-        case shouldOpenSettings
-    }
-
-    func requestLocationPermission() {
-        observeLocationPermissionUseCase.requestAuthorization()
-    }
-
-    func handlePermissionAction() -> LocationPermissionAction {
-        if locationPermissionState == .notDetermined {
-            requestLocationPermission()
-            return .requested
-        }
-        return .shouldOpenSettings
-    }
 
     private func bindLocationPermission() {
         observeLocationPermissionUseCase.statusPublisher
