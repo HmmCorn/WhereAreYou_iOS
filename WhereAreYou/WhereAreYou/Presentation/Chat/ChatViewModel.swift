@@ -19,6 +19,8 @@ final class ChatViewModel {
 
     private(set) var appointmentInfo: AppointmentInfo
     private var messages: [Chat] = []
+    private var hasLoadedMessages = false
+    private var sharesLocationAfterLoading = false
 
     private let fetchMessagesUseCase: FetchMessagesUseCase
     private let sendMessageUseCase: SendMessageUseCase
@@ -49,6 +51,11 @@ final class ChatViewModel {
                 if case .success(let messages) = result {
                     self.messages = messages
                     self.displayItems = self.buildDisplayItems(from: messages)
+                }
+                self.hasLoadedMessages = true
+                if self.sharesLocationAfterLoading {
+                    self.sharesLocationAfterLoading = false
+                    self.shareCurrentLocation()
                 }
             }
         }
@@ -99,6 +106,22 @@ final class ChatViewModel {
                     self.displayItems = self.buildDisplayItems(from: self.messages)
                 }
             }
+        }
+    }
+
+    /// 라이브 액티비티의 위치 공유 버튼으로 들어온 경우 — 확인 없이 바로 보낸다.
+    /// 메시지 조회 결과가 나중에 도착하면 보낸 메시지를 덮어쓰므로, 조회가 끝난 뒤에 보낸다
+    func shareCurrentLocationAfterLoading() {
+        if hasLoadedMessages {
+            shareCurrentLocation()
+        } else {
+            sharesLocationAfterLoading = true
+        }
+    }
+
+    private func shareCurrentLocation() {
+        fetchCurrentLocation { [weak self] coordinate, _ in
+            self?.shareLocation(coordinate: coordinate)
         }
     }
 

@@ -54,4 +54,29 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .blue1
     }
 
+    // MARK: - 딥링크
+
+    /// 약속 탭으로 전환하고 떠 있던 모달·push 화면을 정리한 뒤 목적지 화면을 띄운다
+    func handle(deepLink: AppointmentDeepLink) {
+        guard let appointmentListCoordinator else { return }
+        let navigationController = appointmentListCoordinator.navigationController
+        tabBarController.selectedViewController = navigationController
+
+        let route = {
+            navigationController.popToRootViewController(animated: false)
+            switch deepLink {
+            case .route(let appointmentID):
+                appointmentListCoordinator.showAppointmentRoute(appointmentID: appointmentID)
+            case .shareLocation(let appointmentID):
+                appointmentListCoordinator.showChatSharingLocation(appointmentID: appointmentID)
+            }
+        }
+
+        if tabBarController.presentedViewController != nil {
+            tabBarController.dismiss(animated: false, completion: route)
+        } else {
+            route()
+        }
+    }
+
 }

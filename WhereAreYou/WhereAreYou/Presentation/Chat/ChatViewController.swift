@@ -299,6 +299,11 @@ final class ChatViewController: UIViewController {
         return UIMenu(children: [viewSharedPlaces, searchPlace, shareLocation])
     }
 
+    /// 라이브 액티비티 위치 공유 버튼으로 들어온 경우 호출 — push 전에 불러도 된다
+    func shareCurrentLocationAfterLoading() {
+        viewModel.shareCurrentLocationAfterLoading()
+    }
+
     // MARK: - Extra Feature Handlers
 
     private func handleShareLocation() {

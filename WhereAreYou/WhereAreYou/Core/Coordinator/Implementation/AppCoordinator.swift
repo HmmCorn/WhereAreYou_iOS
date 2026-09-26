@@ -34,6 +34,13 @@ final class AppCoordinator: Coordinator {
         window.makeKeyAndVisible()
     }
 
+    // MARK: - 딥링크
+
+    /// 로그인 전이면 무시한다
+    func handle(deepLink: AppointmentDeepLink) {
+        tabBarCoordinator?.handle(deepLink: deepLink)
+    }
+
     // MARK: - 자동 로그인 검증
 
     private func validateUser() {

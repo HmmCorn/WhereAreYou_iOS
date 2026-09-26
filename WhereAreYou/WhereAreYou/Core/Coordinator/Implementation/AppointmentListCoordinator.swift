@@ -39,11 +39,23 @@ final class AppointmentListCoordinator: NavigationCoordinator, AppointmentListCo
     // MARK: - Chat
 
     func showChat(appointmentID: String) {
+        showChat(appointmentID: appointmentID, sharesLocationImmediately: false)
+    }
+
+    /// 라이브 액티비티의 위치 공유 버튼 — 채팅방을 열면서 확인 없이 내 위치를 바로 보낸다
+    func showChatSharingLocation(appointmentID: String) {
+        showChat(appointmentID: appointmentID, sharesLocationImmediately: true)
+    }
+
+    private func showChat(appointmentID: String, sharesLocationImmediately: Bool) {
         screenFactory.makeChatViewController(appointmentID: appointmentID) { [weak self] result in
             guard let self, case .success(let chatViewController) = result else { return }
             let coordinator = ChatCoordinator(navigationController: self.navigationController)
             self.chatCoordinator = coordinator
             chatViewController.coordinator = coordinator
+            if sharesLocationImmediately {
+                chatViewController.shareCurrentLocationAfterLoading()
+            }
             self.push(chatViewController)
         }
     }
