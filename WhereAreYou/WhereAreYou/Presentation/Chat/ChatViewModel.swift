@@ -17,6 +17,9 @@ final class ChatViewModel {
     @Published private(set) var canSend = false
     @Published private(set) var isEmpty = false
 
+    /// 라이브 액티비티 위치 공유 경로에서 현재 위치를 못 가져왔을 때 — 확인 창 없이 보내는 경로라 실패를 따로 알린다
+    @Published private(set) var currentLocationShareError: Error?
+
     private(set) var appointmentInfo: AppointmentInfo
     private var messages: [Chat] = []
     private var hasLoadedMessages = false
@@ -120,8 +123,15 @@ final class ChatViewModel {
     }
 
     private func shareCurrentLocation() {
-        fetchCurrentLocation { [weak self] coordinate, _ in
-            self?.shareLocation(coordinate: coordinate)
+        getCurrentLocationUseCase.execute { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let coordinate):
+                    self?.shareLocation(coordinate: coordinate)
+                case .failure(let error):
+                    self?.currentLocationShareError = error
+                }
+            }
         }
     }
 

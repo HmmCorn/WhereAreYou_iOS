@@ -404,6 +404,32 @@ final class ChatViewController: UIViewController {
                 self?.sendButton.tintColor = canSend ? .label : .tertiaryLabel
             }
             .store(in: &cancellables)
+
+        viewModel.$currentLocationShareError
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.showCurrentLocationShareFailedAlert()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func showCurrentLocationShareFailedAlert() {
+        let alert = UIAlertController(
+            title: "위치를 가져오지 못했어요",
+            message: "위치 권한을 허용하면 내 위치를 공유할 수 있어요.",
+            preferredStyle: .alert
+        )
+        let openSettingsAction = UIAlertAction(title: "설정으로 이동", style: .default) { _ in
+            guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(settingsURL)
+        }
+        alert.addAction(UIAlertAction(title: "닫기", style: .cancel))
+        alert.addAction(openSettingsAction)
+        // 해결 동작인 설정 이동을 앱 틴트 컬러(탭바와 같은 blue1)로 강조한다
+        alert.preferredAction = openSettingsAction
+        alert.view.tintColor = .blue1
+        present(alert, animated: true)
     }
 
     // MARK: - Update UI
