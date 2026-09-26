@@ -296,7 +296,12 @@ final class ChatViewController: UIViewController {
             self?.handleViewSharedPlaces()
         }
 
-        return UIMenu(children: [viewSharedPlaces, searchPlace, shareLocation])
+        var children: [UIMenuElement] = [viewSharedPlaces, searchPlace, shareLocation]
+        #if DEBUG
+        // [임시 · 3단계에서 삭제] 라이브 액티비티 시작 메뉴 — DebugLiveActivity 폴더
+        children.insert(makeLiveActivityDebugMenu(appointmentID: viewModel.appointmentInfo.id), at: 0)
+        #endif
+        return UIMenu(children: children)
     }
 
     /// 라이브 액티비티 위치 공유 버튼으로 들어온 경우 호출 — push 전에 불러도 된다
