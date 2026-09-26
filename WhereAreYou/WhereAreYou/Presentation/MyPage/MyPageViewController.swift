@@ -217,7 +217,6 @@ final class MyPageViewController: UIViewController {
         profileRow.value = profile.nickname
         profileRow.setProfileIcon(profile.profileImageName)
         locationSharingRow.value = profile.locationSharingOption.title
-        locationPermissionRow.value = viewModel.locationPermissionState.title
         notificationSwitch.isOn = profile.isNotificationEnabled
         notificationRow.value = profile.isNotificationEnabled ? "전체 알림 켜짐" : "전체 알림 꺼짐"
 
@@ -252,6 +251,13 @@ final class MyPageViewController: UIViewController {
     }
 
     private func bindViewModel() {
+        viewModel.$locationPermissionState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.locationPermissionRow.value = state.title
+            }
+            .store(in: &cancellables)
+
         viewModel.$liveActivityPermissionState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
