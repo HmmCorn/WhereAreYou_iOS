@@ -62,6 +62,14 @@ extension DIContainer {
 
         // 길찾기
         register(RouteSearchRepository.self) { MockRouteSearchRepository() }
+
+        // 약속 이동 라이브 액티비티
+        register(RouteLiveActivityRepository.self, instance: ActivityKitRouteLiveActivityRepository())
+        register(LiveActivityPermissionRepository.self, instance: ActivityKitLiveActivityPermissionRepository())
+        // 단계 버튼(LiveActivityIntent)이 앱 프로세스에서 이 서비스를 꺼내 쓴다
+        register(RouteProgressService.self, instance: RouteProgressService(
+            liveActivityRepository: resolve(RouteLiveActivityRepository.self)
+        ))
     }
 
 }
