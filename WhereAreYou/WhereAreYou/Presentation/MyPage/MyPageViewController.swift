@@ -74,6 +74,10 @@ final class MyPageViewController: UIViewController {
     private let locationCard = MyPageCardView()
     private let locationSharingRow = MyPageRow(icon: UIImage(systemName: "location"), title: "위치 공유 설정")
     private let locationPermissionRow = MyPageRow(icon: UIImage(systemName: "location.circle"), title: "위치 권한 설정")
+    private let liveActivityPermissionRow = MyPageRow(
+        icon: UIImage(systemName: "rectangle.bottomhalf.filled"),
+        title: "실시간 현황 설정"
+    )
 
     // MARK: - 알림 카드
 
@@ -126,7 +130,7 @@ final class MyPageViewController: UIViewController {
         scrollView.addSubview(contentStack)
 
         setUpCard(profileCard, rows: [profileRow])
-        setUpCard(locationCard, rows: [locationSharingRow, locationPermissionRow])
+        setUpCard(locationCard, rows: [locationSharingRow, locationPermissionRow, liveActivityPermissionRow])
         setUpCard(notificationCard, rows: [notificationRow, appointmentNotificationRow])
         setUpCard(etcCard, rows: [appInfoRow, signOutRow])
 
@@ -186,6 +190,11 @@ final class MyPageViewController: UIViewController {
         locationPermissionRow.onTap = { [weak self] in
             self?.presentLocationPermission()
         }
+        // 실시간 현황은 앱에서 요청할 수 없어 설정 앱의 앱 설정 화면으로 바로 보낸다
+        liveActivityPermissionRow.onTap = {
+            guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(settingsURL)
+        }
         appointmentNotificationRow.onTap = { [weak self] in
             self?.presentAppointmentNotificationList()
         }
@@ -243,6 +252,13 @@ final class MyPageViewController: UIViewController {
     }
 
     private func bindViewModel() {
+        viewModel.$liveActivityPermissionState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.liveActivityPermissionRow.value = state.title
+            }
+            .store(in: &cancellables)
+
         viewModel.$signOutResult
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
