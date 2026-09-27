@@ -75,7 +75,7 @@ final class MyPageViewController: UIViewController {
     private let locationSharingRow = MyPageRow(icon: UIImage(systemName: "location"), title: "위치 공유 설정")
     private let locationPermissionRow = MyPageRow(icon: UIImage(systemName: "location.circle"), title: "위치 권한 설정")
     private let liveActivityPermissionRow = MyPageRow(
-        icon: UIImage(systemName: "rectangle.bottomhalf.filled"),
+        icon: UIImage(systemName: "clock.badge"),
         title: "실시간 현황 설정"
     )
 
