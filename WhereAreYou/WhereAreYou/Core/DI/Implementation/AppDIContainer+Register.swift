@@ -58,7 +58,9 @@ extension DIContainer {
         register(APIClient.self, instance: URLSessionAPIClient())
 
         // 장소 검색/조회
-        register(NearbyPlaceRepository.self) { MockNearbyPlaceRepository() }
+        register(NearbyPlaceRepository.self) {
+            KakaoNearbyPlaceRepository(apiClient: self.resolve(APIClient.self))
+        }
         register(PlaceSearchRepository.self) { MockPlaceSearchRepository() }
         register(ReverseGeocodingRepository.self) {
             KakaoReverseGeocodingRepository(apiClient: self.resolve(APIClient.self))
