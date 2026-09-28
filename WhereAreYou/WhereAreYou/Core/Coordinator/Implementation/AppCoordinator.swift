@@ -14,14 +14,14 @@ final class AppCoordinator: Coordinator {
     private let window: UIWindow
     private let screenFactory: ScreenFactory
     private let sessionValidationService: SessionValidationService
-    private let fcmTokenService: FCMTokenService
+    private let fcmInstallationIDService: FCMInstallationIDService
     private var tabBarCoordinator: TabBarCoordinator?
 
     init(window: UIWindow, screenFactory: ScreenFactory = .shared) {
         self.window = window
         self.screenFactory = screenFactory
         self.sessionValidationService = screenFactory.container.resolve()
-        self.fcmTokenService = screenFactory.container.resolve()
+        self.fcmInstallationIDService = screenFactory.container.resolve()
     }
 
     func start() {
@@ -124,7 +124,7 @@ final class AppCoordinator: Coordinator {
                     UIApplication.shared.registerForRemoteNotifications()
                 }
             case .denied:
-                self?.deleteFCMToken()
+                self?.deleteFCMInstallationID()
             default:
                 self?.requestNotificationPermission()
             }
@@ -140,9 +140,9 @@ final class AppCoordinator: Coordinator {
         }
     }
 
-    private func deleteFCMToken() {
+    private func deleteFCMInstallationID() {
         Task {
-            try? await fcmTokenService.deleteForCurrentUser()
+            try? await fcmInstallationIDService.deleteForCurrentUser()
         }
     }
 

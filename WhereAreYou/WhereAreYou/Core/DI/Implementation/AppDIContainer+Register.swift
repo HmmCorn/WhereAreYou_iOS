@@ -23,10 +23,10 @@ extension DIContainer {
         ))
 
         // 푸시 알림
-        register(FCMTokenRepository.self, instance: FirestoreFCMTokenRepository())
-        register(FCMTokenService.self, instance: DefaultFCMTokenService(
+        register(FCMInstallationIDRepository.self, instance: FirestoreFCMInstallationIDRepository())
+        register(FCMInstallationIDService.self, instance: DefaultFCMInstallationIDService(
             authRepository: resolve(AuthRepository.self),
-            fcmTokenRepository: resolve(FCMTokenRepository.self)
+            fcmInstallationIDRepository: resolve(FCMInstallationIDRepository.self)
         ))
 
         // 세션 검증
