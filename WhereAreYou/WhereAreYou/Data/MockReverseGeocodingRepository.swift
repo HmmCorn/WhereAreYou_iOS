@@ -9,10 +9,11 @@ import Foundation
 
 final class MockReverseGeocodingRepository: ReverseGeocodingRepository {
 
+    @discardableResult
     func reverseGeocode(
         coordinate: Coordinate,
         completion: @escaping (Result<Place, Error>) -> Void
-    ) {
+    ) -> CancellableRequest {
         let (roadName, fullAddress) = Self.mockAddress(near: coordinate)
         let place = Place(
             id: "address_\(coordinate.latitude)_\(coordinate.longitude)",
@@ -22,9 +23,11 @@ final class MockReverseGeocodingRepository: ReverseGeocodingRepository {
             type: .other
         )
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        let workItem = DispatchWorkItem {
             completion(.success(place))
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+        return workItem
     }
 
     /// 실제 API의 도로명주소 응답 형태를 흉내낸 더미 주소 생성

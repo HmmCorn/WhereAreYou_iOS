@@ -9,10 +9,11 @@ import Foundation
 
 final class MockPlaceSearchRepository: PlaceSearchRepository {
 
+    @discardableResult
     func searchPlaces(
         keyword: String,
         completion: @escaping (Result<[Place], Error>) -> Void
-    ) {
+    ) -> CancellableRequest {
         let trimmed = keyword.trimmingCharacters(in: .whitespaces)
         let results: [Place]
 
@@ -22,9 +23,11 @@ final class MockPlaceSearchRepository: PlaceSearchRepository {
             results = Self.mockPlaces
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        let workItem = DispatchWorkItem {
             completion(.success(results))
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+        return workItem
     }
 
     private static let mockPlaces: [Place] = [
