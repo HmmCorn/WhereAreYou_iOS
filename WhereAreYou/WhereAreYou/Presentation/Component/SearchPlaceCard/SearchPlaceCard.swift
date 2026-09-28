@@ -164,8 +164,12 @@ final class SearchPlaceCard: UIView {
         }
     }
 
-    func updateEmptyResultMessage(hasSearched: Bool) {
-        emptyResultLabel.text = hasSearched ? "검색 결과가 존재하지 않습니다." : "장소를 검색해주세요."
+    func updateEmptyResultMessage(hasSearched: Bool, errorMessage: String?) {
+        if let errorMessage {
+            emptyResultLabel.text = errorMessage
+        } else {
+            emptyResultLabel.text = hasSearched ? "검색 결과가 존재하지 않습니다." : "장소를 검색해주세요."
+        }
     }
 
     // MARK: - Result Cells

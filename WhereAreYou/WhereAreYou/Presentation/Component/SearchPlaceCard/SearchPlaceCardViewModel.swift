@@ -14,6 +14,7 @@ final class SearchPlaceCardViewModel {
     @Published private(set) var selectedFilters: [PlaceType] = []
     @Published private(set) var isSearching = false
     @Published private(set) var hasSearched = false
+    @Published private(set) var errorMessage: String?
 
     private var allPlaces: [Place] = []
     private let searchPlacesUseCase: SearchPlacesUseCase
@@ -34,12 +35,14 @@ final class SearchPlaceCardViewModel {
         guard !trimmed.isEmpty else {
             isSearching = false
             hasSearched = false
+            errorMessage = nil
             allPlaces = []
             applyFilter()
             return
         }
 
         isSearching = true
+        errorMessage = nil
         searchTask = Task { @MainActor [weak self] in
             guard let self else { return }
             do {
@@ -47,6 +50,7 @@ final class SearchPlaceCardViewModel {
                 guard !Task.isCancelled else { return }
                 self.isSearching = false
                 self.hasSearched = true
+                self.errorMessage = nil
                 self.allPlaces = places
                 self.applyFilter()
             } catch is CancellationError {
@@ -55,6 +59,9 @@ final class SearchPlaceCardViewModel {
                 guard !Task.isCancelled else { return }
                 self.isSearching = false
                 self.hasSearched = true
+                self.errorMessage = (error as? AppError)?.errorDescription ?? "알 수 없는 오류가 발생했습니다. 다시 시도해 주세요."
+                self.allPlaces = []
+                self.applyFilter()
             }
         }
     }
@@ -82,6 +89,7 @@ final class SearchPlaceCardViewModel {
         filteredPlaces = []
         selectedFilters = []
         hasSearched = false
+        errorMessage = nil
         allPlaces = []
     }
 
