@@ -22,6 +22,8 @@ struct KakaoPlaceDocument: Decodable {
     let roadAddressName: String
     let x: String
     let y: String
+    /// 중심 좌표로부터의 거리(m) — 카테고리 검색(x,y 파라미터 포함) 응답에만 값이 채워짐
+    let distance: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -32,10 +34,16 @@ struct KakaoPlaceDocument: Decodable {
         case roadAddressName = "road_address_name"
         case x
         case y
+        case distance
     }
 }
 
 extension KakaoPlaceDocument {
+
+    /// 중심 좌표로부터의 거리(m), 파싱 실패 시 nil
+    var distanceMeters: Double? {
+        distance.flatMap(Double.init)
+    }
 
     /// Place로 변환, 좌표 파싱 실패 시 nil
     func toPlace() -> Place? {
@@ -54,16 +62,16 @@ extension KakaoPlaceDocument {
 
     /// category_group_code, category_name 기반 PlaceType 매핑
     private var placeType: PlaceType {
-        switch categoryGroupCode {
-        case "SW8":
+        switch KakaoCategoryGroupCode(rawValue: categoryGroupCode) {
+        case .subwayStation:
             return .subway
-        case "FD6":
+        case .restaurant:
             return .restaurant
-        case "CE7":
+        case .cafe:
             return .cafe
-        case "HP8":
+        case .hospital:
             return .hospital
-        case "MT1", "CS2":
+        case .largeMart, .convenienceStore:
             return .shop
         default:
             return categoryName.contains("기차역") ? .station : .other

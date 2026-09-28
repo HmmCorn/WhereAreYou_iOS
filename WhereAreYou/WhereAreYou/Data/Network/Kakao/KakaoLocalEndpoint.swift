@@ -12,7 +12,7 @@ enum KakaoLocalEndpoint {
     /// 키워드로 장소 검색
     case keyword(query: String)
     /// 좌표 반경 내 카테고리 검색, 거리순 정렬
-    case category(code: String, coordinate: Coordinate, radiusMeters: Int)
+    case category(code: KakaoCategoryGroupCode, coordinate: Coordinate, radiusMeters: Int)
     /// 좌표 -> 주소 변환
     case coord2address(coordinate: Coordinate)
 }
@@ -43,7 +43,7 @@ extension KakaoLocalEndpoint: Endpoint {
             ]
         case .category(let code, let coordinate, let radiusMeters):
             return [
-                URLQueryItem(name: "category_group_code", value: code),
+                URLQueryItem(name: "category_group_code", value: code.rawValue),
                 URLQueryItem(name: "x", value: "\(coordinate.longitude)"),
                 URLQueryItem(name: "y", value: "\(coordinate.latitude)"),
                 URLQueryItem(name: "radius", value: "\(radiusMeters)"),
