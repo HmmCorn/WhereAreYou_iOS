@@ -23,14 +23,17 @@ final class ChatViewModel {
     private let fetchMessagesUseCase: FetchMessagesUseCase
     private let sendMessageUseCase: SendMessageUseCase
     private let getCurrentLocationUseCase: GetCurrentLocationUseCase
+    private let getNearbyPlaceUseCase: GetNearbyPlaceUseCase
     private let shareLocationUseCase: ShareLocationUseCase
     private let sharePlaceUseCase: SharePlaceUseCase
+    private var fetchCurrentLocationTask: Task<Void, Never>?
 
     init(
         appointmentInfo: AppointmentInfo,
         fetchMessagesUseCase: FetchMessagesUseCase,
         sendMessageUseCase: SendMessageUseCase,
         getCurrentLocationUseCase: GetCurrentLocationUseCase,
+        getNearbyPlaceUseCase: GetNearbyPlaceUseCase,
         shareLocationUseCase: ShareLocationUseCase,
         sharePlaceUseCase: SharePlaceUseCase
     ) {
@@ -38,8 +41,13 @@ final class ChatViewModel {
         self.fetchMessagesUseCase = fetchMessagesUseCase
         self.sendMessageUseCase = sendMessageUseCase
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
+        self.getNearbyPlaceUseCase = getNearbyPlaceUseCase
         self.shareLocationUseCase = shareLocationUseCase
         self.sharePlaceUseCase = sharePlaceUseCase
+    }
+
+    deinit {
+        fetchCurrentLocationTask?.cancel()
     }
 
     func fetchMessages() {
@@ -76,12 +84,16 @@ final class ChatViewModel {
     // MARK: - Location Share
 
     func fetchCurrentLocation(completion: @escaping (Coordinate, String) -> Void) {
-        getCurrentLocationUseCase.execute { result in
+        fetchCurrentLocationTask?.cancel()
+        getCurrentLocationUseCase.execute { [weak self] result in
+            guard let self else { return }
             DispatchQueue.main.async {
-                if case .success(let coordinate) = result {
-                    // TODO: CLGeocoder로 실제 주소 변환
-                    let address = "서울특별시 중구 세종대로 110"
-                    completion(coordinate, address)
+                guard case .success(let coordinate) = result else { return }
+                self.fetchCurrentLocationTask = Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    let place = try? await self.getNearbyPlaceUseCase.execute(coordinate: coordinate)
+                    guard !Task.isCancelled else { return }
+                    completion(coordinate, place?.name ?? "현재 위치")
                 }
             }
         }
