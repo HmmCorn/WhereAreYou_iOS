@@ -54,10 +54,15 @@ extension DIContainer {
         // 채팅
         register(ChatRepository.self) { MockChatRepository() }
 
+        // 네트워크
+        register(APIClient.self, instance: URLSessionAPIClient())
+
         // 장소 검색/조회
         register(NearbyPlaceRepository.self) { MockNearbyPlaceRepository() }
         register(PlaceSearchRepository.self) { MockPlaceSearchRepository() }
-        register(ReverseGeocodingRepository.self) { MockReverseGeocodingRepository() }
+        register(ReverseGeocodingRepository.self) {
+            KakaoReverseGeocodingRepository(apiClient: self.resolve(APIClient.self))
+        }
         register(SharedPlaceRepository.self) { MockSharedPlaceRepository() }
 
         // 길찾기
