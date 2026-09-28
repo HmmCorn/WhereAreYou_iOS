@@ -24,7 +24,7 @@ extension DIContainer {
 
         // 푸시 알림
         register(FCMTokenRepository.self, instance: FirestoreFCMTokenRepository())
-        register(FCMTokenService.self, instance: FCMTokenService(
+        register(FCMTokenService.self, instance: DefaultFCMTokenService(
             authRepository: resolve(AuthRepository.self),
             fcmTokenRepository: resolve(FCMTokenRepository.self)
         ))
