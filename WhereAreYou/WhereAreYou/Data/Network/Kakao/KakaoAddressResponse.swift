@@ -43,13 +43,13 @@ struct KakaoAddress: Decodable {
 
 extension KakaoAddressResponse {
 
-    /// Place로 변환, 도로명 우선 없으면 지번, 결과 없으면 notFound
+    /// Place로 변환, 도로명 우선 없으면 지번, 결과 없으면 emptyResult
     func toPlace(coordinate: Coordinate) throws -> Place {
         guard let document = documents.first else {
-            throw AppError.notFound
+            throw NetworkError.emptyResult
         }
         guard let address = document.roadAddress?.addressName ?? document.address?.addressName else {
-            throw AppError.notFound
+            throw NetworkError.emptyResult
         }
         return Place(
             id: "address_\(coordinate.latitude)_\(coordinate.longitude)",

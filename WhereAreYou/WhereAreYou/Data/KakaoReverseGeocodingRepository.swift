@@ -17,9 +17,13 @@ final class KakaoReverseGeocodingRepository: ReverseGeocodingRepository {
     }
 
     func reverseGeocode(coordinate: Coordinate) async throws -> Place {
-        let response: KakaoAddressResponse = try await apiClient.request(
-            KakaoLocalEndpoint.coord2address(coordinate: coordinate)
-        )
-        return try response.toPlace(coordinate: coordinate)
+        do {
+            let response: KakaoAddressResponse = try await apiClient.request(
+                KakaoLocalEndpoint.coord2address(coordinate: coordinate)
+            )
+            return try response.toPlace(coordinate: coordinate)
+        } catch let error as NetworkError {
+            throw error.appError
+        }
     }
 }

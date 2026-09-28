@@ -20,6 +20,8 @@ enum NetworkError: Error {
     case decoding(Error)
     /// URLSession 자체의 전송 실패
     case transport(Error)
+    /// 응답 자체는 성공했으나 원하는 결과가 없음
+    case emptyResult
 }
 
 extension NetworkError {
@@ -41,6 +43,8 @@ extension NetworkError {
         case .transport(let error):
             let nsError = error as NSError
             return nsError.domain == NSURLErrorDomain ? .network : .unknown(error)
+        case .emptyResult:
+            return .notFound
         }
     }
 }
