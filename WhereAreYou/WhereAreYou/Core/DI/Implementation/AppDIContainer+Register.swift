@@ -61,7 +61,9 @@ extension DIContainer {
         register(NearbyPlaceRepository.self) {
             KakaoNearbyPlaceRepository(apiClient: self.resolve(APIClient.self))
         }
-        register(PlaceSearchRepository.self) { MockPlaceSearchRepository() }
+        register(PlaceSearchRepository.self) {
+            KakaoPlaceSearchRepository(apiClient: self.resolve(APIClient.self))
+        }
         register(ReverseGeocodingRepository.self) {
             KakaoReverseGeocodingRepository(apiClient: self.resolve(APIClient.self))
         }
