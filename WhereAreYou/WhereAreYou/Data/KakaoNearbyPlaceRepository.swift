@@ -26,41 +26,63 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
         self.apiClient = apiClient
     }
 
+    /// 카테고리 하나 조회 결과 — 결과 없음(정상)과 요청 실패를 구분해 상위에서 정책을 결정할 수 있게 함
+    private enum CategoryResult {
+        case found(Place, distanceMeters: Double)
+        case notFound
+        case failed(Error)
+    }
+
     func fetchNearbyPlace(coordinate: Coordinate, radiusKm: Double) async throws -> Place? {
         let radiusMeters = min(Int(radiusKm * 1000), Self.maximumRadiusMeters)
 
-        let nearest = try await withThrowingTaskGroup(of: (Place, Double)?.self) { group in
+        let results = try await withThrowingTaskGroup(of: CategoryResult.self) { group in
             for code in Self.categoryCodes {
                 group.addTask {
-                    try await self.nearestDocument(
-                        code: code,
-                        coordinate: coordinate,
-                        radiusMeters: radiusMeters
-                    )
+                    try await self.nearestDocument(code: code, coordinate: coordinate, radiusMeters: radiusMeters)
                 }
             }
-
-            var best: (place: Place, distance: Double)?
+            var collected: [CategoryResult] = []
             for try await result in group {
-                guard let result else { continue }
-                if best == nil || result.1 < best!.distance {
-                    best = result
-                }
+                collected.append(result)
             }
-            return best
+            return collected
         }
 
-        return nearest?.place
+        // 카테고리 중 하나라도 성공(결과 유무 무관)했으면 그 결과로 판단.
+        // 전부 요청 실패였을 때만 대표로 첫 실패를 throw — 상위(GetNearbyPlaceUseCase)가 역지오코딩 폴백 여부를 판단할 신호로 사용
+        var best: (place: Place, distance: Double)?
+        var firstFailure: Error?
+        var hasSucceeded = false
+
+        for result in results {
+            switch result {
+            case .found(let place, let distance):
+                hasSucceeded = true
+                if best == nil || distance < best!.distance {
+                    best = (place, distance)
+                }
+            case .notFound:
+                hasSucceeded = true
+            case .failed(let error):
+                if firstFailure == nil { firstFailure = error }
+            }
+        }
+
+        if !hasSucceeded, let firstFailure {
+            throw firstFailure
+        }
+        return best?.place
     }
 
     // MARK: - Private
 
-    /// 카테고리 하나를 조회해 가장 가까운 (Place, 거리) 반환, 실패/결과없음은 nil로 흡수
+    /// 카테고리 하나를 조회해 결과 유무/실패를 구분해 반환. 취소는 흡수하지 않고 그대로 다시 throw
     private func nearestDocument(
         code: KakaoCategoryGroupCode,
         coordinate: Coordinate,
         radiusMeters: Int
-    ) async throws -> (Place, Double)? {
+    ) async throws -> CategoryResult {
         do {
             let response: KakaoPlaceResponse = try await apiClient.request(
                 KakaoLocalEndpoint.category(code: code, coordinate: coordinate, radiusMeters: radiusMeters)
@@ -68,13 +90,13 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
             guard let document = response.documents.first,
                   let place = document.toPlace(),
                   let distance = document.distanceMeters else {
-                return nil
+                return .notFound
             }
-            return (place, distance)
+            return .found(place, distanceMeters: distance)
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            return nil
+            return .failed(error)
         }
     }
 }
