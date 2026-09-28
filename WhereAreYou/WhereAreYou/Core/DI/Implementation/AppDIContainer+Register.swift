@@ -30,7 +30,7 @@ extension DIContainer {
         ))
 
         // 세션 검증
-        register(SessionValidationService.self, instance: SessionValidationService(
+        register(SessionValidationService.self, instance: DefaultSessionValidationService(
             authRepository: resolve(AuthRepository.self),
             userRepository: resolve(UserRepository.self)
         ))
