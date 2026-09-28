@@ -24,13 +24,21 @@ final class RouteSearchViewModel {
 
     private let searchRoutesUseCase: SearchRoutesUseCase
     private let getCurrentLocationUseCase: GetCurrentLocationUseCase
+    private let getNearbyPlaceUseCase: GetNearbyPlaceUseCase
+    private var fetchCurrentLocationTask: Task<Void, Never>?
 
     init(
         searchRoutesUseCase: SearchRoutesUseCase,
-        getCurrentLocationUseCase: GetCurrentLocationUseCase
+        getCurrentLocationUseCase: GetCurrentLocationUseCase,
+        getNearbyPlaceUseCase: GetNearbyPlaceUseCase
     ) {
         self.searchRoutesUseCase = searchRoutesUseCase
         self.getCurrentLocationUseCase = getCurrentLocationUseCase
+        self.getNearbyPlaceUseCase = getNearbyPlaceUseCase
+    }
+
+    deinit {
+        fetchCurrentLocationTask?.cancel()
     }
 
     func setDeparture(_ place: Place?) {
@@ -61,14 +69,19 @@ final class RouteSearchViewModel {
     }
 
     func fetchCurrentLocation() {
+        fetchCurrentLocationTask?.cancel()
         getCurrentLocationUseCase.execute { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
-                if case .success(let coordinate) = result {
+                guard case .success(let coordinate) = result else { return }
+                self.fetchCurrentLocationTask = Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    let nearbyPlace = try? await self.getNearbyPlaceUseCase.execute(coordinate: coordinate)
+                    guard !Task.isCancelled else { return }
                     let place = Place(
                         id: "current_location",
-                        name: "현재 위치",
-                        address: "",
+                        name: nearbyPlace?.name ?? "현재 위치",
+                        address: nearbyPlace?.address ?? "",
                         coordinate: coordinate,
                         type: .other
                     )
