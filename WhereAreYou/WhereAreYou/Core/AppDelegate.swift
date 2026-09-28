@@ -14,6 +14,7 @@ import FirebaseDatabase
 import FirebaseStorage
 import FirebaseMessaging
 import UserNotifications
+import AppIntents
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -28,11 +29,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         clearKeychainOnReinstall()
         configureFirebaseEmulators()
         DIContainer.shared.registerDependencies()
+        registerAppIntentDependencies()
 
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
 
         return true
+    }
+
+    /// 라이브 액티비티 버튼 같은 App Intent가 @AppDependency로 받을 의존성을 등록한다.
+    /// 인텐트는 앱이 실행된 직후 이 등록을 거쳐 실행되므로, DI 컨테이너를 직접 알 필요가 없다
+    private func registerAppIntentDependencies() {
+        let routeProgressService: RouteProgressService = DIContainer.shared.resolve()
+        AppDependencyManager.shared.add(dependency: routeProgressService)
     }
 
     /// 앱 재설치 시 Keychain에 남은 Firebase Auth 인증 정보를 제거

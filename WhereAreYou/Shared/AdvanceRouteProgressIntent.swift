@@ -9,7 +9,7 @@ import Foundation
 import AppIntents
 
 /// 라이브 액티비티의 단계 버튼("출발했나요?" 등) — 누르면 액티비티를 다음 확인 지점으로 넘긴다.
-/// LiveActivityIntent는 앱 프로세스에서 실행되므로 실제 처리는 앱 타깃에서만 컴파일된다
+/// LiveActivityIntent라 앱 프로세스에서 실행된다. 처리는 앱이 AppDependencyManager에 등록한 RouteProgressService에 맡긴다
 struct AdvanceRouteProgressIntent: LiveActivityIntent {
 
     static var title: LocalizedStringResource = "이동 단계 진행"
@@ -18,6 +18,9 @@ struct AdvanceRouteProgressIntent: LiveActivityIntent {
     @Parameter(title: "약속 ID")
     var appointmentID: String
 
+    @AppDependency
+    private var routeProgressService: RouteProgressService
+
     init() { }
 
     init(appointmentID: String) {
@@ -25,10 +28,7 @@ struct AdvanceRouteProgressIntent: LiveActivityIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        #if !WIDGET_EXTENSION
-        let service = await DIContainer.shared.resolve(RouteProgressService.self)
-        await service.advance(appointmentID: appointmentID)
-        #endif
+        await routeProgressService.advance(appointmentID: appointmentID)
         return .result()
     }
 

@@ -66,8 +66,8 @@ extension DIContainer {
         // 약속 이동 라이브 액티비티
         register(RouteLiveActivityRepository.self, instance: ActivityKitRouteLiveActivityRepository())
         register(LiveActivityPermissionRepository.self, instance: ActivityKitLiveActivityPermissionRepository())
-        // 단계 버튼(LiveActivityIntent)이 앱 프로세스에서 이 서비스를 꺼내 쓴다
-        register(RouteProgressService.self, instance: RouteProgressService(
+        // 단계 버튼(LiveActivityIntent)은 AppDelegate가 AppDependencyManager에 넘긴 이 인스턴스를 쓴다
+        register(RouteProgressService.self, instance: DefaultRouteProgressService(
             liveActivityRepository: resolve(RouteLiveActivityRepository.self)
         ))
     }
