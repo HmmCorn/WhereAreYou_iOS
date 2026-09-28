@@ -7,11 +7,6 @@
 
 protocol NearbyPlaceRepository {
 
-    @discardableResult
-    func fetchNearbyPlace(
-        coordinate: Coordinate,
-        radiusKm: Double,
-        completion: @escaping (Result<Place?, Error>) -> Void
-    ) -> CancellableRequest
+    func fetchNearbyPlace(coordinate: Coordinate, radiusKm: Double) async throws -> Place?
 
 }

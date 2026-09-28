@@ -7,10 +7,6 @@
 
 protocol PlaceSearchRepository {
 
-    @discardableResult
-    func searchPlaces(
-        keyword: String,
-        completion: @escaping (Result<[Place], Error>) -> Void
-    ) -> CancellableRequest
+    func searchPlaces(keyword: String) async throws -> [Place]
 
 }

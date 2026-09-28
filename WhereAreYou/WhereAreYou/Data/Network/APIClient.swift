@@ -9,11 +9,7 @@ import Foundation
 
 /// Endpoint 기반 네트워크 요청 실행기
 protocol APIClient {
-    @discardableResult
-    func request<T: Decodable>(
-        _ endpoint: Endpoint,
-        completion: @escaping (Result<T, Error>) -> Void
-    ) -> CancellableRequest
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
 }
 
 /// URLSession 기반 APIClient 구현
@@ -27,64 +23,39 @@ final class URLSessionAPIClient: APIClient {
         self.decoder = decoder
     }
 
-    @discardableResult
-    func request<T: Decodable>(
-        _ endpoint: Endpoint,
-        completion: @escaping (Result<T, Error>) -> Void
-    ) -> CancellableRequest {
+    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         let urlRequest: URLRequest
         do {
             urlRequest = try endpoint.makeURLRequest()
         } catch {
-            completion(.failure((error as? NetworkError ?? .invalidURL).appError))
-            return NoOpCancellableRequest()
+            throw (error as? NetworkError ?? .invalidURL).appError
         }
 
-        let task = session.dataTask(with: urlRequest) { [weak self] data, response, error in
-            guard let self else { return }
-            self.handle(data: data, response: response, error: error, completion: completion)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: urlRequest)
+        } catch {
+            throw NetworkError.transport(error).appError
         }
-        task.resume()
-        return task
+
+        return try decode(data: data, response: response)
     }
 
     // MARK: - Private
 
     /// 응답 검증 및 디코딩
-    private func handle<T: Decodable>(
-        data: Data?,
-        response: URLResponse?,
-        error: Error?,
-        completion: @escaping (Result<T, Error>) -> Void
-    ) {
-        if let error {
-            let nsError = error as NSError
-            guard nsError.code != NSURLErrorCancelled else { return }
-            completion(.failure(NetworkError.transport(error).appError))
-            return
-        }
+    private func decode<T: Decodable>(data: Data, response: URLResponse) throws -> T {
         guard let httpResponse = response as? HTTPURLResponse else {
-            completion(.failure(NetworkError.invalidResponse.appError))
-            return
+            throw NetworkError.invalidResponse.appError
         }
         guard (200..<300).contains(httpResponse.statusCode) else {
-            completion(.failure(NetworkError.httpStatus(httpResponse.statusCode).appError))
-            return
-        }
-        guard let data else {
-            completion(.failure(NetworkError.invalidResponse.appError))
-            return
+            throw NetworkError.httpStatus(httpResponse.statusCode).appError
         }
         do {
-            let decoded = try decoder.decode(T.self, from: data)
-            completion(.success(decoded))
+            return try decoder.decode(T.self, from: data)
         } catch {
-            completion(.failure(NetworkError.decoding(error).appError))
+            throw NetworkError.decoding(error).appError
         }
     }
-}
-
-/// 요청을 시작조차 못했을 때 반환하는 no-op 취소 핸들
-private struct NoOpCancellableRequest: CancellableRequest {
-    func cancel() {}
 }

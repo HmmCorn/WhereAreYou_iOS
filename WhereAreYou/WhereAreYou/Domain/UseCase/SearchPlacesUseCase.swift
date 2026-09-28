@@ -13,11 +13,8 @@ final class SearchPlacesUseCase {
         self.repository = repository
     }
 
-    func execute(
-        keyword: String,
-        completion: @escaping (Result<[Place], Error>) -> Void
-    ) {
-        repository.searchPlaces(keyword: keyword, completion: completion)
+    func execute(keyword: String) async throws -> [Place] {
+        try await repository.searchPlaces(keyword: keyword)
     }
 
 }

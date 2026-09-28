@@ -7,10 +7,6 @@
 
 protocol ReverseGeocodingRepository {
 
-    @discardableResult
-    func reverseGeocode(
-        coordinate: Coordinate,
-        completion: @escaping (Result<Place, Error>) -> Void
-    ) -> CancellableRequest
+    func reverseGeocode(coordinate: Coordinate) async throws -> Place
 
 }

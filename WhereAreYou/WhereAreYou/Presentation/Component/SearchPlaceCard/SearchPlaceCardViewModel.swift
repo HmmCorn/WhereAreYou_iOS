@@ -17,22 +17,34 @@ final class SearchPlaceCardViewModel {
 
     private var allPlaces: [Place] = []
     private let searchPlacesUseCase: SearchPlacesUseCase
+    private var searchTask: Task<Void, Never>?
 
     init(searchPlacesUseCase: SearchPlacesUseCase) {
         self.searchPlacesUseCase = searchPlacesUseCase
     }
 
+    deinit {
+        searchTask?.cancel()
+    }
+
     func search(keyword: String) {
+        searchTask?.cancel()
         isSearching = true
-        searchPlacesUseCase.execute(keyword: keyword) { [weak self] result in
+        searchTask = Task { @MainActor [weak self] in
             guard let self else { return }
-            DispatchQueue.main.async {
+            do {
+                let places = try await self.searchPlacesUseCase.execute(keyword: keyword)
+                guard !Task.isCancelled else { return }
                 self.isSearching = false
                 self.hasSearched = true
-                if case .success(let places) = result {
-                    self.allPlaces = places
-                    self.applyFilter()
-                }
+                self.allPlaces = places
+                self.applyFilter()
+            } catch is CancellationError {
+                return
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.isSearching = false
+                self.hasSearched = true
             }
         }
     }
@@ -56,6 +68,7 @@ final class SearchPlaceCardViewModel {
     }
 
     func resetAll() {
+        searchTask?.cancel()
         filteredPlaces = []
         selectedFilters = []
         hasSearched = false
