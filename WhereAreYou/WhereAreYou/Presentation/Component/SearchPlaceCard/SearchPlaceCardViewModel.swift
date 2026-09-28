@@ -29,6 +29,16 @@ final class SearchPlaceCardViewModel {
 
     func search(keyword: String) {
         searchTask?.cancel()
+
+        let trimmed = keyword.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            isSearching = false
+            hasSearched = false
+            allPlaces = []
+            applyFilter()
+            return
+        }
+
         isSearching = true
         searchTask = Task { @MainActor [weak self] in
             guard let self else { return }
