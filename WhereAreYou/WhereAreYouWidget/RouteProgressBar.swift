@@ -16,7 +16,8 @@ struct RouteProgressBar: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
+            ForEach(segments.indices, id: \.self) { index in
+                let segment = segments[index]
                 if index > 0 {
                     Capsule()
                         .fill(isPassed(index) || isCurrent(index) ? WidgetPalette.accent : Color.secondary.opacity(0.3))
