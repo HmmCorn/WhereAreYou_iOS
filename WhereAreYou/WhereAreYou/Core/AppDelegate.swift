@@ -14,11 +14,10 @@ import FirebaseDatabase
 import FirebaseStorage
 import FirebaseMessaging
 import UserNotifications
+import AppIntents
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-    private var latestFCMToken: String?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if let clientId = Bundle.main.object(forInfoDictionaryKey: "NMFClientId") as? String {
@@ -28,11 +27,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         clearKeychainOnReinstall()
         configureFirebaseEmulators()
         DIContainer.shared.registerDependencies()
+        registerAppIntentDependencies()
 
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
 
         return true
+    }
+
+    /// 라이브 액티비티 버튼 같은 App Intent가 @AppDependency로 받을 의존성을 등록한다.
+    /// 인텐트는 앱이 실행된 직후 이 등록을 거쳐 실행되므로, DI 컨테이너를 직접 알 필요가 없다
+    private func registerAppIntentDependencies() {
+        let routeProgressService: RouteProgressService = DIContainer.shared.resolve()
+        AppDependencyManager.shared.add(dependency: routeProgressService)
     }
 
     /// 앱 재설치 시 Keychain에 남은 Firebase Auth 인증 정보를 제거
@@ -73,17 +80,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /// APNs 서버에 디바이스 등록이 성공했을 때 시스템이 호출
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
-        if let token = latestFCMToken {
-            saveFCMToken(token)
-        }
+        // 이미 등록된 상태에서 불러도 대리자 didReceiveRegistration이 기존 설치 ID로 다시 호출된다.
+        // APNs 등록은 앱 실행·로그인 때마다 일어나므로, 여기서 등록을 요청해 그때마다 설치 ID를 저장한다
+        Messaging.messaging().register { _ in }
     }
 
-    // MARK: - FCM 토큰 저장
+    // MARK: - FCM 설치 ID 저장
 
-    private func saveFCMToken(_ token: String) {
-        let fcmTokenService: FCMTokenService = DIContainer.shared.resolve()
+    private func saveFCMInstallationID(_ installationID: String) {
+        let fcmInstallationIDService: FCMInstallationIDService = DIContainer.shared.resolve()
         Task {
-            try? await fcmTokenService.save(token: token)
+            try? await fcmInstallationIDService.save(installationID: installationID)
         }
     }
 
@@ -108,11 +115,10 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
 extension AppDelegate: MessagingDelegate {
 
-    /// FCM 토큰이 새로 발급되거나 갱신될 때 호출
-    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        guard let token = fcmToken else { return }
-        latestFCMToken = token
-        saveFCMToken(token)
+    /// FCM 등록이 생성·갱신되거나 register(completion:)을 직접 호출했을 때 호출 — 설치 ID를 서버 발송 대상으로 저장
+    func messaging(_ messaging: Messaging, didReceiveRegistration installationId: String?) {
+        guard let installationID = installationId else { return }
+        saveFCMInstallationID(installationID)
     }
 
 }

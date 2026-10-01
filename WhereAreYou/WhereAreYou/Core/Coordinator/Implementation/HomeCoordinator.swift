@@ -41,7 +41,11 @@ final class HomeCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
         withChatFor appointmentInfo: AppointmentInfo
     ) {
         let chatViewController = screenFactory.makeChatViewController(appointmentInfo: appointmentInfo)
-        let coordinator = ChatCoordinator(navigationController: navigationController)
+        let coordinator = ChatCoordinator(
+            navigationController: navigationController,
+            appointmentID: appointmentInfo.id,
+            chatViewController: chatViewController
+        )
         chatCoordinator = coordinator
         chatViewController.coordinator = coordinator
 
@@ -59,7 +63,11 @@ final class HomeCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
     func showChat(appointmentID: String) {
         screenFactory.makeChatViewController(appointmentID: appointmentID) { [weak self] result in
             guard let self, case .success(let chatViewController) = result else { return }
-            let coordinator = ChatCoordinator(navigationController: self.navigationController)
+            let coordinator = ChatCoordinator(
+                navigationController: self.navigationController,
+                appointmentID: appointmentID,
+                chatViewController: chatViewController
+            )
             self.chatCoordinator = coordinator
             chatViewController.coordinator = coordinator
             self.push(chatViewController)
@@ -68,7 +76,11 @@ final class HomeCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
 
     func showChat(appointmentInfo: AppointmentInfo) {
         let chatViewController = screenFactory.makeChatViewController(appointmentInfo: appointmentInfo)
-        let coordinator = ChatCoordinator(navigationController: navigationController)
+        let coordinator = ChatCoordinator(
+            navigationController: navigationController,
+            appointmentID: appointmentInfo.id,
+            chatViewController: chatViewController
+        )
         chatCoordinator = coordinator
         chatViewController.coordinator = coordinator
         push(chatViewController)
@@ -102,6 +114,17 @@ final class HomeCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
                 sheet.detents = [.large()]
             }
         }
+    }
+
+}
+
+// MARK: - 라이브 액티비티 딥링크
+
+extension HomeCoordinator: AppointmentDeepLinkHandling {
+
+    /// 홈 탭에서 연 채팅이 같은 약속이면 그 채팅이 처리한다
+    func handleInPlace(_ deepLink: AppointmentDeepLink) -> Bool {
+        chatCoordinator?.handleInPlace(deepLink) ?? false
     }
 
 }

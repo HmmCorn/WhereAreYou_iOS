@@ -12,9 +12,12 @@ extension ScreenFactory {
             observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
                 repository: container.resolve(LocationPermissionRepository.self)
             ),
+            observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase(
+                repository: container.resolve(LiveActivityPermissionRepository.self)
+            ),
             signOutUseCase: SignOutUseCase(
                 authRepository: container.resolve(AuthRepository.self),
-                fcmTokenRepository: container.resolve(FCMTokenRepository.self)
+                fcmInstallationIDRepository: container.resolve(FCMInstallationIDRepository.self)
             )
         )
         return MyPageViewController(viewModel: viewModel)

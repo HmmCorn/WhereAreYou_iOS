@@ -20,6 +20,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let coordinator = AppCoordinator(window: window)
         appCoordinator = coordinator
         coordinator.start()
+
+        if let url = connectionOptions.urlContexts.first?.url {
+            handle(url: url)
+        }
+    }
+
+    /// 라이브 액티비티 탭·버튼으로 앱이 이미 떠 있는 상태에서 들어온 링크
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else { return }
+        handle(url: url)
+    }
+
+    private func handle(url: URL) {
+        guard let deepLink = AppointmentDeepLink(url: url) else { return }
+        appCoordinator?.handle(deepLink: deepLink)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) { }

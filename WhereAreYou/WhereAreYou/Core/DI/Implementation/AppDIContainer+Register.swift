@@ -23,14 +23,14 @@ extension DIContainer {
         ))
 
         // 푸시 알림
-        register(FCMTokenRepository.self, instance: FirestoreFCMTokenRepository())
-        register(FCMTokenService.self, instance: FCMTokenService(
+        register(FCMInstallationIDRepository.self, instance: FirestoreFCMInstallationIDRepository())
+        register(FCMInstallationIDService.self, instance: DefaultFCMInstallationIDService(
             authRepository: resolve(AuthRepository.self),
-            fcmTokenRepository: resolve(FCMTokenRepository.self)
+            fcmInstallationIDRepository: resolve(FCMInstallationIDRepository.self)
         ))
 
         // 세션 검증
-        register(SessionValidationService.self, instance: SessionValidationService(
+        register(SessionValidationService.self, instance: DefaultSessionValidationService(
             authRepository: resolve(AuthRepository.self),
             userRepository: resolve(UserRepository.self)
         ))
@@ -62,6 +62,14 @@ extension DIContainer {
 
         // 길찾기
         register(RouteSearchRepository.self) { MockRouteSearchRepository() }
+
+        // 약속 이동 라이브 액티비티
+        register(RouteLiveActivityRepository.self, instance: ActivityKitRouteLiveActivityRepository())
+        register(LiveActivityPermissionRepository.self, instance: ActivityKitLiveActivityPermissionRepository())
+        // 단계 버튼(LiveActivityIntent)은 AppDelegate가 AppDependencyManager에 넘긴 이 인스턴스를 쓴다
+        register(RouteProgressService.self, instance: DefaultRouteProgressService(
+            liveActivityRepository: resolve(RouteLiveActivityRepository.self)
+        ))
     }
 
 }

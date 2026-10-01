@@ -39,4 +39,13 @@ extension NavigationCoordinator {
         navigationController.present(wrapped, animated: animated)
     }
 
+    /// 이 내비게이션 스택 위에 떠 있는 모달을 닫은 뒤 completion 실행. 떠 있는 모달이 없으면 바로 실행
+    func dismissPresented(animated: Bool = false, then completion: @escaping () -> Void) {
+        guard navigationController.presentedViewController != nil else {
+            completion()
+            return
+        }
+        navigationController.dismiss(animated: animated, completion: completion)
+    }
+
 }
