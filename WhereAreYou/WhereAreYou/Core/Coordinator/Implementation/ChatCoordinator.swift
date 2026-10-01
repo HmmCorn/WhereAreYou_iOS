@@ -13,11 +13,22 @@ final class ChatCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
     private let screenFactory: ChatScreenFactory
     private var routeSearchCoordinator: RouteSearchCoordinator?
 
+    /// 이 코디네이터가 맡은 채팅의 약속 — 딥링크가 같은 약속인지 판단할 때 쓴다
+    private let appointmentID: String
+    /// 채팅이 지금 화면 맨 위에 있는지 확인하려고 둔다. 소유는 내비게이션 스택이 한다
+    private weak var chatViewController: ChatViewController?
+    /// 같은 약속 지도가 이미 떠 있는지 확인하려고 둔다
+    private weak var routeViewController: AppointmentRouteViewController?
+
     init(
         navigationController: UINavigationController,
+        appointmentID: String,
+        chatViewController: ChatViewController,
         screenFactory: ScreenFactory = .shared
     ) {
         self.navigationController = navigationController
+        self.appointmentID = appointmentID
+        self.chatViewController = chatViewController
         self.screenFactory = screenFactory
     }
 
@@ -31,6 +42,7 @@ final class ChatCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
     func showAppointmentRoute(appointmentID: String) {
         let viewController = screenFactory.makeAppointmentRouteViewController(appointmentID: appointmentID)
         viewController.coordinator = self
+        routeViewController = viewController
         present(viewController)
     }
 
@@ -113,6 +125,35 @@ final class ChatCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
                 sheet.detents = [.large()]
             }
         }
+    }
+
+}
+
+// MARK: - 라이브 액티비티 딥링크
+
+extension ChatCoordinator: AppointmentDeepLinkHandling {
+
+    /// 내 채팅이 맨 위에 있고 같은 약속일 때만 처리한다 — 채팅을 다시 만들지 않아 입력 중이던 내용이 유지된다
+    func handleInPlace(_ deepLink: AppointmentDeepLink) -> Bool {
+        guard deepLink.appointmentID == appointmentID,
+              let chatViewController,
+              navigationController.topViewController === chatViewController
+        else { return false }
+
+        switch deepLink {
+        case .route:
+            // 같은 약속 지도가 이미 떠 있으면 그대로 둔다
+            guard routeViewController?.presentingViewController == nil else { return true }
+            dismissPresented { [weak self] in
+                guard let self else { return }
+                self.showAppointmentRoute(appointmentID: self.appointmentID)
+            }
+        case .shareLocation:
+            dismissPresented {
+                chatViewController.shareCurrentLocationAfterLoading()
+            }
+        }
+        return true
     }
 
 }

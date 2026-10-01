@@ -56,27 +56,31 @@ final class TabBarCoordinator: Coordinator {
 
     // MARK: - 딥링크
 
-    /// 약속 탭으로 전환하고 떠 있던 모달·push 화면을 정리한 뒤 목적지 화면을 띄운다
+    /// 지금 탭의 코디네이터가 자기 화면에서 처리할 수 있으면 맡기고,
+    /// 아니면 떠 있는 모달을 정리한 뒤 약속 탭에서 목적지를 새로 띄운다
     func handle(deepLink: AppointmentDeepLink) {
+        if selectedTabCoordinator?.handleInPlace(deepLink) == true { return }
+
         guard let appointmentListCoordinator else { return }
-        let navigationController = appointmentListCoordinator.navigationController
-        tabBarController.selectedViewController = navigationController
-
-        let route = {
-            navigationController.popToRootViewController(animated: false)
-            switch deepLink {
-            case .route(let appointmentID):
-                appointmentListCoordinator.showAppointmentRoute(appointmentID: appointmentID)
-            case .shareLocation(let appointmentID):
-                appointmentListCoordinator.showChatSharingLocation(appointmentID: appointmentID)
-            }
+        let showInAppointmentList = { [weak self] in
+            guard let self else { return }
+            self.tabBarController.selectedViewController = appointmentListCoordinator.navigationController
+            appointmentListCoordinator.showFromDeepLink(deepLink)
         }
 
-        if tabBarController.presentedViewController != nil {
-            tabBarController.dismiss(animated: false, completion: route)
-        } else {
-            route()
+        // 모든 탭의 모달은 루트인 탭바 컨트롤러 위에 뜨므로 여기서 한 번에 정리한다
+        guard tabBarController.presentedViewController != nil else {
+            showInAppointmentList()
+            return
         }
+        tabBarController.dismiss(animated: false, completion: showInAppointmentList)
+    }
+
+    private var selectedTabCoordinator: AppointmentDeepLinkHandling? {
+        let selectedViewController = tabBarController.selectedViewController
+        if selectedViewController === homeCoordinator?.navigationController { return homeCoordinator }
+        if selectedViewController === appointmentListCoordinator?.navigationController { return appointmentListCoordinator }
+        return nil
     }
 
 }

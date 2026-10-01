@@ -16,6 +16,13 @@ enum AppointmentDeepLink {
     /// 채팅방을 열고 내 위치를 바로 전송
     case shareLocation(appointmentID: String)
 
+    var appointmentID: String {
+        switch self {
+        case .route(let appointmentID), .shareLocation(let appointmentID):
+            return appointmentID
+        }
+    }
+
     static let scheme = "whereareyou"
     private static let host = "appointment"
     private static let routePath = "route"
