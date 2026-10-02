@@ -7,15 +7,15 @@
 
 import Foundation
 
-/// 카카오 카테고리 검색 기반 주변 장소 조회
-/// 카테고리 검색은 요청당 카테고리 1개만 지원하므로, 관심 카테고리를 병렬 요청한 뒤 가장 가까운 결과 1개를 선택
-/// 지도 이동 1회당 카테고리 수만큼 호출이 발생 — PlaceSelectionViewModel의 디바운스/최소 이동 거리 필터로 호출량을 제한
+/// 좌표 반경 내 가장 가까운 장소 1개 조회 (지도 장소 선택, 현재 위치 표시용, 키워드 검색과 무관)
+/// 카테고리 검색이 요청당 카테고리 1개만 지원해, 서비스가 다루는 카테고리를 병렬 요청 후 가장 가까운 결과 선택
+/// 지도 이동 1회당 카테고리 수만큼 호출 발생 — PlaceSelectionViewModel의 디바운스/최소 이동 거리로 호출량 제한
 final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
 
     /// 카카오 API가 허용하는 최대 반경(m)
     private static let maximumRadiusMeters = 20000
 
-    /// 조회 대상 카테고리 — PlaceType으로 매핑되는 카테고리만 포함 (KakaoPlaceDocument.placeType 참고)
+    /// 조회 대상 카테고리 — 검색 화면 필터와 무관, PlaceType 매핑 대상만 포함
     private static let categoryCodes: [KakaoCategoryGroupCode] = [
         .subwayStation, .restaurant, .cafe, .hospital, .largeMart, .convenienceStore
     ]
