@@ -15,30 +15,10 @@ enum SessionValidationResult {
 }
 
 /// 세션 검증 서비스 — 현재 로그인된 유저가 유효한지 확인
-final class SessionValidationService {
+protocol SessionValidationService {
 
-    private let authRepository: AuthRepository
-    private let userRepository: UserRepository
+    var currentUserID: String? { get }
 
-    init(authRepository: AuthRepository, userRepository: UserRepository) {
-        self.authRepository = authRepository
-        self.userRepository = userRepository
-    }
-
-    var currentUserID: String? {
-        authRepository.currentUserID
-    }
-
-    func validate() async -> SessionValidationResult {
-        guard let userID = authRepository.currentUserID else { return .invalid }
-        do {
-            _ = try await userRepository.fetchUser(userID: userID)
-            return .valid
-        } catch AppError.network {
-            return .networkError
-        } catch {
-            return .invalid
-        }
-    }
+    func validate() async -> SessionValidationResult
 
 }

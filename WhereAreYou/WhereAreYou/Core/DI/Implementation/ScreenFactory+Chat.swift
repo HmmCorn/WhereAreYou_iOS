@@ -15,6 +15,9 @@ extension ScreenFactory {
             appointmentInfo: appointmentInfo,
             fetchMessagesUseCase: FetchMessagesUseCase(repository: chatRepository),
             sendMessageUseCase: SendMessageUseCase(repository: chatRepository),
+            getCurrentLocationUseCase: GetCurrentLocationUseCase(
+                repository: container.resolve(LocationRepository.self)
+            ),
             getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase(
                 locationRepository: container.resolve(LocationRepository.self),
                 getNearbyPlaceUseCase: GetNearbyPlaceUseCase(

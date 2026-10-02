@@ -13,6 +13,8 @@ import Foundation
 //       - appointmentNotifications: 약속별 알림 화면에서 쓸 약속 목록
 //       - locationPermissionState: 위치 권한 상태를 표시용 타입으로 변환해 발행
 //         (실제 CoreLocation 접근은 Data 계층이 담당하며, ObserveLocationPermissionUseCase를 통해 전달받음)
+//       - liveActivityPermissionState: 실시간 현황 허용 상태를 표시용 타입으로 변환해 발행
+//         (ActivityKit 접근은 Data 계층이 담당하며, ObserveLiveActivityPermissionUseCase를 통해 전달받음)
 
 final class MyPageViewModel {
 
@@ -20,24 +22,29 @@ final class MyPageViewModel {
     private(set) var appointmentNotifications: [AppointmentListItem] = []
 
     @Published private(set) var locationPermissionState: LocationPermissionState
+    @Published private(set) var liveActivityPermissionState: LiveActivityPermissionState
     @Published private(set) var signOutResult: Result<Void, Error>?
 
     private let observeLocationPermissionUseCase: ObserveLocationPermissionUseCase
+    private let observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase
     private let signOutUseCase: SignOutUseCase
-    private var cancellables = Set<AnyCancellable>()
 
     init(
         profile: MyPageProfile? = nil,
         observeLocationPermissionUseCase: ObserveLocationPermissionUseCase,
+        observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase,
         signOutUseCase: SignOutUseCase
     ) {
         self.profile = profile ?? Self.makeDummyProfile()
         self.observeLocationPermissionUseCase = observeLocationPermissionUseCase
+        self.observeLiveActivityPermissionUseCase = observeLiveActivityPermissionUseCase
         self.signOutUseCase = signOutUseCase
         self.locationPermissionState = LocationPermissionState(observeLocationPermissionUseCase.currentStatus)
+        self.liveActivityPermissionState = LiveActivityPermissionState(observeLiveActivityPermissionUseCase.currentStatus)
 
         loadDummyAppointmentNotifications()
         bindLocationPermission()
+        bindLiveActivityPermission()
     }
 
     func signOut() {
@@ -159,27 +166,22 @@ extension MyPageViewModel {
 
 extension MyPageViewModel {
 
-    enum LocationPermissionAction {
-        case requested
-        case shouldOpenSettings
-    }
-
-    func requestLocationPermission() {
-        observeLocationPermissionUseCase.requestAuthorization()
-    }
-
-    func handlePermissionAction() -> LocationPermissionAction {
-        if locationPermissionState == .notDetermined {
-            requestLocationPermission()
-            return .requested
-        }
-        return .shouldOpenSettings
-    }
-
     private func bindLocationPermission() {
         observeLocationPermissionUseCase.statusPublisher
             .map(LocationPermissionState.init)
             .assign(to: &$locationPermissionState)
+    }
+
+}
+
+// MARK: - 실시간 현황 권한
+
+extension MyPageViewModel {
+
+    private func bindLiveActivityPermission() {
+        observeLiveActivityPermissionUseCase.statusPublisher
+            .map(LiveActivityPermissionState.init)
+            .assign(to: &$liveActivityPermissionState)
     }
 
 }

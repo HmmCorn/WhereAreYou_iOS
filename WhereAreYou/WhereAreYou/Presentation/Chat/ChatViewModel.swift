@@ -17,11 +17,17 @@ final class ChatViewModel {
     @Published private(set) var canSend = false
     @Published private(set) var isEmpty = false
 
+    /// 라이브 액티비티 위치 공유 경로에서 현재 위치를 못 가져왔을 때 — 확인 창 없이 보내는 경로라 실패를 따로 알린다
+    @Published private(set) var currentLocationShareError: Error?
+
     private(set) var appointmentInfo: AppointmentInfo
     private var messages: [Chat] = []
+    private var hasLoadedMessages = false
+    private var sharesLocationAfterLoading = false
 
     private let fetchMessagesUseCase: FetchMessagesUseCase
     private let sendMessageUseCase: SendMessageUseCase
+    private let getCurrentLocationUseCase: GetCurrentLocationUseCase
     private let getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase
     private let shareLocationUseCase: ShareLocationUseCase
     private let sharePlaceUseCase: SharePlaceUseCase
@@ -31,6 +37,7 @@ final class ChatViewModel {
         appointmentInfo: AppointmentInfo,
         fetchMessagesUseCase: FetchMessagesUseCase,
         sendMessageUseCase: SendMessageUseCase,
+        getCurrentLocationUseCase: GetCurrentLocationUseCase,
         getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase,
         shareLocationUseCase: ShareLocationUseCase,
         sharePlaceUseCase: SharePlaceUseCase
@@ -38,6 +45,7 @@ final class ChatViewModel {
         self.appointmentInfo = appointmentInfo
         self.fetchMessagesUseCase = fetchMessagesUseCase
         self.sendMessageUseCase = sendMessageUseCase
+        self.getCurrentLocationUseCase = getCurrentLocationUseCase
         self.getCurrentLocationPlaceUseCase = getCurrentLocationPlaceUseCase
         self.shareLocationUseCase = shareLocationUseCase
         self.sharePlaceUseCase = sharePlaceUseCase
@@ -54,6 +62,11 @@ final class ChatViewModel {
                 if case .success(let messages) = result {
                     self.messages = messages
                     self.displayItems = self.buildDisplayItems(from: messages)
+                }
+                self.hasLoadedMessages = true
+                if self.sharesLocationAfterLoading {
+                    self.sharesLocationAfterLoading = false
+                    self.shareCurrentLocation()
                 }
             }
         }
@@ -99,6 +112,29 @@ final class ChatViewModel {
                 if case .success(let message) = result {
                     self.messages.append(message)
                     self.displayItems = self.buildDisplayItems(from: self.messages)
+                }
+            }
+        }
+    }
+
+    /// 라이브 액티비티의 위치 공유 버튼으로 들어온 경우 — 확인 없이 바로 보낸다.
+    /// 메시지 조회 결과가 나중에 도착하면 보낸 메시지를 덮어쓰므로, 조회가 끝난 뒤에 보낸다
+    func shareCurrentLocationAfterLoading() {
+        if hasLoadedMessages {
+            shareCurrentLocation()
+        } else {
+            sharesLocationAfterLoading = true
+        }
+    }
+
+    private func shareCurrentLocation() {
+        getCurrentLocationUseCase.execute { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let coordinate):
+                    self?.shareLocation(coordinate: coordinate)
+                case .failure(let error):
+                    self?.currentLocationShareError = error
                 }
             }
         }
