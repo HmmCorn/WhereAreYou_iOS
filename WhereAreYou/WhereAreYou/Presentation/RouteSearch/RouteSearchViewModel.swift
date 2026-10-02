@@ -23,14 +23,19 @@ final class RouteSearchViewModel {
     private var routesDomain: [Route] = []
 
     private let searchRoutesUseCase: SearchRoutesUseCase
-    private let getCurrentLocationUseCase: GetCurrentLocationUseCase
+    private let getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase
+    private var fetchCurrentLocationTask: Task<Void, Never>?
 
     init(
         searchRoutesUseCase: SearchRoutesUseCase,
-        getCurrentLocationUseCase: GetCurrentLocationUseCase
+        getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase
     ) {
         self.searchRoutesUseCase = searchRoutesUseCase
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
+        self.getCurrentLocationPlaceUseCase = getCurrentLocationPlaceUseCase
+    }
+
+    deinit {
+        fetchCurrentLocationTask?.cancel()
     }
 
     func setDeparture(_ place: Place?) {
@@ -61,20 +66,18 @@ final class RouteSearchViewModel {
     }
 
     func fetchCurrentLocation() {
-        getCurrentLocationUseCase.execute { [weak self] result in
-            guard let self else { return }
-            DispatchQueue.main.async {
-                if case .success(let coordinate) = result {
-                    let place = Place(
-                        id: "current_location",
-                        name: "현재 위치",
-                        address: "",
-                        coordinate: coordinate,
-                        type: .other
-                    )
-                    self.setDeparture(place)
-                }
-            }
+        fetchCurrentLocationTask?.cancel()
+        fetchCurrentLocationTask = Task { @MainActor [weak self] in
+            guard let self, let result = try? await self.getCurrentLocationPlaceUseCase.execute() else { return }
+            guard !Task.isCancelled else { return }
+            let place = Place(
+                id: "current_location",
+                name: result.place?.name ?? "현재 위치",
+                address: result.place?.address ?? "",
+                coordinate: result.coordinate,
+                type: .other
+            )
+            self.setDeparture(place)
         }
     }
 

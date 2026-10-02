@@ -12,8 +12,12 @@ extension ScreenFactory {
             searchRoutesUseCase: SearchRoutesUseCase(
                 repository: container.resolve(RouteSearchRepository.self)
             ),
-            getCurrentLocationUseCase: GetCurrentLocationUseCase(
-                repository: container.resolve(LocationRepository.self)
+            getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase(
+                locationRepository: container.resolve(LocationRepository.self),
+                getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
+                    nearbyPlaceRepository: container.resolve(NearbyPlaceRepository.self),
+                    reverseGeocodingRepository: container.resolve(ReverseGeocodingRepository.self)
+                )
             )
         )
         return RouteSearchViewController(viewModel: viewModel, departure: departure, destination: destination)

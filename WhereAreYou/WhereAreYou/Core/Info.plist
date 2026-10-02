@@ -4,6 +4,8 @@
 <dict>
 	<key>NMFClientId</key>
 	<string>$(NMF_CLIENT_ID)</string>
+	<key>KakaoRestAPIKey</key>
+	<string>$(KAKAO_REST_API_KEY)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

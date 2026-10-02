@@ -7,9 +7,6 @@
 
 protocol PlaceSearchRepository {
 
-    func searchPlaces(
-        keyword: String,
-        completion: @escaping (Result<[Place], Error>) -> Void
-    )
+    func searchPlaces(keyword: String) async throws -> [Place]
 
 }

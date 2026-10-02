@@ -9,18 +9,13 @@ import Foundation
 
 final class MockNearbyPlaceRepository: NearbyPlaceRepository {
 
-    func fetchNearbyPlace(
-        coordinate: Coordinate,
-        radiusKm: Double,
-        completion: @escaping (Result<Place?, Error>) -> Void
-    ) {
+    func fetchNearbyPlace(coordinate: Coordinate, radiusKm: Double) async throws -> Place? {
         let nearest = Self.mockPlaces
             .filter { $0.coordinate.distance(to: coordinate) <= radiusKm }
             .min { $0.coordinate.distance(to: coordinate) < $1.coordinate.distance(to: coordinate) }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            completion(.success(nearest))
-        }
+        try await Task.sleep(for: .milliseconds(300))
+        return nearest
     }
 
     private static let mockPlaces: [Place] = [
