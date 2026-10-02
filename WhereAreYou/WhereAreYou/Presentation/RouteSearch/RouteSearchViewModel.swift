@@ -23,18 +23,15 @@ final class RouteSearchViewModel {
     private var routesDomain: [Route] = []
 
     private let searchRoutesUseCase: SearchRoutesUseCase
-    private let getCurrentLocationUseCase: GetCurrentLocationUseCase
-    private let getNearbyPlaceUseCase: GetNearbyPlaceUseCase
+    private let getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase
     private var fetchCurrentLocationTask: Task<Void, Never>?
 
     init(
         searchRoutesUseCase: SearchRoutesUseCase,
-        getCurrentLocationUseCase: GetCurrentLocationUseCase,
-        getNearbyPlaceUseCase: GetNearbyPlaceUseCase
+        getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase
     ) {
         self.searchRoutesUseCase = searchRoutesUseCase
-        self.getCurrentLocationUseCase = getCurrentLocationUseCase
-        self.getNearbyPlaceUseCase = getNearbyPlaceUseCase
+        self.getCurrentLocationPlaceUseCase = getCurrentLocationPlaceUseCase
     }
 
     deinit {
@@ -70,24 +67,17 @@ final class RouteSearchViewModel {
 
     func fetchCurrentLocation() {
         fetchCurrentLocationTask?.cancel()
-        getCurrentLocationUseCase.execute { [weak self] result in
-            guard let self else { return }
-            DispatchQueue.main.async {
-                guard case .success(let coordinate) = result else { return }
-                self.fetchCurrentLocationTask = Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    let nearbyPlace = try? await self.getNearbyPlaceUseCase.execute(coordinate: coordinate)
-                    guard !Task.isCancelled else { return }
-                    let place = Place(
-                        id: "current_location",
-                        name: nearbyPlace?.name ?? "현재 위치",
-                        address: nearbyPlace?.address ?? "",
-                        coordinate: coordinate,
-                        type: .other
-                    )
-                    self.setDeparture(place)
-                }
-            }
+        fetchCurrentLocationTask = Task { @MainActor [weak self] in
+            guard let self, let result = try? await self.getCurrentLocationPlaceUseCase.execute() else { return }
+            guard !Task.isCancelled else { return }
+            let place = Place(
+                id: "current_location",
+                name: result.place?.name ?? "현재 위치",
+                address: result.place?.address ?? "",
+                coordinate: result.coordinate,
+                type: .other
+            )
+            self.setDeparture(place)
         }
     }
 
