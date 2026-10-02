@@ -37,7 +37,7 @@ final class SearchPlaceCardViewModel {
             hasSearched = false
             errorMessage = nil
             allPlaces = []
-            applyFilter()
+            filteredPlaces = []
             return
         }
 
@@ -61,7 +61,7 @@ final class SearchPlaceCardViewModel {
                 self.hasSearched = true
                 self.errorMessage = (error as? AppError)?.errorDescription ?? "알 수 없는 오류가 발생했습니다. 다시 시도해 주세요."
                 self.allPlaces = []
-                self.applyFilter()
+                self.filteredPlaces = []
             }
         }
     }
