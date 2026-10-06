@@ -29,14 +29,6 @@ final class AppointmentRouteMapView: NMFNaverMapView {
 
     // MARK: - Public
 
-    func moveCamera(to coordinate: Coordinate, zoomLevel: Double = 15) {
-        let cameraPosition = NMFCameraPosition(
-            NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude),
-            zoom: zoomLevel
-        )
-        mapView.moveCamera(NMFCameraUpdate(position: cameraPosition))
-    }
-
     func setPlaceMarker(coordinate: Coordinate, name: String) {
         placeMarkerLoadTask?.cancel()
         placeMarker?.mapView = nil
@@ -49,7 +41,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
 
         if !hasMovedToInitialPosition {
             hasMovedToInitialPosition = true
-            moveCamera(to: coordinate)
+            moveCamera(to: coordinate, zoomLevel: MapZoom.overview)
         }
     }
 
