@@ -31,12 +31,60 @@ final class ClusterMarkerView: UIView {
         }
     }
 
+    /// 대표 멤버가 바뀌는 전환의 중간 프레임 렌더링 — progress 0은 from, 1은 to와 같은 이미지
+    static func renderTransitionFrame(from: UIImage, to: UIImage, progress: CGFloat) -> UIImage {
+        if progress <= 0 { return from }
+        if progress >= 1 { return to }
+
+        let imageRect = CGRect(origin: .zero, size: size)
+        let avatarRect = CGRect(x: (size.width - iconSize) / 2, y: 0, width: iconSize, height: iconSize)
+        let nameRect = CGRect(x: 0, y: iconSize, width: size.width, height: size.height - iconSize)
+        let nameFade = min(max((progress - nameFadeRange.lowerBound) / (nameFadeRange.upperBound - nameFadeRange.lowerBound), 0), 1)
+
+        return UIGraphicsImageRenderer(size: size).image { context in
+            let cgContext = context.cgContext
+
+            // 프로필 원 — 원형 창 안에서 이전 원은 왼쪽 위로 밀려나고 새 원은 오른쪽 아래에서 들어옴
+            cgContext.saveGState()
+            cgContext.addEllipse(in: avatarRect)
+            cgContext.clip()
+            for (image, step) in [(from, progress), (to, progress - 1)] {
+                guard let avatar = croppedAvatar(of: image, in: avatarRect) else { continue }
+                let movedRect = avatarRect.offsetBy(dx: slideOffset.width * step, dy: slideOffset.height * step)
+                cgContext.saveGState()
+                cgContext.addEllipse(in: movedRect.insetBy(dx: -0.5, dy: -0.5))
+                cgContext.clip()
+                avatar.draw(in: movedRect)
+                cgContext.restoreGState()
+            }
+            cgContext.restoreGState()
+
+            // 이름 영역 — 전환 중간에서만 교차 페이드, 더하기 합성이라 두 이름 배경이 겹쳐도 투명해지지 않음
+            cgContext.saveGState()
+            cgContext.clip(to: nameRect)
+            from.draw(in: imageRect, blendMode: .normal, alpha: 1 - nameFade)
+            to.draw(in: imageRect, blendMode: .plusLighter, alpha: nameFade)
+            cgContext.restoreGState()
+        }
+    }
+
+    /// 이동시켜도 이름 영역과 그 그림자가 딸려 들어오지 않도록 프로필 원 부분만 잘라낸 이미지
+    private static func croppedAvatar(of image: UIImage, in rect: CGRect) -> UIImage? {
+        let scale = image.scale
+        let pixelRect = CGRect(x: rect.minX * scale, y: rect.minY * scale, width: rect.width * scale, height: rect.height * scale)
+        return image.cgImage?.cropping(to: pixelRect).map { UIImage(cgImage: $0, scale: scale, orientation: .up) }
+    }
+
     // MARK: - Constants
 
     private static let contentWidth: CGFloat = 100
     private static let iconSize: CGFloat = 40
     private static let nameBackgroundHeight: CGFloat = 22
     private static let shadowMargin: CGFloat = 8
+    /// 이전 원이 창 밖으로 밀려나는 이동량 — 왼쪽 위 방향으로 원 지름 + 간격
+    private static let slideOffset = CGSize(width: -(iconSize + 8) * 0.86, height: -(iconSize + 8) * 0.5)
+    /// 이름 영역이 교차 페이드되는 진행 구간 — 짧게만 겹쳐 글자 번짐을 줄임
+    private static let nameFadeRange: ClosedRange<CGFloat> = 0.35...0.65
 
     // MARK: - Subviews
 
