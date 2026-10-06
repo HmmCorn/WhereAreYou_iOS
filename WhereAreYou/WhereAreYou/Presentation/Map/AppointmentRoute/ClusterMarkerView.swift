@@ -7,7 +7,7 @@
 
 import UIKit
 
-/// 겹친 참여자 마커를 대신해 지도 위에 올리는 클러스터 오버레이
+/// 겹친 참여자 마커를 대신하는 클러스터 마커 이미지의 렌더링 소스 뷰
 final class ClusterMarkerView: UIView {
 
     /// 클러스터에 속한 참여자의 표시 정보
@@ -17,10 +17,19 @@ final class ClusterMarkerView: UIView {
         let tintColor: UIColor
     }
 
-    /// 오버레이 전체 크기
+    /// 마커 전체 크기
     static let size = CGSize(width: contentWidth, height: iconSize + nameBackgroundHeight + shadowMargin)
     /// 지도 좌표가 놓이는 비율 — 프로필 원 하단 중앙
     static let anchor = CGPoint(x: 0.5, y: iconSize / size.height)
+
+    /// 지도 마커 아이콘으로 쓸 이미지 렌더링
+    static func renderImage(members: [Member]) -> UIImage {
+        let view = ClusterMarkerView(members: members)
+        view.layoutIfNeeded()
+        return UIGraphicsImageRenderer(size: size).image { context in
+            view.layer.render(in: context.cgContext)
+        }
+    }
 
     // MARK: - Constants
 
@@ -74,7 +83,7 @@ final class ClusterMarkerView: UIView {
 
     // MARK: - Init
 
-    init(members: [Member]) {
+    private init(members: [Member]) {
         super.init(frame: CGRect(origin: .zero, size: Self.size))
         setUp()
         configure(with: members)
@@ -91,8 +100,6 @@ final class ClusterMarkerView: UIView {
 private extension ClusterMarkerView {
 
     func setUp() {
-        isUserInteractionEnabled = false
-
         let nameStack = UIStackView(arrangedSubviews: [nameLabel, countLabel])
         nameStack.axis = .horizontal
         nameStack.spacing = 3

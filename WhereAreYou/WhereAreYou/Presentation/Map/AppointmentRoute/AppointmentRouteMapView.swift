@@ -15,15 +15,14 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         let id: String
         let coordinate: Coordinate
         let marker: NMFMarker
-        /// 클러스터 오버레이에 표시할 정보
+        /// 클러스터 마커에 표시할 정보
         let member: ClusterMarkerView.Member
     }
 
-    /// 지도 위에 올린 클러스터 오버레이 — 멤버 구성이 같으면 재사용
-    private struct ClusterOverlay {
+    /// 지도에 표시된 클러스터 마커 — 멤버 구성이 같으면 재사용
+    private struct ClusterMarker {
         let memberIDs: [String]
-        let coordinate: Coordinate
-        let view: ClusterMarkerView
+        let marker: NMFMarker
     }
 
     /// 겹침 판정에 쓰는 참여자 마커 크기
@@ -32,7 +31,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var placeMarker: NMFMarker?
     private var participantMarkers: [ParticipantMarker] = []
     private var clusters: [ParticipantClusterer.Cluster] = []
-    private var clusterOverlays: [ClusterOverlay] = []
+    private var clusterMarkers: [ClusterMarker] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
     private var placeMarkerLoadTask: Task<Void, Never>?
     private var markerLoadTask: Task<Void, Never>?
@@ -98,7 +97,6 @@ private extension AppointmentRouteMapView {
         showLocationButton = true
         showScaleBar = false
         showZoomControls = true
-        clipsToBounds = true
         mapView.addCameraDelegate(delegate: self)
     }
 
@@ -119,56 +117,40 @@ private extension AppointmentRouteMapView {
         applyClusters()
     }
 
-    /// 묶인 참여자는 개별 마커를 숨기고 클러스터 오버레이로 대체
+    /// 묶인 참여자는 개별 마커를 숨기고 클러스터 마커로 대체
     func applyClusters() {
         let groupedClusters = clusters.filter { $0.memberIDs.count > 1 }
         let groupedIDs = Set(groupedClusters.flatMap(\.memberIDs))
 
         participantMarkers.forEach { $0.marker.hidden = groupedIDs.contains($0.id) }
-        updateClusterOverlays(for: groupedClusters)
-        layoutClusterOverlays()
+        updateClusterMarkers(for: groupedClusters)
     }
 
-    func updateClusterOverlays(for groupedClusters: [ParticipantClusterer.Cluster]) {
-        var staleOverlays = clusterOverlays
-        clusterOverlays = groupedClusters.map { cluster in
-            if let index = staleOverlays.firstIndex(where: { $0.memberIDs == cluster.memberIDs }) {
-                return staleOverlays.remove(at: index)
+    func updateClusterMarkers(for groupedClusters: [ParticipantClusterer.Cluster]) {
+        var staleMarkers = clusterMarkers
+        clusterMarkers = groupedClusters.map { cluster in
+            if let index = staleMarkers.firstIndex(where: { $0.memberIDs == cluster.memberIDs }) {
+                return staleMarkers.remove(at: index)
             }
-            return makeClusterOverlay(for: cluster)
+            return makeClusterMarker(for: cluster)
         }
-        staleOverlays.forEach { $0.view.removeFromSuperview() }
+        staleMarkers.forEach { $0.marker.mapView = nil }
     }
 
-    private func makeClusterOverlay(for cluster: ParticipantClusterer.Cluster) -> ClusterOverlay {
+    private func makeClusterMarker(for cluster: ParticipantClusterer.Cluster) -> ClusterMarker {
         let members = cluster.memberIDs.compactMap { id in
             participantMarkers.first { $0.id == id }?.member
         }
-        let view = ClusterMarkerView(members: members)
-        if mapView.superview === self {
-            insertSubview(view, aboveSubview: mapView)
-        } else {
-            addSubview(view)
-        }
-        return ClusterOverlay(memberIDs: cluster.memberIDs, coordinate: cluster.coordinate, view: view)
-    }
 
-    func layoutClusterOverlays() {
-        for overlay in clusterOverlays {
-            let coordinate = overlay.coordinate
-            let mapPoint = mapView.projection.point(
-                from: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude)
-            )
-            let point = mapView.convert(mapPoint, to: self)
+        let coordinate = cluster.coordinate
+        let marker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
+        marker.iconImage = NMFOverlayImage(image: ClusterMarkerView.renderImage(members: members))
+        marker.width = ClusterMarkerView.size.width
+        marker.height = ClusterMarkerView.size.height
+        marker.anchor = ClusterMarkerView.anchor
+        marker.mapView = mapView
 
-            overlay.view.isHidden = !(point.x.isFinite && point.y.isFinite)
-            guard !overlay.view.isHidden else { continue }
-
-            overlay.view.frame.origin = CGPoint(
-                x: point.x - ClusterMarkerView.size.width * ClusterMarkerView.anchor.x,
-                y: point.y - ClusterMarkerView.size.height * ClusterMarkerView.anchor.y
-            )
-        }
+        return ClusterMarker(memberIDs: cluster.memberIDs, marker: marker)
     }
 
     // MARK: - Camera
@@ -262,8 +244,8 @@ private extension AppointmentRouteMapView {
         participantMarkers.forEach { $0.marker.mapView = nil }
         participantMarkers.removeAll()
         clusters.removeAll()
-        clusterOverlays.forEach { $0.view.removeFromSuperview() }
-        clusterOverlays.removeAll()
+        clusterMarkers.forEach { $0.marker.mapView = nil }
+        clusterMarkers.removeAll()
         participantPolylines.forEach { $0.mapView = nil }
         participantPolylines.removeAll()
     }
