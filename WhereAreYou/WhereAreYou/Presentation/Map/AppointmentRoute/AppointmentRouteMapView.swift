@@ -17,8 +17,12 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         let marker: NMFMarker
     }
 
+    /// 겹침 판정에 쓰는 참여자 마커 크기
+    private static let participantMarkerSize = MapMarker.size(for: .participant(profileImage: nil, tintColor: .clear))
+
     private var placeMarker: NMFMarker?
     private var participantMarkers: [ParticipantMarker] = []
+    private var clusters: [ParticipantClusterer.Cluster] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
     private var placeMarkerLoadTask: Task<Void, Never>?
     private var markerLoadTask: Task<Void, Never>?
@@ -66,6 +70,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
             for (index, participant) in participants.enumerated() {
                 await self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
             }
+            self?.updateClusters()
         }
 
         moveToInitialPositionIfNeeded(participants: participants)
@@ -83,6 +88,23 @@ private extension AppointmentRouteMapView {
         showLocationButton = true
         showScaleBar = false
         showZoomControls = true
+        mapView.addCameraDelegate(delegate: self)
+    }
+
+    // MARK: - Clustering
+
+    func updateClusters() {
+        let items = participantMarkers.map { participantMarker in
+            let coordinate = participantMarker.coordinate
+            return ParticipantClusterer.Item(
+                id: participantMarker.id,
+                coordinate: coordinate,
+                screenPoint: mapView.projection.point(
+                    from: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude)
+                )
+            )
+        }
+        clusters = ParticipantClusterer(markerSize: Self.participantMarkerSize).cluster(items)
     }
 
     // MARK: - Camera
@@ -164,8 +186,19 @@ private extension AppointmentRouteMapView {
     func clearParticipantOverlays() {
         participantMarkers.forEach { $0.marker.mapView = nil }
         participantMarkers.removeAll()
+        clusters.removeAll()
         participantPolylines.forEach { $0.mapView = nil }
         participantPolylines.removeAll()
+    }
+
+}
+
+// MARK: - NMFMapViewCameraDelegate
+
+extension AppointmentRouteMapView: NMFMapViewCameraDelegate {
+
+    func mapViewCameraIdle(_ mapView: NMFMapView) {
+        updateClusters()
     }
 
 }
