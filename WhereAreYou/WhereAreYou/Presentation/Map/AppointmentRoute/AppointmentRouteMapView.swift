@@ -10,8 +10,15 @@ import NMapsMap
 
 final class AppointmentRouteMapView: NMFNaverMapView {
 
+    /// 지도에 표시된 참여자 마커 — 클러스터링 시 식별자로 개별 제어
+    private struct ParticipantMarker {
+        let id: String
+        let coordinate: Coordinate
+        let marker: NMFMarker
+    }
+
     private var placeMarker: NMFMarker?
-    private var participantMarkers: [NMFMarker] = []
+    private var participantMarkers: [ParticipantMarker] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
     private var placeMarkerLoadTask: Task<Void, Never>?
     private var markerLoadTask: Task<Void, Never>?
@@ -151,11 +158,11 @@ private extension AppointmentRouteMapView {
         marker.anchor = MapMarker.anchor(for: kind)
         marker.mapView = mapView
 
-        participantMarkers.append(marker)
+        participantMarkers.append(ParticipantMarker(id: participant.id, coordinate: position, marker: marker))
     }
 
     func clearParticipantOverlays() {
-        participantMarkers.forEach { $0.mapView = nil }
+        participantMarkers.forEach { $0.marker.mapView = nil }
         participantMarkers.removeAll()
         participantPolylines.forEach { $0.mapView = nil }
         participantPolylines.removeAll()
