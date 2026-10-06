@@ -23,6 +23,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private struct ClusterMarker {
         let memberIDs: [String]
         let marker: NMFMarker
+        let images: [UIImage]
         let icons: [NMFOverlayImage]
         var currentIndex = 0
     }
@@ -31,6 +32,8 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private static let participantMarkerSize = MapMarker.size(for: .participant(profileImage: nil, tintColor: .clear))
     /// 클러스터 대표 멤버가 바뀌는 주기
     private static let clusterRotationInterval: Duration = .seconds(2)
+    /// 대표 멤버가 바뀌는 슬라이드 전환 시간
+    private static let clusterTransitionDuration: CFTimeInterval = 0.35
 
     private var placeMarker: NMFMarker?
     private var participantMarkers: [ParticipantMarker] = []
@@ -40,6 +43,8 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var placeMarkerLoadTask: Task<Void, Never>?
     private var markerLoadTask: Task<Void, Never>?
     private var clusterRotationTask: Task<Void, Never>?
+    private var clusterTransitionLink: CADisplayLink?
+    private var clusterTransitionStart: CFTimeInterval = 0
     private var placeCoordinate: Coordinate?
     private var hasMovedToInitialPosition = false
 
@@ -154,9 +159,10 @@ private extension AppointmentRouteMapView {
         let members = cluster.memberIDs.compactMap { id in
             participantMarkers.first { $0.id == id }?.member
         }
-        let icons = members.indices.map { index in
-            NMFOverlayImage(image: ClusterMarkerView.renderImage(members: members, memberIndex: index))
+        let images = members.indices.map { index in
+            ClusterMarkerView.renderImage(members: members, memberIndex: index)
         }
+        let icons = images.map { NMFOverlayImage(image: $0) }
 
         let coordinate = cluster.coordinate
         let marker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
@@ -168,7 +174,7 @@ private extension AppointmentRouteMapView {
         marker.anchor = ClusterMarkerView.anchor
         marker.mapView = mapView
 
-        return ClusterMarker(memberIDs: cluster.memberIDs, marker: marker, icons: icons)
+        return ClusterMarker(memberIDs: cluster.memberIDs, marker: marker, images: images, icons: icons)
     }
 
     // MARK: - Cluster Rotation
@@ -176,6 +182,7 @@ private extension AppointmentRouteMapView {
     /// 클러스터가 있고 화면에 떠 있을 때만 순회를 돌리고, 아니면 정지
     func updateClusterRotation() {
         guard !clusterMarkers.isEmpty, window != nil else {
+            cancelClusterTransition()
             clusterRotationTask?.cancel()
             clusterRotationTask = nil
             return
@@ -186,8 +193,64 @@ private extension AppointmentRouteMapView {
             while !Task.isCancelled {
                 try? await Task.sleep(for: Self.clusterRotationInterval)
                 guard !Task.isCancelled, let self else { return }
-                self.showNextClusterMembers()
+                self.rotateClusterMembers()
             }
+        }
+    }
+
+    /// 동작 줄이기가 켜져 있으면 바로 교체하고, 아니면 슬라이드 전환
+    func rotateClusterMembers() {
+        if UIAccessibility.isReduceMotionEnabled {
+            showNextClusterMembers()
+        } else {
+            startClusterTransition()
+        }
+    }
+
+    func startClusterTransition() {
+        guard clusterTransitionLink == nil else { return }
+
+        let link = CADisplayLink(target: self, selector: #selector(updateClusterTransition))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)
+        link.add(to: .main, forMode: .common)
+        clusterTransitionLink = link
+        clusterTransitionStart = CACurrentMediaTime()
+    }
+
+    @objc func updateClusterTransition() {
+        let elapsed = (CACurrentMediaTime() - clusterTransitionStart) / Self.clusterTransitionDuration
+        guard elapsed < 1 else {
+            finishClusterTransition()
+            return
+        }
+
+        // 가속 후 감속
+        let progress = elapsed * elapsed * (3 - 2 * elapsed)
+        for clusterMarker in clusterMarkers where clusterMarker.images.count > 1 {
+            let nextIndex = (clusterMarker.currentIndex + 1) % clusterMarker.images.count
+            let frame = ClusterMarkerView.renderTransitionFrame(
+                from: clusterMarker.images[clusterMarker.currentIndex],
+                to: clusterMarker.images[nextIndex],
+                progress: progress
+            )
+            clusterMarker.marker.iconImage = NMFOverlayImage(image: frame)
+        }
+    }
+
+    /// 전환을 끝내고 다음 멤버로 확정
+    func finishClusterTransition() {
+        clusterTransitionLink?.invalidate()
+        clusterTransitionLink = nil
+        showNextClusterMembers()
+    }
+
+    /// 전환을 중단하고 현재 멤버의 정지 아이콘으로 복원
+    func cancelClusterTransition() {
+        guard let link = clusterTransitionLink else { return }
+        link.invalidate()
+        clusterTransitionLink = nil
+        for clusterMarker in clusterMarkers where clusterMarker.icons.indices.contains(clusterMarker.currentIndex) {
+            clusterMarker.marker.iconImage = clusterMarker.icons[clusterMarker.currentIndex]
         }
     }
 
