@@ -44,7 +44,6 @@ final class AppointmentRouteMapView: NMFNaverMapView {
 
     private var placeMarker: NMFMarker?
     private var participantMarkers: [ParticipantMarker] = []
-    private var clusters: [ParticipantClusterer.Cluster] = []
     private var clusterMarkers: [ClusterMarker] = []
     private var participantPolylines: [NMFPolylineOverlay] = []
     private var placeMarkerLoadTask: Task<Void, Never>?
@@ -137,12 +136,12 @@ private extension AppointmentRouteMapView {
                 )
             )
         }
-        clusters = ParticipantClusterer(markerSize: Self.participantMarkerSize).cluster(items)
-        applyClusters()
+        let clusters = ParticipantClusterer(markerSize: Self.participantMarkerSize).cluster(items)
+        applyClusters(clusters)
     }
 
     /// 묶인 참여자는 개별 마커를 숨기고 클러스터 마커로 대체
-    func applyClusters() {
+    func applyClusters(_ clusters: [ParticipantClusterer.Cluster]) {
         let groupedClusters = clusters.filter { $0.memberIDs.count > 1 }
         let groupedIDs = Set(groupedClusters.flatMap(\.memberIDs))
 
@@ -362,7 +361,6 @@ private extension AppointmentRouteMapView {
     func clearParticipantOverlays() {
         participantMarkers.forEach { $0.marker.mapView = nil }
         participantMarkers.removeAll()
-        clusters.removeAll()
         clusterMarkers.forEach { $0.marker.mapView = nil }
         clusterMarkers.removeAll()
         updateClusterRotation()
