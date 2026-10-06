@@ -28,6 +28,13 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         var currentIndex = 0
     }
 
+    /// 마커가 겹칠 때의 우선순위 — 클러스터 > 개별 참여자 > 목적지
+    private enum MarkerZIndex {
+        static let place = 0
+        static let participant = 1
+        static let cluster = 2
+    }
+
     /// 겹침 판정에 쓰는 참여자 마커 크기
     private static let participantMarkerSize = MapMarker.size(for: .participant(profileImage: nil, tintColor: .clear))
     /// 클러스터 대표 멤버가 바뀌는 주기
@@ -172,6 +179,7 @@ private extension AppointmentRouteMapView {
         marker.width = ClusterMarkerView.size.width
         marker.height = ClusterMarkerView.size.height
         marker.anchor = ClusterMarkerView.anchor
+        marker.zIndex = MarkerZIndex.cluster
         marker.mapView = mapView
 
         return ClusterMarker(memberIDs: cluster.memberIDs, marker: marker, images: images, icons: icons)
@@ -316,6 +324,7 @@ private extension AppointmentRouteMapView {
         marker.width = MapMarker.size(for: kind).width
         marker.height = MapMarker.size(for: kind).height
         marker.anchor = MapMarker.anchor(for: kind)
+        marker.zIndex = MarkerZIndex.place
         marker.mapView = mapView
 
         placeMarker = marker
@@ -333,6 +342,7 @@ private extension AppointmentRouteMapView {
         marker.width = MapMarker.size(for: kind).width
         marker.height = MapMarker.size(for: kind).height
         marker.anchor = MapMarker.anchor(for: kind)
+        marker.zIndex = MarkerZIndex.participant
         marker.mapView = mapView
 
         participantMarkers.append(
