@@ -18,6 +18,13 @@ extension ScreenFactory {
             getCurrentLocationUseCase: GetCurrentLocationUseCase(
                 repository: container.resolve(LocationRepository.self)
             ),
+            getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase(
+                locationRepository: container.resolve(LocationRepository.self),
+                getNearbyPlaceUseCase: GetNearbyPlaceUseCase(
+                    nearbyPlaceRepository: container.resolve(NearbyPlaceRepository.self),
+                    reverseGeocodingRepository: container.resolve(ReverseGeocodingRepository.self)
+                )
+            ),
             shareLocationUseCase: ShareLocationUseCase(repository: chatRepository),
             sharePlaceUseCase: SharePlaceUseCase(
                 chatRepository: chatRepository,

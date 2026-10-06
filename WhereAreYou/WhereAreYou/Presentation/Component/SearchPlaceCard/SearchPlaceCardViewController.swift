@@ -203,9 +203,10 @@ final class SearchPlaceCardViewController: UIViewController {
             .store(in: &cancellables)
 
         viewModel.$hasSearched
+            .combineLatest(viewModel.$errorMessage)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] hasSearched in
-                self?.searchCard.updateEmptyResultMessage(hasSearched: hasSearched)
+            .sink { [weak self] hasSearched, errorMessage in
+                self?.searchCard.updateEmptyResultMessage(hasSearched: hasSearched, errorMessage: errorMessage)
             }
             .store(in: &cancellables)
     }

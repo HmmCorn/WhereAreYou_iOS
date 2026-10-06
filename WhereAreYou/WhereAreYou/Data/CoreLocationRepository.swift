@@ -29,6 +29,8 @@ final class CoreLocationRepository: NSObject, LocationRepository {
     }
 
     func getCurrentLocation(completion: @escaping (Result<Coordinate, Error>) -> Void) {
+        // 이전 요청이 끝나기 전 재호출 시 이전 completion을 실패로 마무리 (async 변환 시 continuation 누수 방지)
+        self.completion?(.failure(LocationError.unableToFetch))
         self.completion = completion
 
         switch locationManager.authorizationStatus {

@@ -22,28 +22,22 @@ final class GetNearbyPlaceUseCase {
     }
 
     /// 좌표 기준 POI를 우선 조회하고, 없으면 역지오코딩 주소로 대체한다
-    func execute(
-        coordinate: Coordinate,
-        completion: @escaping (Result<Place?, Error>) -> Void
-    ) {
-        nearbyPlaceRepository.fetchNearbyPlace(
-            coordinate: coordinate,
-            radiusKm: Self.maximumDistanceKm
-        ) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case .success(let place) where place != nil:
-                completion(.success(place))
-            case .success:
-                self.reverseGeocodingRepository.reverseGeocode(coordinate: coordinate) { geocodeResult in
-                    completion(geocodeResult.map { $0 })
-                }
-            case .failure:
-                self.reverseGeocodingRepository.reverseGeocode(coordinate: coordinate) { geocodeResult in
-                    completion(geocodeResult.map { $0 })
-                }
-            }
+    func execute(coordinate: Coordinate) async throws -> Place? {
+        let nearbyPlace: Place?
+        do {
+            nearbyPlace = try await nearbyPlaceRepository.fetchNearbyPlace(
+                coordinate: coordinate,
+                radiusKm: Self.maximumDistanceKm
+            )
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            nearbyPlace = nil
         }
+        if let nearbyPlace {
+            return nearbyPlace
+        }
+        return try await reverseGeocodingRepository.reverseGeocode(coordinate: coordinate)
     }
 
 }

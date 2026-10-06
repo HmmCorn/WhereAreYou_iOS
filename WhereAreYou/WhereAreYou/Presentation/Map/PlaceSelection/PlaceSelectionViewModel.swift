@@ -26,6 +26,8 @@ final class PlaceSelectionViewModel {
     private var cancellables = Set<AnyCancellable>()
     /// 마지막으로 실제 조회를 실행했던 좌표
     private var lastFetchedCoordinate: Coordinate?
+    /// 진행 중인 근처 장소 조회 Task — 새 좌표가 들어오면 이전 Task를 취소해 응답 경쟁을 막음
+    private var nearbyPlaceTask: Task<Void, Never>?
 
     /// 이 거리(km) 미만으로 움직였을 때는 재조회하지 않음
     private static let minimumFetchDistanceKm = 0.02
@@ -46,6 +48,10 @@ final class PlaceSelectionViewModel {
         self.getNearbyPlaceUseCase = getNearbyPlaceUseCase
         self.initialCoordinate = initialCoordinate
         bindCenterCoordinate()
+    }
+
+    deinit {
+        nearbyPlaceTask?.cancel()
     }
 
     func fetchCurrentLocation() {
@@ -79,21 +85,25 @@ final class PlaceSelectionViewModel {
     }
 
     private func fetchNearbyPlace(at coordinate: Coordinate) {
+        nearbyPlaceTask?.cancel()
         isFetchingNearbyPlace = true
-        getNearbyPlaceUseCase.execute(coordinate: coordinate) { [weak self] result in
+        nearbyPlaceTask = Task { @MainActor [weak self] in
             guard let self else { return }
-            DispatchQueue.main.async {
+            do {
+                let fetchedPlace = try await self.getNearbyPlaceUseCase.execute(coordinate: coordinate)
+                guard !Task.isCancelled else { return }
                 self.isFetchingNearbyPlace = false
-                switch result {
-                case .success(let fetchedPlace):
-                    self.nearbyPlaceDomain = fetchedPlace
-                    self.nearbyPlace = fetchedPlace.map { PlaceInfo(place: $0) }
-                    self.updateDistanceText(for: fetchedPlace)
-                case .failure:
-                    self.nearbyPlaceDomain = nil
-                    self.nearbyPlace = nil
-                    self.distanceText = nil
-                }
+                self.nearbyPlaceDomain = fetchedPlace
+                self.nearbyPlace = fetchedPlace.map { PlaceInfo(place: $0) }
+                self.updateDistanceText(for: fetchedPlace)
+            } catch is CancellationError {
+                return
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.isFetchingNearbyPlace = false
+                self.nearbyPlaceDomain = nil
+                self.nearbyPlace = nil
+                self.distanceText = nil
             }
         }
     }

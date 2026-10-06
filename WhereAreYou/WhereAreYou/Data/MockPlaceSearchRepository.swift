@@ -9,22 +9,10 @@ import Foundation
 
 final class MockPlaceSearchRepository: PlaceSearchRepository {
 
-    func searchPlaces(
-        keyword: String,
-        completion: @escaping (Result<[Place], Error>) -> Void
-    ) {
+    func searchPlaces(keyword: String) async throws -> [Place] {
         let trimmed = keyword.trimmingCharacters(in: .whitespaces)
-        let results: [Place]
-
-        if trimmed.isEmpty {
-            results = []
-        } else {
-            results = Self.mockPlaces
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            completion(.success(results))
-        }
+        try await Task.sleep(for: .milliseconds(300))
+        return trimmed.isEmpty ? [] : Self.mockPlaces
     }
 
     private static let mockPlaces: [Place] = [
