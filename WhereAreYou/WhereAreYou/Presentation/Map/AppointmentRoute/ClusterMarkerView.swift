@@ -23,8 +23,8 @@ final class ClusterMarkerView: UIView {
     static let anchor = CGPoint(x: 0.5, y: iconSize / size.height)
 
     /// 지도 마커 아이콘으로 쓸 이미지 렌더링
-    static func renderImage(members: [Member]) -> UIImage {
-        let view = ClusterMarkerView(members: members)
+    static func renderImage(members: [Member], memberIndex: Int) -> UIImage {
+        let view = ClusterMarkerView(members: members, memberIndex: memberIndex)
         view.layoutIfNeeded()
         return UIGraphicsImageRenderer(size: size).image { context in
             view.layer.render(in: context.cgContext)
@@ -83,10 +83,10 @@ final class ClusterMarkerView: UIView {
 
     // MARK: - Init
 
-    private init(members: [Member]) {
+    private init(members: [Member], memberIndex: Int) {
         super.init(frame: CGRect(origin: .zero, size: Self.size))
         setUp()
-        configure(with: members)
+        configure(with: members, memberIndex: memberIndex)
     }
 
     required init?(coder: NSCoder) {
@@ -135,13 +135,14 @@ private extension ClusterMarkerView {
         ])
     }
 
-    /// 첫 번째 멤버 기준으로 표시
-    func configure(with members: [Member]) {
-        guard let first = members.first else { return }
+    /// memberIndex 멤버 기준으로 표시
+    func configure(with members: [Member], memberIndex: Int) {
+        guard members.indices.contains(memberIndex) else { return }
+        let member = members[memberIndex]
 
-        avatarImageView.image = first.profileImage
-        avatarCircleView.layer.borderColor = first.tintColor.cgColor
-        nameLabel.text = first.nickname
+        avatarImageView.image = member.profileImage
+        avatarCircleView.layer.borderColor = member.tintColor.cgColor
+        nameLabel.text = member.nickname
         countLabel.text = "외 \(members.count - 1)명"
         countLabel.isHidden = members.count < 2
     }

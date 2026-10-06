@@ -23,10 +23,14 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private struct ClusterMarker {
         let memberIDs: [String]
         let marker: NMFMarker
+        let icons: [NMFOverlayImage]
+        var currentIndex = 0
     }
 
     /// 겹침 판정에 쓰는 참여자 마커 크기
     private static let participantMarkerSize = MapMarker.size(for: .participant(profileImage: nil, tintColor: .clear))
+    /// 클러스터 대표 멤버가 바뀌는 주기
+    private static let clusterRotationInterval: Duration = .seconds(2)
 
     private var placeMarker: NMFMarker?
     private var participantMarkers: [ParticipantMarker] = []
@@ -35,6 +39,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var participantPolylines: [NMFPolylineOverlay] = []
     private var placeMarkerLoadTask: Task<Void, Never>?
     private var markerLoadTask: Task<Void, Never>?
+    private var clusterRotationTask: Task<Void, Never>?
     private var placeCoordinate: Coordinate?
     private var hasMovedToInitialPosition = false
 
@@ -48,6 +53,13 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         setUp()
     }
 
+    // MARK: - Lifecycle
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        updateClusterRotation()
+    }
+
     // MARK: - Public
 
     func setPlaceMarker(coordinate: Coordinate, name: String) {
@@ -57,7 +69,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
         placeMarkerLoadTask = Task { [weak self] in
             let pinImage = await AppAssetImageLoader.shared.load(.pin)
             guard !Task.isCancelled else { return }
-            await self?.addPlaceMarker(coordinate: coordinate, name: name, pinImage: pinImage)
+            self?.addPlaceMarker(coordinate: coordinate, name: name, pinImage: pinImage)
         }
 
         placeCoordinate = coordinate
@@ -77,7 +89,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
             guard !Task.isCancelled, !images.isEmpty else { return }
 
             for (index, participant) in participants.enumerated() {
-                await self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
+                self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
             }
             self?.updateClusters()
         }
@@ -135,22 +147,56 @@ private extension AppointmentRouteMapView {
             return makeClusterMarker(for: cluster)
         }
         staleMarkers.forEach { $0.marker.mapView = nil }
+        updateClusterRotation()
     }
 
     private func makeClusterMarker(for cluster: ParticipantClusterer.Cluster) -> ClusterMarker {
         let members = cluster.memberIDs.compactMap { id in
             participantMarkers.first { $0.id == id }?.member
         }
+        let icons = members.indices.map { index in
+            NMFOverlayImage(image: ClusterMarkerView.renderImage(members: members, memberIndex: index))
+        }
 
         let coordinate = cluster.coordinate
         let marker = NMFMarker(position: NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude))
-        marker.iconImage = NMFOverlayImage(image: ClusterMarkerView.renderImage(members: members))
+        if let firstIcon = icons.first {
+            marker.iconImage = firstIcon
+        }
         marker.width = ClusterMarkerView.size.width
         marker.height = ClusterMarkerView.size.height
         marker.anchor = ClusterMarkerView.anchor
         marker.mapView = mapView
 
-        return ClusterMarker(memberIDs: cluster.memberIDs, marker: marker)
+        return ClusterMarker(memberIDs: cluster.memberIDs, marker: marker, icons: icons)
+    }
+
+    // MARK: - Cluster Rotation
+
+    /// 클러스터가 있고 화면에 떠 있을 때만 순회를 돌리고, 아니면 정지
+    func updateClusterRotation() {
+        guard !clusterMarkers.isEmpty, window != nil else {
+            clusterRotationTask?.cancel()
+            clusterRotationTask = nil
+            return
+        }
+        guard clusterRotationTask == nil else { return }
+
+        clusterRotationTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.clusterRotationInterval)
+                guard !Task.isCancelled, let self else { return }
+                self.showNextClusterMembers()
+            }
+        }
+    }
+
+    func showNextClusterMembers() {
+        for index in clusterMarkers.indices where clusterMarkers[index].icons.count > 1 {
+            let nextIndex = (clusterMarkers[index].currentIndex + 1) % clusterMarkers[index].icons.count
+            clusterMarkers[index].currentIndex = nextIndex
+            clusterMarkers[index].marker.iconImage = clusterMarkers[index].icons[nextIndex]
+        }
     }
 
     // MARK: - Camera
@@ -246,6 +292,7 @@ private extension AppointmentRouteMapView {
         clusters.removeAll()
         clusterMarkers.forEach { $0.marker.mapView = nil }
         clusterMarkers.removeAll()
+        updateClusterRotation()
         participantPolylines.forEach { $0.mapView = nil }
         participantPolylines.removeAll()
     }

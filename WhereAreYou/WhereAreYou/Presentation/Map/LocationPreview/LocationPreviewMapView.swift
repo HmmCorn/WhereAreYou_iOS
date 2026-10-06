@@ -33,7 +33,7 @@ final class LocationPreviewMapView: NMFNaverMapView {
         markerLoadTask = Task { [weak self] in
             let pinImage = await AppAssetImageLoader.shared.load(.pin)
             guard !Task.isCancelled else { return }
-            await self?.addMarker(coordinate: coordinate, name: name, accentColor: accentColor, pinImage: pinImage)
+            self?.addMarker(coordinate: coordinate, name: name, accentColor: accentColor, pinImage: pinImage)
         }
 
         if !hasMovedToInitialPosition {
