@@ -28,4 +28,22 @@ extension NMFNaverMapView {
         mapView.moveCamera(NMFCameraUpdate(position: cameraPosition))
     }
 
+    /// 모든 좌표가 보이도록 카메라 이동
+    func fitCamera(to coordinates: [Coordinate], padding: CGFloat = 60, maxZoom: Double = MapZoom.detail) {
+        guard let firstCoordinate = coordinates.first else { return }
+
+        let latLngs = coordinates.map { NMGLatLng(lat: $0.latitude, lng: $0.longitude) }
+        let bounds = NMGLatLngBounds(latLngs: latLngs)
+        guard bounds.latSpan > 0 || bounds.lngSpan > 0 else {
+            moveCamera(to: firstCoordinate, zoomLevel: maxZoom)
+            return
+        }
+
+        let map = mapView
+        map.moveCamera(NMFCameraUpdate(fit: bounds, padding: padding)) { [weak map] isCancelled in
+            guard !isCancelled, let map, map.cameraPosition.zoom > maxZoom else { return }
+            map.moveCamera(NMFCameraUpdate(zoomTo: maxZoom))
+        }
+    }
+
 }
