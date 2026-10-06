@@ -15,6 +15,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
     private var participantPolylines: [NMFPolylineOverlay] = []
     private var placeMarkerLoadTask: Task<Void, Never>?
     private var markerLoadTask: Task<Void, Never>?
+    private var placeCoordinate: Coordinate?
     private var hasMovedToInitialPosition = false
 
     override init(frame: CGRect) {
@@ -39,10 +40,7 @@ final class AppointmentRouteMapView: NMFNaverMapView {
             await self?.addPlaceMarker(coordinate: coordinate, name: name, pinImage: pinImage)
         }
 
-        if !hasMovedToInitialPosition {
-            hasMovedToInitialPosition = true
-            moveCamera(to: coordinate, zoomLevel: MapZoom.overview)
-        }
+        placeCoordinate = coordinate
     }
 
     func setParticipants(_ participants: [AppointmentRouteParticipant]) {
@@ -62,6 +60,8 @@ final class AppointmentRouteMapView: NMFNaverMapView {
                 await self?.addMarker(for: participant, color: colors[index], profileImage: images[index])
             }
         }
+
+        moveToInitialPositionIfNeeded(participants: participants)
     }
 
 }
@@ -76,6 +76,16 @@ private extension AppointmentRouteMapView {
         showLocationButton = true
         showScaleBar = false
         showZoomControls = true
+    }
+
+    // MARK: - Camera
+
+    func moveToInitialPositionIfNeeded(participants: [AppointmentRouteParticipant]) {
+        guard !hasMovedToInitialPosition, let placeCoordinate else { return }
+        hasMovedToInitialPosition = true
+
+        let participantPath = participants.flatMap(\.path)
+        fitCamera(to: [placeCoordinate] + participantPath, maxZoom: MapZoom.overview)
     }
 
     // MARK: - Overlay Building
