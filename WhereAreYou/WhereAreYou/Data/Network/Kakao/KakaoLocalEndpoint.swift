@@ -10,7 +10,7 @@ import Foundation
 /// 카카오 로컬 API 요청
 enum KakaoLocalEndpoint {
     /// 키워드로 장소 검색
-    case keyword(query: String)
+    case keyword(query: String, page: Int = 1)
     /// 좌표 반경 내 카테고리 검색, 거리순 정렬
     case category(code: KakaoCategoryGroupCode, coordinate: Coordinate, radiusMeters: Int)
     /// 좌표 -> 주소 변환
@@ -36,10 +36,11 @@ extension KakaoLocalEndpoint: Endpoint {
 
     var queryItems: [URLQueryItem] {
         switch self {
-        case .keyword(let query):
+        case .keyword(let query, let page):
             return [
                 URLQueryItem(name: "query", value: query),
-                URLQueryItem(name: "size", value: "15")
+                URLQueryItem(name: "size", value: "15"),
+                URLQueryItem(name: "page", value: "\(page)")
             ]
         case .category(let code, let coordinate, let radiusMeters):
             return [
