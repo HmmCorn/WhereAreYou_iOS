@@ -26,18 +26,30 @@ struct KakaoAddressDocument: Decodable {
 /// 도로명주소
 struct KakaoRoadAddress: Decodable {
     let addressName: String
+    /// 시/도
+    let region1DepthName: String?
+    /// 시/군/구
+    let region2DepthName: String?
 
     enum CodingKeys: String, CodingKey {
         case addressName = "address_name"
+        case region1DepthName = "region_1depth_name"
+        case region2DepthName = "region_2depth_name"
     }
 }
 
 /// 지번주소
 struct KakaoAddress: Decodable {
     let addressName: String
+    /// 시/도
+    let region1DepthName: String?
+    /// 시/군/구
+    let region2DepthName: String?
 
     enum CodingKeys: String, CodingKey {
         case addressName = "address_name"
+        case region1DepthName = "region_1depth_name"
+        case region2DepthName = "region_2depth_name"
     }
 }
 
