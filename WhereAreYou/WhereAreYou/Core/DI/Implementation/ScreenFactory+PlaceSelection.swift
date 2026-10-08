@@ -16,6 +16,9 @@ extension ScreenFactory {
                 nearbyPlaceRepository: container.resolve(NearbyPlaceRepository.self),
                 reverseGeocodingRepository: container.resolve(ReverseGeocodingRepository.self)
             ),
+            getRegionPlaceUseCase: GetRegionPlaceUseCase(
+                reverseGeocodingRepository: container.resolve(ReverseGeocodingRepository.self)
+            ),
             initialCoordinate: initialCoordinate
         )
         return PlaceSelectionViewController(viewModel: viewModel)
