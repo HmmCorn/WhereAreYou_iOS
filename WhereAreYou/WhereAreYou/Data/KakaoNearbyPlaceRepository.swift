@@ -15,9 +15,10 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
     /// 카카오 API가 허용하는 최대 반경(m)
     private static let maximumRadiusMeters = 20000
 
-    /// 조회 대상 카테고리 — 검색 화면 필터와 무관, PlaceType 매핑 대상만 포함
+    /// 조회 대상 카테고리
     private static let categoryCodes: [KakaoCategoryGroupCode] = [
-        .subwayStation, .restaurant, .cafe, .hospital, .largeMart, .convenienceStore
+        .subwayStation, .restaurant, .cafe, .hospital, .largeMart, .convenienceStore,
+        .publicInstitution, .attraction, .culturalFacility
     ]
 
     private let apiClient: APIClient
