@@ -30,7 +30,7 @@ final class PlaceSelectionViewModel {
     private var nearbyPlaceTask: Task<Void, Never>?
 
     /// 이 거리(km) 미만으로 움직였을 때는 재조회하지 않음
-    private static let minimumFetchDistanceKm = 0.02
+    private static let minimumFetchDistanceKm = 0.03
 
     /// 현재 위치 조회를 위임하는 UseCase
     private let getCurrentLocationUseCase: GetCurrentLocationUseCase
@@ -72,7 +72,7 @@ final class PlaceSelectionViewModel {
 
     private func bindCenterCoordinate() {
         centerCoordinateSubject
-            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
             .filter { [weak self] coordinate in
                 guard let self, let lastFetchedCoordinate else { return true }
                 return lastFetchedCoordinate.distance(to: coordinate) >= Self.minimumFetchDistanceKm
