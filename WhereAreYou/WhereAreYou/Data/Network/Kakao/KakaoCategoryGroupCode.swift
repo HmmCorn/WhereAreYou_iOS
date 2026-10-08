@@ -29,7 +29,7 @@ enum KakaoCategoryGroupCode: String {
     case pharmacy = "PM9"         // 약국
 }
 
-extension KakaoCategoryGroupCode {
+nonisolated extension KakaoCategoryGroupCode {
 
     /// 코드 정보가 없는 장소에 적용하는 기본 대표성 가중치
     static let defaultRepresentativeness = 1.0
