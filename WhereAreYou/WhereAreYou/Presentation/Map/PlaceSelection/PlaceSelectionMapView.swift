@@ -10,7 +10,8 @@ import NMapsMap
 
 final class PlaceSelectionMapView: NMFNaverMapView {
 
-    var onCameraIdle: ((Coordinate) -> Void)?
+    /// 카메라 이동이 멈추면 핀이 가리키는 좌표와 현재 줌 레벨을 전달
+    var onCameraIdle: ((Coordinate, Double) -> Void)?
 
     private let centerPinImageView: UIImageView = {
         let imageView = UIImageView()
@@ -69,7 +70,7 @@ extension PlaceSelectionMapView: NMFMapViewCameraDelegate {
             to: mapView
         )
         let coordinate = mapView.projection.latlng(from: pinPoint)
-        onCameraIdle?(Coordinate(latitude: coordinate.lat, longitude: coordinate.lng))
+        onCameraIdle?(Coordinate(latitude: coordinate.lat, longitude: coordinate.lng), mapView.zoomLevel)
     }
 
 }

@@ -28,3 +28,21 @@ enum KakaoCategoryGroupCode: String {
     case hospital = "HP8"         // 병원
     case pharmacy = "PM9"         // 약국
 }
+
+nonisolated extension KakaoCategoryGroupCode {
+
+    /// 코드 정보가 없는 장소에 적용하는 기본 대표성 가중치
+    static let defaultRepresentativeness = 1.0
+
+    /// 지명을 대표하는 정도
+    var representativeness: Double {
+        switch self {
+        case .subwayStation, .publicInstitution, .attraction:
+            return 4.0
+        case .culturalFacility, .hospital, .largeMart:
+            return 2.0
+        default:
+            return Self.defaultRepresentativeness
+        }
+    }
+}

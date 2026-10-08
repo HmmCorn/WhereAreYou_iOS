@@ -23,6 +23,22 @@ final class MockReverseGeocodingRepository: ReverseGeocodingRepository {
         return place
     }
 
+    func reverseGeocodeRegion(coordinate: Coordinate, level: RegionLevel) async throws -> Place {
+        let parts = Self.mockAddress(near: coordinate).roadName.split(separator: " ").map(String.init)
+        let province = parts.first ?? "알 수 없는 지역"
+        let city = parts.count > 1 ? parts[1] : province
+        let place = Place(
+            id: "region_\(level.rawValue)_\(coordinate.latitude)_\(coordinate.longitude)",
+            name: level == .province ? province : city,
+            address: province == city ? province : "\(province) \(city)",
+            coordinate: coordinate,
+            type: .other
+        )
+
+        try await Task.sleep(for: .milliseconds(300))
+        return place
+    }
+
     /// 실제 API의 도로명주소 응답 형태를 흉내낸 더미 주소 생성
     /// 좌표와 가장 가까운 지역 기준점을 찾아, 도로명(요약)과 도로명+지번(상세) 주소를 함께 반환
     private static func mockAddress(near coordinate: Coordinate) -> (roadName: String, fullAddress: String) {
