@@ -13,8 +13,8 @@ final class SearchPlacesUseCase {
         self.repository = repository
     }
 
-    func execute(keyword: String) async throws -> [Place] {
-        try await repository.searchPlaces(keyword: keyword)
+    func execute(keyword: String, near coordinate: Coordinate? = nil) async throws -> [Place] {
+        try await repository.searchPlaces(keyword: keyword, near: coordinate)
     }
 
 }

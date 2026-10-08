@@ -16,7 +16,7 @@ final class KakaoPlaceSearchRepository: PlaceSearchRepository {
         self.apiClient = apiClient
     }
 
-    func searchPlaces(keyword: String) async throws -> [Place] {
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
         async let firstPage = fetchDocuments(keyword: keyword, page: 1)
         async let secondPage = fetchDocumentsIgnoringFailure(keyword: keyword, page: 2)
 

@@ -9,7 +9,7 @@ import Foundation
 
 final class MockPlaceSearchRepository: PlaceSearchRepository {
 
-    func searchPlaces(keyword: String) async throws -> [Place] {
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
         let trimmed = keyword.trimmingCharacters(in: .whitespaces)
         try await Task.sleep(for: .milliseconds(300))
         return trimmed.isEmpty ? [] : Self.mockPlaces
