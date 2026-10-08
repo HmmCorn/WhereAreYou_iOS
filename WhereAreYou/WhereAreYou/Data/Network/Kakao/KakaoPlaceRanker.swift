@@ -27,6 +27,7 @@ nonisolated enum KakaoPlaceRanker {
         let originalIndex: Int
         let matchLevel: MatchLevel
         let representativeness: Double
+        let distanceMeters: Double?
         let lengthRatio: Double
     }
 
@@ -34,8 +35,12 @@ nonisolated enum KakaoPlaceRanker {
         let normalizedKeyword = normalize(keyword)
         guard !normalizedKeyword.isEmpty else { return documents }
 
+        let usesDistance = documents.allSatisfy { $0.distanceMeters != nil }
+
         return documents.enumerated()
-            .map { candidate(of: $1, at: $0, normalizedKeyword: normalizedKeyword) }
+            .map {
+                candidate(of: $1, at: $0, normalizedKeyword: normalizedKeyword, usesDistance: usesDistance)
+            }
             .sorted(by: isOrderedBefore)
             .map(\.document)
     }
@@ -45,7 +50,8 @@ nonisolated enum KakaoPlaceRanker {
     private static func candidate(
         of document: KakaoPlaceDocument,
         at index: Int,
-        normalizedKeyword: String
+        normalizedKeyword: String,
+        usesDistance: Bool
     ) -> Candidate {
         let normalizedName = normalize(document.placeName)
         let representativeness = KakaoCategoryGroupCode(rawValue: document.categoryGroupCode)?.representativeness
@@ -59,6 +65,7 @@ nonisolated enum KakaoPlaceRanker {
             originalIndex: index,
             matchLevel: matchLevel(name: normalizedName, keyword: normalizedKeyword),
             representativeness: representativeness,
+            distanceMeters: usesDistance ? document.distanceMeters : nil,
             lengthRatio: lengthRatio
         )
     }
@@ -74,6 +81,9 @@ nonisolated enum KakaoPlaceRanker {
     private static func isOrderedBefore(_ lhs: Candidate, _ rhs: Candidate) -> Bool {
         if lhs.matchLevel != rhs.matchLevel { return lhs.matchLevel > rhs.matchLevel }
         if lhs.representativeness != rhs.representativeness { return lhs.representativeness > rhs.representativeness }
+        if let lhsDistance = lhs.distanceMeters, let rhsDistance = rhs.distanceMeters, lhsDistance != rhsDistance {
+            return lhsDistance < rhsDistance
+        }
         if lhs.lengthRatio != rhs.lengthRatio { return lhs.lengthRatio > rhs.lengthRatio }
         return lhs.originalIndex < rhs.originalIndex
     }

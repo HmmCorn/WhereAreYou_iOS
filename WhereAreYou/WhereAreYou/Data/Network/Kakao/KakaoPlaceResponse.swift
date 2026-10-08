@@ -41,7 +41,7 @@ struct KakaoPlaceDocument: Decodable {
 extension KakaoPlaceDocument {
 
     /// 중심 좌표로부터의 거리(m), 파싱 실패 시 nil
-    var distanceMeters: Double? {
+    nonisolated var distanceMeters: Double? {
         distance.flatMap(Double.init)
     }
 
