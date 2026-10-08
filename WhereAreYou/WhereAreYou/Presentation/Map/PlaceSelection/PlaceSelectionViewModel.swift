@@ -12,9 +12,9 @@ final class PlaceSelectionViewModel {
 
     /// 사용자의 현재 GPS 좌표
     @Published private(set) var currentLocation: Coordinate?
-    /// 지도 중앙 좌표 기준 근처 장소를 조회 중인지 여부
+    /// 지도 중앙 좌표 기준 근처 장소 또는 지역명을 조회 중인지 여부
     @Published private(set) var isFetchingNearbyPlace = false
-    /// 지도 중앙 좌표 기준으로 조회된 가장 가까운 장소 1개
+    /// 지도 중앙 좌표 기준으로 조회된 근처 장소 또는 지역명 1개 (줌 레벨에 따라 결정)
     @Published private(set) var nearbyPlace: PlaceInfo?
     /// currentLocation과 nearbyPlace 사이 거리를 표시용 문자열로 계산해둔 값
     @Published private(set) var distanceText: String?
@@ -30,7 +30,7 @@ final class PlaceSelectionViewModel {
     private var lastFetchedCoordinate: Coordinate?
     /// 마지막으로 실제 조회를 실행했던 조회 방식
     private var lastFetchedMode: FetchMode?
-    /// 진행 중인 근처 장소 조회 Task — 새 좌표가 들어오면 이전 Task를 취소해 응답 경쟁을 막음
+    /// 진행 중인 근처 장소·지역명 조회 Task — 새 좌표가 들어오면 이전 Task를 취소해 응답 경쟁을 막음
     private var nearbyPlaceTask: Task<Void, Never>?
 
     /// 줌 레벨에 따른 조회 방식

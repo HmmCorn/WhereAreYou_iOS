@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// 좌표 반경 내 가장 가까운 장소 1개 조회 (지도 장소 선택, 현재 위치 표시용, 키워드 검색과 무관)
+/// 좌표 반경 내 거리와 대표성을 고려한 장소 1개 조회 (지도 장소 선택, 현재 위치 표시용, 키워드 검색과 무관)
 /// 카테고리 검색이 요청당 카테고리 1개만 지원해, 서비스가 다루는 카테고리를 병렬 요청 후 거리와 카테고리 대표성을 함께 고려해 선택
 /// 지도 이동 1회당 카테고리 수만큼 호출 발생 — PlaceSelectionViewModel의 디바운스/최소 이동 거리로 호출량 제한
 final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
