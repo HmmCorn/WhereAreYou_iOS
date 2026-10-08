@@ -49,9 +49,9 @@ final class PlaceSelectionViewModel {
     }
 
     /// 이 줌 레벨 이상이면 주변 장소 조회
-    private static let nearbyPlaceMinimumZoomLevel = 15.0
+    private static let nearbyPlaceMinimumZoomLevel = 14.0
     /// 이 줌 레벨 이상(주변 장소 미만)이면 시/군/구, 미만이면 시/도 조회
-    private static let cityMinimumZoomLevel = 12.0
+    private static let cityMinimumZoomLevel = 9.0
 
     /// 현재 줌 레벨에 해당하는 조회 방식, 줌 레벨을 모르면 주변 장소
     private var currentFetchMode: FetchMode {

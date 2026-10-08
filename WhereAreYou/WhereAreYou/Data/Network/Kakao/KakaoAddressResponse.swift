@@ -55,17 +55,40 @@ struct KakaoAddress: Decodable {
 
 extension KakaoAddressResponse {
 
+    /// 카카오가 약칭으로 내려주는 시/도명을 정식 명칭으로 변환
+    /// 이미 정식 명칭이거나 매핑이 없으면 그대로 사용
+    private static let provinceFullNames: [String: String] = [
+        "서울": "서울특별시",
+        "부산": "부산광역시",
+        "대구": "대구광역시",
+        "인천": "인천광역시",
+        "광주": "광주광역시",
+        "대전": "대전광역시",
+        "울산": "울산광역시",
+        "세종": "세종특별자치시",
+        "경기": "경기도",
+        "강원": "강원특별자치도",
+        "충북": "충청북도",
+        "충남": "충청남도",
+        "전북": "전북특별자치도",
+        "전남": "전라남도",
+        "경북": "경상북도",
+        "경남": "경상남도",
+        "제주": "제주특별자치도",
+    ]
+
     /// 지정한 행정구역 단위의 Place로 변환, 지역명이 없으면 emptyResult
     func toRegionPlace(coordinate: Coordinate, level: RegionLevel) throws -> Place {
         guard let document = documents.first else {
             throw NetworkError.emptyResult
         }
-        let province = document.address?.region1DepthName ?? document.roadAddress?.region1DepthName
+        let rawProvince = document.address?.region1DepthName ?? document.roadAddress?.region1DepthName
         let city = document.address?.region2DepthName ?? document.roadAddress?.region2DepthName
 
-        guard let province, !province.isEmpty else {
+        guard let rawProvince, !rawProvince.isEmpty else {
             throw NetworkError.emptyResult
         }
+        let province = Self.provinceFullNames[rawProvince] ?? rawProvince
         let name: String
         switch level {
         case .province:
