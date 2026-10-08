@@ -17,10 +17,11 @@ final class KakaoPlaceSearchRepository: PlaceSearchRepository {
     }
 
     func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place] {
-        async let firstPage = fetchDocuments(keyword: keyword, page: 1)
-        async let secondPage = fetchDocumentsIgnoringFailure(keyword: keyword, page: 2)
+        async let firstPage = fetchDocuments(keyword: keyword, page: 1, coordinate: coordinate)
+        async let secondPage = fetchDocumentsIgnoringFailure(keyword: keyword, page: 2, coordinate: coordinate)
+        async let nearestPage = fetchNearestDocuments(keyword: keyword, coordinate: coordinate)
 
-        let documents = try await firstPage + secondPage
+        let documents = try await firstPage + secondPage + nearestPage
 
         var seenIDs = Set<String>()
         let uniqueDocuments = documents.filter { seenIDs.insert($0.id).inserted }
@@ -31,20 +32,41 @@ final class KakaoPlaceSearchRepository: PlaceSearchRepository {
 
     // MARK: - Private
 
-    private func fetchDocuments(keyword: String, page: Int) async throws -> [KakaoPlaceDocument] {
+    private func fetchDocuments(
+        keyword: String,
+        page: Int,
+        coordinate: Coordinate?,
+        sort: KakaoKeywordSort = .accuracy
+    ) async throws -> [KakaoPlaceDocument] {
         let response: KakaoPlaceResponse = try await apiClient.request(
-            KakaoLocalEndpoint.keyword(query: keyword, page: page)
+            KakaoLocalEndpoint.keyword(query: keyword, page: page, coordinate: coordinate, sort: sort)
         )
         return response.documents
     }
 
     /// 보조 페이지 조회
-    private func fetchDocumentsIgnoringFailure(keyword: String, page: Int) async throws -> [KakaoPlaceDocument] {
+    private func fetchDocumentsIgnoringFailure(
+        keyword: String,
+        page: Int,
+        coordinate: Coordinate?,
+        sort: KakaoKeywordSort = .accuracy
+    ) async throws -> [KakaoPlaceDocument] {
         do {
-            return try await fetchDocuments(keyword: keyword, page: page)
+            return try await fetchDocuments(keyword: keyword, page: page, coordinate: coordinate, sort: sort)
         } catch {
             try Task.checkCancellation()
             return []
         }
+    }
+
+    /// 기준 좌표에서 가까운 순 후보 조회
+    private func fetchNearestDocuments(keyword: String, coordinate: Coordinate?) async throws -> [KakaoPlaceDocument] {
+        guard let coordinate else { return [] }
+        return try await fetchDocumentsIgnoringFailure(
+            keyword: keyword,
+            page: 1,
+            coordinate: coordinate,
+            sort: .distance
+        )
     }
 }
