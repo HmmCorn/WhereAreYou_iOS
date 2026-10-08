@@ -8,7 +8,7 @@
 import Foundation
 
 /// 좌표 반경 내 가장 가까운 장소 1개 조회 (지도 장소 선택, 현재 위치 표시용, 키워드 검색과 무관)
-/// 카테고리 검색이 요청당 카테고리 1개만 지원해, 서비스가 다루는 카테고리를 병렬 요청 후 가장 가까운 결과 선택
+/// 카테고리 검색이 요청당 카테고리 1개만 지원해, 서비스가 다루는 카테고리를 병렬 요청 후 거리와 카테고리 대표성을 함께 고려해 선택
 /// 지도 이동 1회당 카테고리 수만큼 호출 발생 — PlaceSelectionViewModel의 디바운스/최소 이동 거리로 호출량 제한
 final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
 
@@ -34,6 +34,11 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
         let place: Place
         let distanceMeters: Double
         let categoryCode: KakaoCategoryGroupCode
+
+        /// 선택 점수, 낮을수록 우선
+        var score: Double {
+            distanceMeters / categoryCode.representativeness
+        }
     }
 
     /// 카테고리 하나 조회 결과 — 결과 없음(정상)과 요청 실패를 구분해 상위에서 정책을 결정할 수 있게 함
@@ -80,7 +85,7 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
         if !hasSucceeded, let firstFailure {
             throw firstFailure
         }
-        return candidates.min { $0.distanceMeters < $1.distanceMeters }?.place
+        return candidates.min { $0.score < $1.score }?.place
     }
 
     // MARK: - Private
