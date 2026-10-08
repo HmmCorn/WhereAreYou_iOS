@@ -55,6 +55,41 @@ struct KakaoAddress: Decodable {
 
 extension KakaoAddressResponse {
 
+    /// 지정한 행정구역 단위의 Place로 변환, 지역명이 없으면 emptyResult
+    func toRegionPlace(coordinate: Coordinate, level: RegionLevel) throws -> Place {
+        guard let document = documents.first else {
+            throw NetworkError.emptyResult
+        }
+        let province = document.address?.region1DepthName ?? document.roadAddress?.region1DepthName
+        let city = document.address?.region2DepthName ?? document.roadAddress?.region2DepthName
+
+        guard let province, !province.isEmpty else {
+            throw NetworkError.emptyResult
+        }
+        let name: String
+        switch level {
+        case .province:
+            name = province
+        case .city:
+            guard let city, !city.isEmpty else {
+                throw NetworkError.emptyResult
+            }
+            name = city
+        }
+        let address = [province, city]
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+
+        return Place(
+            id: "region_\(level.rawValue)_\(coordinate.latitude)_\(coordinate.longitude)",
+            name: name,
+            address: address,
+            coordinate: coordinate,
+            type: .other
+        )
+    }
+
     /// Place로 변환, 도로명 우선 없으면 지번, 결과 없으면 emptyResult
     func toPlace(coordinate: Coordinate) throws -> Place {
         guard let document = documents.first else {
