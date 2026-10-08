@@ -8,7 +8,7 @@
 import Foundation
 
 /// 카카오 로컬 API 카테고리 그룹 코드 전체
-enum KakaoCategoryGroupCode: String, CaseIterable {
+enum KakaoCategoryGroupCode: String {
     case largeMart = "MT1"        // 대형마트
     case convenienceStore = "CS2" // 편의점
     case kindergarten = "PS3"     // 어린이집, 유치원
