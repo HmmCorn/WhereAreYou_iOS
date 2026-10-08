@@ -16,10 +16,7 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
     private static let maximumRadiusMeters = 20000
 
     /// 조회 대상 카테고리
-    private static let categoryCodes: [KakaoCategoryGroupCode] = [
-        .subwayStation, .restaurant, .cafe, .hospital, .largeMart, .convenienceStore,
-        .publicInstitution, .attraction, .culturalFacility
-    ]
+    private static let categoryCodes = KakaoCategoryGroupCode.allCases
 
     private let apiClient: APIClient
 
