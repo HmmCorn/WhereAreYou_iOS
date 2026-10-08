@@ -23,8 +23,9 @@ final class KakaoPlaceSearchRepository: PlaceSearchRepository {
         let documents = try await firstPage + secondPage
 
         var seenIDs = Set<String>()
-        return documents
-            .filter { seenIDs.insert($0.id).inserted }
+        let uniqueDocuments = documents.filter { seenIDs.insert($0.id).inserted }
+
+        return KakaoPlaceRanker.rank(uniqueDocuments, keyword: keyword)
             .compactMap { $0.toPlace() }
     }
 
