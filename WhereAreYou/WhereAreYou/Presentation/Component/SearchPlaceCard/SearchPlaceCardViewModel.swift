@@ -46,7 +46,7 @@ final class SearchPlaceCardViewModel {
         searchTask = Task { @MainActor [weak self] in
             guard let self else { return }
             do {
-                let places = try await self.searchPlacesUseCase.execute(keyword: keyword)
+                let places = try await self.searchPlacesUseCase.execute(keyword: trimmed)
                 guard !Task.isCancelled else { return }
                 self.isSearching = false
                 self.hasSearched = true
