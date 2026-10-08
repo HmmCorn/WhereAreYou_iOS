@@ -20,6 +20,8 @@ final class PlaceSelectionViewModel {
     @Published private(set) var distanceText: String?
 
     private(set) var nearbyPlaceDomain: Place?
+    /// 지도의 마지막 줌 레벨 — 카메라 이동이 멈출 때 갱신
+    private(set) var zoomLevel: Double?
     /// 지도 중앙 좌표가 바뀔 때마다 이벤트를 흘려보내는 파이프
     private let centerCoordinateSubject = PassthroughSubject<Coordinate, Never>()
     /// Combine 구독을 유지하기 위한 저장소
@@ -66,7 +68,11 @@ final class PlaceSelectionViewModel {
         }
     }
 
-    func setCenterCoordinate(_ coordinate: Coordinate) {
+    /// zoomLevel이 nil이면 직전에 전달된 줌 레벨을 유지 (현재 위치·초기 좌표처럼 줌 정보가 없는 호출)
+    func setCenterCoordinate(_ coordinate: Coordinate, zoomLevel: Double? = nil) {
+        if let zoomLevel {
+            self.zoomLevel = zoomLevel
+        }
         centerCoordinateSubject.send(coordinate)
     }
 
