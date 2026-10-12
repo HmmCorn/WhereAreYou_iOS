@@ -43,8 +43,7 @@ final class MockAppointmentInfoRepository: AppointmentInfoRepository {
             dateTime: date ?? current.dateTime,
             place: place ?? current.place,
             participants: current.participants,
-            routes: current.routes,
-            placeVoteStatus: current.placeVoteStatus
+            routes: current.routes
         )
         storedAppointments[appointmentID] = updated
 
@@ -99,8 +98,7 @@ final class MockAppointmentInfoRepository: AppointmentInfoRepository {
             dateTime: Date().addingTimeInterval(3600),
             place: place,
             participants: [currentUser, user2, user3],
-            routes: [:],
-            placeVoteStatus: [:]
+            routes: [:]
         )
     }
 

@@ -23,8 +23,7 @@ final class MockAppointmentCreationRepository: AppointmentCreationRepository {
             dateTime: date ?? Date(),
             place: place,
             participants: [],
-            routes: [:],
-            placeVoteStatus: [:]
+            routes: [:]
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

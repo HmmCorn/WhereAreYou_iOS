@@ -154,8 +154,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
             dateTime: myTimelineBase.addingTimeInterval(25 * 60),
             place: place,
             participants: users,
-            routes: routes,
-            placeVoteStatus: [:]
+            routes: routes
         )
     }
 
