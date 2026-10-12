@@ -11,7 +11,9 @@ extension ScreenFactory {
         let viewModel = AppointmentRouteViewModel(
             appointmentID: appointmentID,
             getAppointmentDetailUseCase: GetAppointmentDetailUseCase(
-                repository: container.resolve(AppointmentDetailRepository.self)
+                appointmentRepository: container.resolve(AppointmentRepository.self),
+                appointmentRouteRepository: container.resolve(AppointmentRouteRepository.self),
+                authRepository: container.resolve(AuthRepository.self)
             )
         )
         return AppointmentRouteViewController(viewModel: viewModel)

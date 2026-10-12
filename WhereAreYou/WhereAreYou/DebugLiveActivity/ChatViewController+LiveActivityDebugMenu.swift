@@ -18,8 +18,8 @@ extension ChatViewController {
         let makeScenarioActions: (Bool) -> [UIAction] = { startsAfterAppointmentTime in
             MockMyRouteScenario.allCases.map { scenario in
                 UIAction(title: scenario.title) { [weak self] _ in
-                    MockAppointmentDetailRepository.myRouteScenario = scenario
-                    MockAppointmentDetailRepository.startsAfterAppointmentTime = startsAfterAppointmentTime
+                    MockAppointmentRouteRepository.myRouteScenario = scenario
+                    MockAppointmentRepository.startsAfterAppointmentTime = startsAfterAppointmentTime
                     self?.startLiveActivity(appointmentID: appointmentID)
                 }
             }
@@ -42,7 +42,11 @@ extension ChatViewController {
     private func startLiveActivity(appointmentID: String) {
         let container = DIContainer.shared
         let useCase = StartRouteLiveActivityUseCase(
-            appointmentDetailRepository: container.resolve(AppointmentDetailRepository.self),
+            getAppointmentDetailUseCase: GetAppointmentDetailUseCase(
+                appointmentRepository: container.resolve(AppointmentRepository.self),
+                appointmentRouteRepository: container.resolve(AppointmentRouteRepository.self),
+                authRepository: container.resolve(AuthRepository.self)
+            ),
             liveActivityRepository: ActivityKitRouteLiveActivityRepository(),
             permissionRepository: container.resolve(LiveActivityPermissionRepository.self)
         )

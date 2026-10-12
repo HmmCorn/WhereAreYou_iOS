@@ -45,23 +45,23 @@ final class AppointmentCreationViewModel {
         isCreating = true
         if appointmentTitle.isEmpty { appointmentTitle = "약속" }
 
-        createAppointmentUseCase.execute(
-            title: appointmentTitle,
-            date: appointmentDate,
-            place: placeDomain
-        ) { [weak self] result in
+        // TODO: 약속 날짜 필수화 때 appointmentDate를 필수로 바꾸고 기본값을 없앤다
+        let dateTime = appointmentDate ?? Date()
+        Task { @MainActor [weak self] in
             guard let self else { return }
-            DispatchQueue.main.async {
+            do {
+                let appointment = try await self.createAppointmentUseCase.execute(
+                    name: self.appointmentTitle,
+                    dateTime: dateTime,
+                    place: self.placeDomain
+                )
                 self.isCreating = false
-                switch result {
-                case .success(let appointment):
-                    self.id = appointment.id
-                    self.code = appointment.code
-                    self.hasCreated = true
-                case .failure:
-                    // TODO: 서버 작업 후 실패 케이스 정리해 사용자에게 표시할 실패 텍스트 추가 예정
-                    break
-                }
+                self.id = appointment.id
+                self.code = appointment.code
+                self.hasCreated = true
+            } catch {
+                self.isCreating = false
+                // TODO: 서버 작업 후 실패 케이스 정리해 사용자에게 표시할 실패 텍스트 추가 예정
             }
         }
     }

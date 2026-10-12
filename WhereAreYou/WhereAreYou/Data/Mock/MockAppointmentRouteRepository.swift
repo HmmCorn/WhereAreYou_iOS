@@ -1,5 +1,5 @@
 //
-//  MockAppointmentDetailRepository.swift
+//  MockAppointmentRouteRepository.swift
 //  WhereAreYou
 //
 //  Created by 김성훈 on 7/31/26.
@@ -7,155 +7,67 @@
 
 import Foundation
 
-final class MockAppointmentDetailRepository: AppointmentDetailRepository {
-
-    func fetchAppointment(
-        appointmentID: String,
-        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
-    ) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let appointment = Self.makeMockAppointment(appointmentID: appointmentID)
-            completion(.success((appointment: appointment, currentUserID: Self.currentUserID)))
-        }
-    }
-
-    func fetchAppointment(
-        code: String,
-        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
-    ) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            guard code == Self.mockCode else {
-                completion(.failure(AppError.notFound))
-                return
-            }
-            let appointment = Self.makeMockAppointment(appointmentID: "appointment_joined")
-            completion(.success((appointment: appointment, currentUserID: Self.currentUserID)))
-        }
-    }
-
-    private static let currentUserID = "user_me"
+/// 서버 연결 전 참여자 경로 저장소 — MockAppointmentRepository의 참여자와 약속 장소에 맞춘 고정 경로를 돌려준다
+final class MockAppointmentRouteRepository: AppointmentRouteRepository {
 
     /// 내 경로 시나리오 — DEBUG 라이브 액티비티 시작 메뉴에서 바꿔 가며 확인한다
     static var myRouteScenario: MockMyRouteScenario = .subwayTransfer
-    /// true면 약속 시각을 5분 전으로 당긴다 — 약속 시간이 지난 상태의 라이브 액티비티 확인용
-    static var startsAfterAppointmentTime = false
-    private static let mockCode = "MOCK1234"
 
-    private static func makeMockAppointment(appointmentID: String) -> Appointment {
-        let place = Place(
-            id: "place_starbucks_gangnam",
-            name: "스타벅스 강남역점",
-            address: "서울 강남구 강남대로 396",
-            coordinate: Coordinate(latitude: 37.4979, longitude: 127.0276),
-            type: .cafe
-        )
+    private let authRepository: AuthRepository
 
+    init(authRepository: AuthRepository) {
+        self.authRepository = authRepository
+    }
+
+    func fetchRoutes(appointmentID: String) async throws -> [String: Route] {
+        try await Task.sleep(for: .milliseconds(500))
+        return makeMockRoutes()
+    }
+
+    private func makeMockRoutes() -> [String: Route] {
+        let place = MockAppointmentRepository.place
+        let currentUserID = authRepository.currentUserID ?? MockAppointmentRepository.fallbackCurrentUserID
         let now = Date()
         // 약속 시각과 내 경로만 당긴다. 다른 참여자 경로는 지도 표시용이라 그대로 둔다
-        let myTimelineBase = startsAfterAppointmentTime ? now.addingTimeInterval(-30 * 60) : now
+        let myTimelineBase = MockAppointmentRepository.startsAfterAppointmentTime
+            ? now.addingTimeInterval(-30 * 60)
+            : now
 
-        let users: [User] = [
-            User(
-                id: currentUserID,
-                nickname: "나",
-                profileImage: "shark",
-                defaultTransportMode: .car,
-                locationSharingScope: .onlyDuringAppointment,
-                isNotificationEnabled: true,
-                appointmentsNotification: [:]
-            ),
-            User(
-                id: "user_minji",
-                nickname: "김민지",
-                profileImage: "turtle",
-                defaultTransportMode: .transit,
-                locationSharingScope: .onlyDuringAppointment,
-                isNotificationEnabled: true,
-                appointmentsNotification: [:]
-            ),
-            User(
-                id: "user_seoyeon",
-                nickname: "이서연",
-                profileImage: "shark",
-                defaultTransportMode: .car,
-                locationSharingScope: .onlyDuringAppointment,
-                isNotificationEnabled: true,
-                appointmentsNotification: [:]
-            ),
-            User(
-                id: "user_junwoo",
-                nickname: "박준우",
-                profileImage: "turtle",
-                defaultTransportMode: .transit,
-                locationSharingScope: .onlyDuringAppointment,
-                isNotificationEnabled: true,
-                appointmentsNotification: [:]
-            ),
-            User(
-                id: "user_gildong",
-                nickname: "최길동",
-                profileImage: "shark",
-                defaultTransportMode: .walk,
-                locationSharingScope: .onlyDuringAppointment,
-                isNotificationEnabled: true,
-                appointmentsNotification: [:]
-            ),
-            User(
-                id: "user_subin",
-                nickname: "정수빈",
-                profileImage: "turtle",
-                defaultTransportMode: .car,
-                locationSharingScope: .onlyDuringAppointment,
-                isNotificationEnabled: true,
-                appointmentsNotification: [:]
-            ),
-        ]
-
-        let routes: [String: Route] = [
-            currentUserID: makeMyRoute(
+        return [
+            currentUserID: Self.makeMyRoute(
                 to: place, departureTime: myTimelineBase.addingTimeInterval(1 * 60)
             ),
-            "user_minji": makeRoute(
+            "user_minji": Self.makeRoute(
                 to: place, departureTime: now.addingTimeInterval(-40 * 60),
                 arrivalTime: now.addingTimeInterval(8 * 60),
                 start: Coordinate(latitude: 37.5040, longitude: 127.0350),
                 transportType: .transit
             ),
-            "user_seoyeon": makeRoute(
+            "user_seoyeon": Self.makeRoute(
                 to: place, departureTime: now.addingTimeInterval(-38 * 60),
                 arrivalTime: now.addingTimeInterval(7 * 60),
                 start: Coordinate(latitude: 37.4990, longitude: 127.0120),
                 transportType: .car
             ),
-            "user_junwoo": makeRoute(
+            "user_junwoo": Self.makeRoute(
                 to: place, departureTime: now.addingTimeInterval(-30 * 60),
                 arrivalTime: now.addingTimeInterval(10 * 60),
                 start: Coordinate(latitude: 37.4900, longitude: 127.0300),
                 transportType: .transit
             ),
-            "user_gildong": makeRoute(
+            "user_gildong": Self.makeRoute(
                 to: place, departureTime: now.addingTimeInterval(-25 * 60),
                 arrivalTime: now.addingTimeInterval(15 * 60),
                 start: Coordinate(latitude: 37.4965, longitude: 127.0230),
                 transportType: .walk
             ),
-            "user_subin": makeRoute(
+            "user_subin": Self.makeRoute(
                 to: place, departureTime: now.addingTimeInterval(-20 * 60),
                 arrivalTime: now.addingTimeInterval(11 * 60),
                 start: Coordinate(latitude: 37.5010, longitude: 127.0400),
                 transportType: .car
             ),
         ]
-
-        return Appointment(
-            id: appointmentID,
-            code: Self.mockCode,
-            name: "고기굽는방앗간 이수역점",
-            dateTime: myTimelineBase.addingTimeInterval(25 * 60),
-            place: place,
-            participants: users,
-            routes: routes
-        )
     }
 
     private static func makeRoute(
@@ -336,7 +248,7 @@ final class MockAppointmentDetailRepository: AppointmentDetailRepository {
 
 }
 
-/// MockAppointmentDetailRepository가 돌려주는 내 경로 종류
+/// MockAppointmentRouteRepository가 돌려주는 내 경로 종류
 enum MockMyRouteScenario: CaseIterable {
 
     case subwayTransfer

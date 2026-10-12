@@ -9,25 +9,23 @@ import Foundation
 
 final class UpdateAppointmentInfoUseCase {
 
-    private let repository: AppointmentInfoRepository
+    private let repository: AppointmentRepository
 
-    init(repository: AppointmentInfoRepository) {
+    init(repository: AppointmentRepository) {
         self.repository = repository
     }
 
     func execute(
         appointmentID: String,
         name: String?,
-        date: Date?,
-        place: Place?,
-        completion: @escaping (Result<Appointment, Error>) -> Void
-    ) {
-        repository.updateAppointmentInfo(
+        dateTime: Date?,
+        place: Place?
+    ) async throws -> Appointment {
+        try await repository.updateAppointment(
             appointmentID: appointmentID,
             name: name,
-            date: date,
-            place: place,
-            completion: completion
+            dateTime: dateTime,
+            place: place
         )
     }
 

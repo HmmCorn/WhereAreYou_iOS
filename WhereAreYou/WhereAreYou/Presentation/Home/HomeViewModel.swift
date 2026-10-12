@@ -19,11 +19,11 @@ final class HomeViewModel {
     }
 
     func joinAppointment(code: String, completion: @escaping (Result<AppointmentInfo, Error>) -> Void) {
-        joinAppointmentUseCase.execute(code: code) { result in
-            switch result {
-            case .success(let (appointment, _)):
+        Task { @MainActor in
+            do {
+                let appointment = try await joinAppointmentUseCase.execute(code: code)
                 completion(.success(AppointmentInfo(appointment: appointment)))
-            case .failure(let error):
+            } catch {
                 completion(.failure(error))
             }
         }

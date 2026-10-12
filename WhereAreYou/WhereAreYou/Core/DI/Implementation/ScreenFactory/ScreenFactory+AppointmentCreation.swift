@@ -10,7 +10,7 @@ extension ScreenFactory {
     func makeAppointmentCreationViewController() -> AppointmentCreationViewController {
         let viewModel = AppointmentCreationViewModel(
             createAppointmentUseCase: CreateAppointmentUseCase(
-                repository: container.resolve(AppointmentCreationRepository.self)
+                repository: container.resolve(AppointmentRepository.self)
             )
         )
         return AppointmentCreationViewController(viewModel)
