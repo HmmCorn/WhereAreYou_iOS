@@ -84,8 +84,7 @@ final class AppointmentCreationViewController: UIViewController {
         viewModel.$appointmentDate
             .receive(on: DispatchQueue.main)
             .sink { [weak self] date in
-                guard let self, let date else { return }
-                self.creationCard.setDateLabel(date)
+                self?.creationCard.setDateLabel(date)
             }
             .store(in: &cancellables)
 

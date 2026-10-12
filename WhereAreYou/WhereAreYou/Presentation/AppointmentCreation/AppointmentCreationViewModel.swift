@@ -18,7 +18,8 @@ final class AppointmentCreationViewModel {
     private var isCreating = false
     private var placeDomain: Place?
 
-    @Published private(set) var appointmentDate: Date?
+    /// 날짜는 필수라 다음 정시로 미리 채워 둔다
+    @Published private(set) var appointmentDate: Date = AppointmentCreationViewModel.nextHour()
     @Published private(set) var place: PlaceInfo?
     @Published private(set) var hasCreated: Bool = false
 
@@ -45,14 +46,12 @@ final class AppointmentCreationViewModel {
         isCreating = true
         if appointmentTitle.isEmpty { appointmentTitle = "약속" }
 
-        // TODO: 약속 날짜 필수화 때 appointmentDate를 필수로 바꾸고 기본값을 없앤다
-        let dateTime = appointmentDate ?? Date()
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
                 let appointment = try await self.createAppointmentUseCase.execute(
                     name: self.appointmentTitle,
-                    dateTime: dateTime,
+                    dateTime: self.appointmentDate,
                     place: self.placeDomain
                 )
                 self.isCreating = false
@@ -75,6 +74,12 @@ final class AppointmentCreationViewModel {
             location: placeDomain.map { AppointmentLocation(place: $0) },
             participants: []
         )
+    }
+
+    private static func nextHour(after date: Date = Date()) -> Date {
+        let calendar = Calendar.current
+        let startOfHour = calendar.dateInterval(of: .hour, for: date)?.start ?? date
+        return calendar.date(byAdding: .hour, value: 1, to: startOfHour) ?? date
     }
 
 }
