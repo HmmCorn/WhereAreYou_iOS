@@ -26,14 +26,6 @@ final class LocationPreviewMapView: NMFNaverMapView {
 
     // MARK: - Public
 
-    func moveCamera(to coordinate: Coordinate, zoomLevel: Double = 16) {
-        let cameraPosition = NMFCameraPosition(
-            NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude),
-            zoom: zoomLevel
-        )
-        mapView.moveCamera(NMFCameraUpdate(position: cameraPosition))
-    }
-
     func setMarker(coordinate: Coordinate, name: String, accentColor: UIColor) {
         markerLoadTask?.cancel()
         marker?.mapView = nil
@@ -41,7 +33,7 @@ final class LocationPreviewMapView: NMFNaverMapView {
         markerLoadTask = Task { [weak self] in
             let pinImage = await AppAssetImageLoader.shared.load(.pin)
             guard !Task.isCancelled else { return }
-            await self?.addMarker(coordinate: coordinate, name: name, accentColor: accentColor, pinImage: pinImage)
+            self?.addMarker(coordinate: coordinate, name: name, accentColor: accentColor, pinImage: pinImage)
         }
 
         if !hasMovedToInitialPosition {

@@ -49,14 +49,6 @@ final class PlaceSelectionMapView: NMFNaverMapView {
         ])
     }
 
-    func moveCamera(to coordinate: Coordinate, zoomLevel: Double = 16) {
-        let cameraPosition = NMFCameraPosition(
-            NMGLatLng(lat: coordinate.latitude, lng: coordinate.longitude),
-            zoom: zoomLevel
-        )
-        mapView.moveCamera(NMFCameraUpdate(position: cameraPosition))
-    }
-
 }
 
 // MARK: - NMFMapViewCameraDelegate
