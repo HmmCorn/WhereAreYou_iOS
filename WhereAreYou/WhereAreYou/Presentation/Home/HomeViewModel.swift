@@ -40,7 +40,7 @@ final class HomeViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .hour, value: 10, to: Date())
+                date: Date().addingTimeInterval(10 * 60 * 60)
             ),
             UpcomingAppointment(
                 id: "2",
@@ -51,7 +51,7 @@ final class HomeViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .hour, value: 30, to: Date())
+                date: Date().addingTimeInterval(30 * 60 * 60)
             ),
             UpcomingAppointment(
                 id: "3",
@@ -62,10 +62,10 @@ final class HomeViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .hour, value: 3, to: Date())
+                date: Date().addingTimeInterval(3 * 60 * 60)
             )
         ]
-        .sorted { ($0.date ?? .distantFuture) < ($1.date ?? .distantFuture) }
+        .sorted { $0.date < $1.date }
     }
 
 }

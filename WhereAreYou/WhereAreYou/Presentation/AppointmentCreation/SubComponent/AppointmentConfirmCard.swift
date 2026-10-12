@@ -84,7 +84,7 @@ final class AppointmentConfirmCard: UIView {
 
     private func configure(with data: AppointmentInfo) {
         nameRow.text = data.title
-        dateRow.text = data.date?.koreanDateString ?? "미정"
+        dateRow.text = data.date.koreanDateString
         placeRow.text = data.location?.title ?? "미정"
         codeLabel.text = "약속 코드 : \(data.code)"
     }

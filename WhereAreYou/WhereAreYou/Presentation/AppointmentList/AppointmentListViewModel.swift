@@ -70,7 +70,7 @@ final class AppointmentListViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date()),
+                date: Calendar.current.startOfDay(for: Date()).addingTimeInterval(12 * 60 * 60),
                 isNotificationEnabled: true
             ),
             AppointmentListItem(
@@ -82,7 +82,7 @@ final class AppointmentListViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: Date()),
+                date: Calendar.current.startOfDay(for: Date()),
                 isNotificationEnabled: true
             ),
             AppointmentListItem(
@@ -94,7 +94,7 @@ final class AppointmentListViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .minute, value: 30, to: Date()),
+                date: Date().addingTimeInterval(30 * 60),
                 isNotificationEnabled: true
             ),
             AppointmentListItem(
@@ -106,7 +106,7 @@ final class AppointmentListViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .day, value: 1, to: Date()),
+                date: Date().addingTimeInterval(1 * 24 * 60 * 60),
                 isNotificationEnabled: true
             ),
             AppointmentListItem(
@@ -118,21 +118,21 @@ final class AppointmentListViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .day, value: 365, to: Date()),
+                date: Date().addingTimeInterval(365 * 24 * 60 * 60),
                 isNotificationEnabled: false
             )
         ]
 
         let (today, upcoming) = allAppointments.reduce(into: ([AppointmentListItem](), [AppointmentListItem]())) { result, item in
-            if let date = item.date, Calendar.current.isDateInToday(date) {
+            if Calendar.current.isDateInToday(item.date) {
                 result.0.append(item)
             } else {
                 result.1.append(item)
             }
         }
 
-        todayAppointments = today.sorted { ($0.date ?? .distantFuture) < ($1.date ?? .distantFuture) }
-        upcomingAppointments = upcoming.sorted { ($0.date ?? .distantFuture) < ($1.date ?? .distantFuture) }
+        todayAppointments = today.sorted { $0.date < $1.date }
+        upcomingAppointments = upcoming.sorted { $0.date < $1.date }
     }
 
 }
