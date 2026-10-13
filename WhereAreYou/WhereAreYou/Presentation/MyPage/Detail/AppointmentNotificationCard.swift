@@ -26,7 +26,7 @@ final class AppointmentNotificationCard: AppointmentCardBase {
         super.init(
             participantCount: item.participantCount,
             placeText: item.location?.title ?? "미정",
-            dateText: item.date?.appointmentDateTimeText ?? "미정",
+            dateText: item.date.appointmentDateTimeText,
             title: item.title,
             accessoryView: notificationSwitch
         )

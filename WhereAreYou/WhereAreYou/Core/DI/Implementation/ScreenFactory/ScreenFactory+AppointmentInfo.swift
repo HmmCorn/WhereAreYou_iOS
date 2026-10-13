@@ -8,7 +8,7 @@
 extension ScreenFactory {
 
     func makeAppointmentInfoViewController(appointmentID: String) -> AppointmentInfoViewController {
-        let repository = container.resolve(AppointmentInfoRepository.self)
+        let repository = container.resolve(AppointmentRepository.self)
         let viewModel = AppointmentInfoViewModel(
             appointmentID: appointmentID,
             fetchAppointmentInfoUseCase: FetchAppointmentInfoUseCase(repository: repository),

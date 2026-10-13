@@ -62,13 +62,13 @@ final class PastAppointmentListViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .day, value: -index, to: Date()),
+                date: Date().addingTimeInterval(-Double(index) * 24 * 60 * 60),
                 isNotificationEnabled: true
             )
         }
 
         pastAppointments = allPastAppointments.sorted {
-            ($0.date ?? .distantPast) > ($1.date ?? .distantPast)
+            $0.date > $1.date
         }
     }
 

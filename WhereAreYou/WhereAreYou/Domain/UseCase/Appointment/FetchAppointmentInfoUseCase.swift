@@ -7,17 +7,14 @@
 
 final class FetchAppointmentInfoUseCase {
 
-    private let repository: AppointmentInfoRepository
+    private let repository: AppointmentRepository
 
-    init(repository: AppointmentInfoRepository) {
+    init(repository: AppointmentRepository) {
         self.repository = repository
     }
 
-    func execute(
-        appointmentID: String,
-        completion: @escaping (Result<Appointment, Error>) -> Void
-    ) {
-        repository.fetchAppointmentInfo(appointmentID: appointmentID, completion: completion)
+    func execute(appointmentID: String) async throws -> Appointment {
+        try await repository.fetchAppointment(appointmentID: appointmentID)
     }
 
 }

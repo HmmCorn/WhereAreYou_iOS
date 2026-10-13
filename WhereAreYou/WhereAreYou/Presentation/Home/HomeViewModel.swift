@@ -19,11 +19,11 @@ final class HomeViewModel {
     }
 
     func joinAppointment(code: String, completion: @escaping (Result<AppointmentInfo, Error>) -> Void) {
-        joinAppointmentUseCase.execute(code: code) { result in
-            switch result {
-            case .success(let (appointment, _)):
+        Task { @MainActor in
+            do {
+                let appointment = try await joinAppointmentUseCase.execute(code: code)
                 completion(.success(AppointmentInfo(appointment: appointment)))
-            case .failure(let error):
+            } catch {
                 completion(.failure(error))
             }
         }
@@ -40,7 +40,7 @@ final class HomeViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .hour, value: 10, to: Date())
+                date: Date().addingTimeInterval(10 * 60 * 60)
             ),
             UpcomingAppointment(
                 id: "2",
@@ -51,7 +51,7 @@ final class HomeViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .hour, value: 30, to: Date())
+                date: Date().addingTimeInterval(30 * 60 * 60)
             ),
             UpcomingAppointment(
                 id: "3",
@@ -62,10 +62,10 @@ final class HomeViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .hour, value: 3, to: Date())
+                date: Date().addingTimeInterval(3 * 60 * 60)
             )
         ]
-        .sorted { ($0.date ?? .distantFuture) < ($1.date ?? .distantFuture) }
+        .sorted { $0.date < $1.date }
     }
 
 }

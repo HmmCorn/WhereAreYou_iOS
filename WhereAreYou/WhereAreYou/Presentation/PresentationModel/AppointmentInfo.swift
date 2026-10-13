@@ -12,7 +12,7 @@ struct AppointmentInfo {
     let id: String
     let code: String
     let title: String
-    let date: Date?
+    let date: Date
     let location: AppointmentLocation?
     let participants: [Participant]
 
@@ -30,7 +30,7 @@ struct AppointmentInfo {
         id: String,
         code: String,
         title: String,
-        date: Date?,
+        date: Date,
         location: AppointmentLocation?,
         participants: [Participant]
     ) {

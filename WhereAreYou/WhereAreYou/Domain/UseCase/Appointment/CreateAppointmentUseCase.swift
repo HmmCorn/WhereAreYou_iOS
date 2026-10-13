@@ -9,24 +9,14 @@ import Foundation
 
 final class CreateAppointmentUseCase {
 
-    private let repository: AppointmentCreationRepository
+    private let repository: AppointmentRepository
 
-    init(repository: AppointmentCreationRepository) {
+    init(repository: AppointmentRepository) {
         self.repository = repository
     }
 
-    func execute(
-        title: String,
-        date: Date?,
-        place: Place?,
-        completion: @escaping (Result<Appointment, Error>) -> Void
-    ) {
-        repository.createAppointment(
-            title: title,
-            date: date,
-            place: place,
-            completion: completion
-        )
+    func execute(name: String, dateTime: Date, place: Place?) async throws -> Appointment {
+        try await repository.createAppointment(name: name, dateTime: dateTime, place: place)
     }
 
 }

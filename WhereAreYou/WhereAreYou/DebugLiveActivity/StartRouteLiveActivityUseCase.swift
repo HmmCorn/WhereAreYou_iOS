@@ -13,16 +13,16 @@ import Foundation
 /// 실시간 현황이 꺼져 있으면 permissionDenied, 내 경로나 약속 장소가 없으면 notFound
 final class StartRouteLiveActivityUseCase {
 
-    private let appointmentDetailRepository: AppointmentDetailRepository
+    private let getAppointmentDetailUseCase: GetAppointmentDetailUseCase
     private let liveActivityRepository: RouteLiveActivityStarting
     private let permissionRepository: LiveActivityPermissionRepository
 
     init(
-        appointmentDetailRepository: AppointmentDetailRepository,
+        getAppointmentDetailUseCase: GetAppointmentDetailUseCase,
         liveActivityRepository: RouteLiveActivityStarting,
         permissionRepository: LiveActivityPermissionRepository
     ) {
-        self.appointmentDetailRepository = appointmentDetailRepository
+        self.getAppointmentDetailUseCase = getAppointmentDetailUseCase
         self.liveActivityRepository = liveActivityRepository
         self.permissionRepository = permissionRepository
     }
@@ -32,8 +32,8 @@ final class StartRouteLiveActivityUseCase {
             throw AppError.permissionDenied
         }
 
-        let (appointment, currentUserID) = try await fetchAppointment(appointmentID: appointmentID)
-        guard let route = appointment.routes[currentUserID], let place = appointment.place else {
+        let (appointment, routes, currentUserID) = try await getAppointmentDetailUseCase.execute(appointmentID: appointmentID)
+        guard let route = routes[currentUserID], let place = appointment.place else {
             throw AppError.notFound
         }
 
@@ -50,14 +50,6 @@ final class StartRouteLiveActivityUseCase {
             plan: plan,
             status: RouteProgressStatus(reachedCheckpointCount: 0, arrivedParticipantCount: 0)
         )
-    }
-
-    private func fetchAppointment(appointmentID: String) async throws -> (Appointment, String) {
-        try await withCheckedThrowingContinuation { continuation in
-            appointmentDetailRepository.fetchAppointment(appointmentID: appointmentID) { result in
-                continuation.resume(with: result.map { ($0.appointment, $0.currentUserID) })
-            }
-        }
     }
 
 }

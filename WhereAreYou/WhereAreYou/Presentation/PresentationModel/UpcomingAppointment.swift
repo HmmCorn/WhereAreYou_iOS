@@ -12,5 +12,5 @@ struct UpcomingAppointment {
     let title: String
     let participantCount: Int
     let location: AppointmentLocation?
-    let date: Date?
+    let date: Date
 }

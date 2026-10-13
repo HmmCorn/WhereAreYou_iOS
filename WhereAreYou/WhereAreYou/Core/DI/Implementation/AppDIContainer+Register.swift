@@ -46,10 +46,13 @@ extension DIContainer {
         register(LocationRepository.self, instance: coreLocationRepository)
         register(LocationPermissionRepository.self, instance: coreLocationRepository)
 
-        // 약속 생성/조회
-        register(AppointmentCreationRepository.self) { MockAppointmentCreationRepository() }
-        register(AppointmentDetailRepository.self) { MockAppointmentDetailRepository() }
-        register(AppointmentInfoRepository.self) { MockAppointmentInfoRepository() }
+        // 약속
+        register(AppointmentRepository.self) {
+            MockAppointmentRepository(authRepository: self.resolve(AuthRepository.self))
+        }
+        register(AppointmentRouteRepository.self) {
+            MockAppointmentRouteRepository(authRepository: self.resolve(AuthRepository.self))
+        }
 
         // 채팅
         register(ChatRepository.self) { MockChatRepository() }

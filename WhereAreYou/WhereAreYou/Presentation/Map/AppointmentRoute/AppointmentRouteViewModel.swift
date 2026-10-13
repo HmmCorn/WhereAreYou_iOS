@@ -37,16 +37,15 @@ final class AppointmentRouteViewModel {
 
     func fetchAppointmentDetail() {
         isLoading = true
-        getAppointmentDetailUseCase.execute(appointmentID: appointmentID) { [weak self] result in
+        Task { @MainActor [weak self] in
             guard let self else { return }
-            DispatchQueue.main.async {
+            do {
+                let detail = try await self.getAppointmentDetailUseCase.execute(appointmentID: self.appointmentID)
                 self.isLoading = false
-                switch result {
-                case .success(let value):
-                    self.apply(appointment: value.appointment, currentUserID: value.currentUserID)
-                case .failure:
-                    self.errorMessage = "약속 정보를 불러오지 못했습니다"
-                }
+                self.apply(appointment: detail.appointment, routes: detail.routes, currentUserID: detail.currentUserID)
+            } catch {
+                self.isLoading = false
+                self.errorMessage = "약속 정보를 불러오지 못했습니다"
             }
         }
     }
@@ -55,7 +54,7 @@ final class AppointmentRouteViewModel {
         onChangeRouteTap?(place)
     }
 
-    private func apply(appointment: Appointment, currentUserID: String) {
+    private func apply(appointment: Appointment, routes: [String: Route], currentUserID: String) {
         place = appointment.place
         placeName = appointment.place?.name
         placeCoordinate = appointment.place?.coordinate
@@ -65,11 +64,11 @@ final class AppointmentRouteViewModel {
             .map { [$0] + otherParticipants } ?? otherParticipants
 
         participants = orderedParticipants.compactMap { user in
-            guard let route = appointment.routes[user.id] else { return nil }
+            guard let route = routes[user.id] else { return nil }
             return AppointmentRouteParticipant(user: user, route: route, currentUserID: currentUserID)
         }
 
-        if let myRoute = appointment.routes[currentUserID] {
+        if let myRoute = routes[currentUserID] {
             myRouteSummary = MyRouteSummary(route: myRoute)
         }
     }

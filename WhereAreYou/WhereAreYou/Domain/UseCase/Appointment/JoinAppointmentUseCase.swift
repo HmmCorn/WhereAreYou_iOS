@@ -7,17 +7,14 @@
 
 final class JoinAppointmentUseCase {
 
-    private let repository: AppointmentDetailRepository
+    private let repository: AppointmentRepository
 
-    init(repository: AppointmentDetailRepository) {
+    init(repository: AppointmentRepository) {
         self.repository = repository
     }
 
-    func execute(
-        code: String,
-        completion: @escaping (Result<(appointment: Appointment, currentUserID: String), Error>) -> Void
-    ) {
-        repository.fetchAppointment(code: code, completion: completion)
+    func execute(code: String) async throws -> Appointment {
+        try await repository.joinAppointment(code: code)
     }
 
 }
