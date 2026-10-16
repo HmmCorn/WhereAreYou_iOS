@@ -35,12 +35,8 @@ nonisolated enum KakaoPlaceRanker {
         let normalizedKeyword = normalize(keyword)
         guard !normalizedKeyword.isEmpty else { return documents }
 
-        let usesDistance = documents.allSatisfy { $0.distanceMeters != nil }
-
         return documents.enumerated()
-            .map {
-                candidate(of: $1, at: $0, normalizedKeyword: normalizedKeyword, usesDistance: usesDistance)
-            }
+            .map { candidate(of: $1, at: $0, normalizedKeyword: normalizedKeyword) }
             .sorted(by: isOrderedBefore)
             .map(\.document)
     }
@@ -50,8 +46,7 @@ nonisolated enum KakaoPlaceRanker {
     private static func candidate(
         of document: KakaoPlaceDocument,
         at index: Int,
-        normalizedKeyword: String,
-        usesDistance: Bool
+        normalizedKeyword: String
     ) -> Candidate {
         let normalizedName = normalize(document.placeName)
         let representativeness = KakaoCategoryGroupCode(rawValue: document.categoryGroupCode)?.representativeness
@@ -65,7 +60,7 @@ nonisolated enum KakaoPlaceRanker {
             originalIndex: index,
             matchLevel: matchLevel(name: normalizedName, keyword: normalizedKeyword),
             representativeness: representativeness,
-            distanceMeters: usesDistance ? document.distanceMeters : nil,
+            distanceMeters: document.distanceMeters,
             lengthRatio: lengthRatio
         )
     }
@@ -81,9 +76,10 @@ nonisolated enum KakaoPlaceRanker {
     private static func isOrderedBefore(_ lhs: Candidate, _ rhs: Candidate) -> Bool {
         if lhs.matchLevel != rhs.matchLevel { return lhs.matchLevel > rhs.matchLevel }
         if lhs.representativeness != rhs.representativeness { return lhs.representativeness > rhs.representativeness }
-        if let lhsDistance = lhs.distanceMeters, let rhsDistance = rhs.distanceMeters, lhsDistance != rhsDistance {
-            return lhsDistance < rhsDistance
-        }
+        // 거리를 모르는 문서는 가장 먼 것으로 취급 — 일부만 거리가 있어도 비교 순서가 일관됨
+        let lhsDistance = lhs.distanceMeters ?? .infinity
+        let rhsDistance = rhs.distanceMeters ?? .infinity
+        if lhsDistance != rhsDistance { return lhsDistance < rhsDistance }
         if lhs.lengthRatio != rhs.lengthRatio { return lhs.lengthRatio > rhs.lengthRatio }
         return lhs.originalIndex < rhs.originalIndex
     }
