@@ -36,8 +36,8 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
         let distanceMeters: Double
         let categoryCode: KakaoCategoryGroupCode
 
-        /// 선택 점수, 낮을수록 우선
-        var score: Double {
+        /// 선택 순위, 낮을수록 우선
+        var rank: Double {
             distanceMeters / categoryCode.representativeness
         }
     }
@@ -86,7 +86,7 @@ final class KakaoNearbyPlaceRepository: NearbyPlaceRepository {
         if !hasSucceeded, let firstFailure {
             throw firstFailure
         }
-        return candidates.min { $0.score < $1.score }?.place
+        return candidates.min { $0.rank < $1.rank }?.place
     }
 
     // MARK: - Private
