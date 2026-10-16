@@ -94,10 +94,12 @@ extension KakaoAddressResponse {
         case .province:
             name = province
         case .city:
-            guard let city, !city.isEmpty else {
-                throw NetworkError.emptyResult
+            // 세종처럼 시/군/구가 없는 지역은 시/도 이름으로 대체
+            if let city, !city.isEmpty {
+                name = city
+            } else {
+                name = province
             }
-            name = city
         }
         let address = [province, city]
             .compactMap { $0 }
