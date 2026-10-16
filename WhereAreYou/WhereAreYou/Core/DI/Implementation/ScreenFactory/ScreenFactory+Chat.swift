@@ -40,16 +40,16 @@ extension ScreenFactory {
         appointmentID: String,
         completion: @escaping (Result<ChatViewController, Error>) -> Void
     ) {
-        let repository = container.resolve(AppointmentInfoRepository.self)
-        FetchAppointmentInfoUseCase(repository: repository).execute(appointmentID: appointmentID) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case .success(let appointment):
+        let useCase = FetchAppointmentInfoUseCase(repository: container.resolve(AppointmentRepository.self))
+        Task { @MainActor [weak self] in
+            do {
+                let appointment = try await useCase.execute(appointmentID: appointmentID)
+                guard let self else { return }
                 let chatViewController = self.makeChatViewController(
                     appointmentInfo: AppointmentInfo(appointment: appointment)
                 )
                 completion(.success(chatViewController))
-            case .failure(let error):
+            } catch {
                 completion(.failure(error))
             }
         }

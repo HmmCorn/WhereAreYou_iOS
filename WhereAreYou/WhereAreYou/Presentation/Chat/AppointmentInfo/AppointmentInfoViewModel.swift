@@ -27,12 +27,11 @@ final class AppointmentInfoViewModel {
     }
 
     func fetchAppointmentInfo() {
-        fetchAppointmentInfoUseCase.execute(appointmentID: appointmentID) { [weak self] result in
-            DispatchQueue.main.async {
-                if case .success(let appointment) = result {
-                    self?.appointmentInfo = AppointmentInfo(appointment: appointment)
-                }
-            }
+        Task { @MainActor [weak self] in
+            guard let self,
+                  let appointment = try? await self.fetchAppointmentInfoUseCase.execute(appointmentID: self.appointmentID)
+            else { return }
+            self.appointmentInfo = AppointmentInfo(appointment: appointment)
         }
     }
 
@@ -50,17 +49,16 @@ final class AppointmentInfoViewModel {
     }
 
     private func update(name: String?, date: Date?, place: Place?) {
-        updateAppointmentInfoUseCase.execute(
-            appointmentID: appointmentID,
-            name: name,
-            date: date,
-            place: place
-        ) { [weak self] result in
-            DispatchQueue.main.async {
-                if case .success(let appointment) = result {
-                    self?.appointmentInfo = AppointmentInfo(appointment: appointment)
-                }
-            }
+        Task { @MainActor [weak self] in
+            guard let self,
+                  let appointment = try? await self.updateAppointmentInfoUseCase.execute(
+                      appointmentID: self.appointmentID,
+                      name: name,
+                      dateTime: date,
+                      place: place
+                  )
+            else { return }
+            self.appointmentInfo = AppointmentInfo(appointment: appointment)
         }
     }
 

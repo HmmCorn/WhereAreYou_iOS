@@ -23,14 +23,14 @@ final class UpcomingAppointmentCard: AppointmentCardBase {
             label.adjustsFontForContentSizeCategory = true
             label.setContentHuggingPriority(.required, for: .horizontal)
             label.setContentCompressionResistancePriority(.required, for: .horizontal)
-            label.text = appointment.date?.remainingTimeText
+            label.text = appointment.date.remainingTimeText
             return label
         }()
 
         super.init(
             participantCount: appointment.participantCount,
             placeText: appointment.location?.title ?? "미정",
-            dateText: appointment.date?.appointmentDateTimeText ?? "미정",
+            dateText: appointment.date.appointmentDateTimeText,
             title: appointment.title,
             accessoryView: remainingTimeLabel
         )

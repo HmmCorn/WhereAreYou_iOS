@@ -121,7 +121,7 @@ final class AppointmentInfoCard: UIView {
     /// 변경 가능한 정보(이름, 날짜, 장소, 참여자)를 갱신한다. 매 emit마다 호출.
     func updateInfo(_ data: AppointmentInfo) {
         fieldsBox.name = data.title
-        fieldsBox.dateText = data.date?.appointmentDateTimeText ?? "미정"
+        fieldsBox.dateText = data.date.appointmentDateTimeText
         fieldsBox.placeText = data.location?.title ?? "미정"
 
         memberSectionLabel.text = "인원 (\(data.participants.count)명)"

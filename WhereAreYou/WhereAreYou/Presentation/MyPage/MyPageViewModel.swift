@@ -130,7 +130,7 @@ extension MyPageViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .day, value: 1, to: Date()),
+                date: Date().addingTimeInterval(1 * 24 * 60 * 60),
                 isNotificationEnabled: true
             ),
             AppointmentListItem(
@@ -142,7 +142,7 @@ extension MyPageViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .day, value: 3, to: Date()),
+                date: Date().addingTimeInterval(3 * 24 * 60 * 60),
                 isNotificationEnabled: false
             ),
             AppointmentListItem(
@@ -154,7 +154,7 @@ extension MyPageViewModel {
                     address: "",
                     coordinate: Coordinate(latitude: 0, longitude: 0)
                 ),
-                date: Calendar.current.date(byAdding: .day, value: 10, to: Date()),
+                date: Date().addingTimeInterval(10 * 24 * 60 * 60),
                 isNotificationEnabled: true
             )
         ]

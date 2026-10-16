@@ -50,7 +50,7 @@
 		8C44C1EE2FFCF586006DA2FC /* Exceptions for "WhereAreYou" folder in "WhereAreYou" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Core/Info.plist,
+				SupportingFiles/Info.plist,
 			);
 			target = 8C44C1DB2FFCF585006DA2FC /* WhereAreYou */;
 		};
@@ -289,14 +289,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = WhereAreYou/WhereAreYou.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WhereAreYou/SupportingFiles/WhereAreYou.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 2ZF894QLGK;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = WhereAreYou/Core/Info.plist;
+				INFOPLIST_FILE = WhereAreYou/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "약속이 진행되는 동안 상대방에게 실시간 위치를 공유하기 위해 위치 정보가 필요해요.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "약속 상대방과 위치를 공유하고 이동 경로를 안내하기 위해 위치 정보가 필요해요.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -334,14 +334,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = WhereAreYou/WhereAreYouRelease.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WhereAreYou/SupportingFiles/WhereAreYouRelease.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 2ZF894QLGK;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = WhereAreYou/Core/Info.plist;
+				INFOPLIST_FILE = WhereAreYou/SupportingFiles/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "약속이 진행되는 동안 상대방에게 실시간 위치를 공유하기 위해 위치 정보가 필요해요.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "약속 상대방과 위치를 공유하고 이동 경로를 안내하기 위해 위치 정보가 필요해요.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

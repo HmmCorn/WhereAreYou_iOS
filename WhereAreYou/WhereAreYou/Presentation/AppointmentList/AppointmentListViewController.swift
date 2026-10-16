@@ -204,7 +204,7 @@ final class AppointmentListViewController: UIViewController {
             let label = UILabel()
             label.font = .boldPreferredFont(forTextStyle: .footnote)
             label.textColor = .blue2
-            label.text = item.date?.remainingTimeText
+            label.text = item.date.remainingTimeText
             return label
         }()
 
