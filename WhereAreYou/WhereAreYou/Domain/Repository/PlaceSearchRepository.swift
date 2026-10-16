@@ -7,6 +7,6 @@
 
 protocol PlaceSearchRepository {
 
-    func searchPlaces(keyword: String) async throws -> [Place]
+    func searchPlaces(keyword: String, near coordinate: Coordinate?) async throws -> [Place]
 
 }

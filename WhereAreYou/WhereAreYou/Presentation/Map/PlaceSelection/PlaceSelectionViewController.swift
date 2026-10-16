@@ -154,8 +154,8 @@ final class PlaceSelectionViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpLayout()
-        naverMapView.onCameraIdle = { [weak self] coordinate in
-            self?.viewModel.setCenterCoordinate(coordinate)
+        naverMapView.onCameraIdle = { [weak self] coordinate, zoomLevel in
+            self?.viewModel.setCenterCoordinate(coordinate, zoomLevel: zoomLevel)
         }
         searchOtherPlaceButton.addAction(
             UIAction { [weak self] _ in self?.searchOtherPlaceTapped() },
