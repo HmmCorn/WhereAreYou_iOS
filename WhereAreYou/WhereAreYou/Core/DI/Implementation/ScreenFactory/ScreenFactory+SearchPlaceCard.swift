@@ -12,7 +12,11 @@ extension ScreenFactory {
         style: SearchPlaceCardViewController.Style
     ) -> SearchPlaceCardViewController {
         let viewModel = SearchPlaceCardViewModel(
-            searchPlacesUseCase: SearchPlacesUseCase(repository: container.resolve(PlaceSearchRepository.self))
+            searchPlacesUseCase: SearchPlacesUseCase(
+                repository: container.resolve(PlaceSearchRepository.self),
+                locationRepository: container.resolve(LocationRepository.self),
+                locationPermissionRepository: container.resolve(LocationPermissionRepository.self)
+            )
         )
         return SearchPlaceCardViewController(
             viewModel: viewModel,
