@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - 지난 약속 화면의 데이터
 //       - 약속 시각이 지났고, 지난 지 30일 이내인 약속만 보관
@@ -13,6 +14,8 @@ import Foundation
 final class PastAppointmentListViewModel {
 
     private(set) var pastAppointments: [AppointmentListItem] = []
+
+    @Published private(set) var leaveResult: Result<Void, Error>?
 
     private let leaveAppointmentUseCase: LeaveAppointmentUseCase
 
@@ -38,14 +41,14 @@ final class PastAppointmentListViewModel {
         item.isNotificationEnabled ? "bell.slash" : "bell"
     }
 
-    func leave(id: String, completion: @escaping (Result<[AppointmentListItem], Error>) -> Void) {
+    func leave(id: String) {
         Task { @MainActor in
             do {
                 try await leaveAppointmentUseCase.execute(appointmentID: id)
                 pastAppointments.removeAll { $0.id == id }
-                completion(.success(pastAppointments))
+                leaveResult = .success(())
             } catch {
-                completion(.failure(error))
+                leaveResult = .failure(error)
             }
         }
     }

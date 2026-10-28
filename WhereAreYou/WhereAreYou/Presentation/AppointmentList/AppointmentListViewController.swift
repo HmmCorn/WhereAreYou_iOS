@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 final class AppointmentListViewController: UIViewController {
 
@@ -17,6 +18,7 @@ final class AppointmentListViewController: UIViewController {
 
     private let viewModel: AppointmentListViewModel
     weak var coordinator: AppointmentListCoordinating?
+    private var cancellables = Set<AnyCancellable>()
 
     init(viewModel: AppointmentListViewModel) {
         self.viewModel = viewModel
@@ -89,6 +91,22 @@ final class AppointmentListViewController: UIViewController {
         setUpLayout()
         setUpActions()
         reloadCards()
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
+        viewModel.$leaveResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.reloadCards()
+                case .failure:
+                    self?.present(UIAlertController.leaveFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -246,15 +264,7 @@ final class AppointmentListViewController: UIViewController {
 
     private func presentLeaveConfirmAlert(id: String, title: String) {
         let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
-            self?.viewModel.leave(id: id) { [weak self] result in
-                guard let self else { return }
-                switch result {
-                case .success(let (today, upcoming)):
-                    reloadCards(today: today, upcoming: upcoming)
-                case .failure:
-                    present(UIAlertController.leaveFailureAlert(), animated: true)
-                }
-            }
+            self?.viewModel.leave(id: id)
         }
         present(alert, animated: true)
     }

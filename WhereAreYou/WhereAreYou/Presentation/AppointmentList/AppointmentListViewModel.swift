@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - 약속 목록 화면(탭)의 데이터
 //       - "오늘 약속"은 date가 오늘 날짜(같은 day)인 약속, "예정된 약속"은 그 외 미래 약속
@@ -15,6 +16,8 @@ final class AppointmentListViewModel {
 
     private(set) var todayAppointments: [AppointmentListItem] = []
     private(set) var upcomingAppointments: [AppointmentListItem] = []
+
+    @Published private(set) var leaveResult: Result<Void, Error>?
 
     private let leaveAppointmentUseCase: LeaveAppointmentUseCase
 
@@ -45,18 +48,15 @@ final class AppointmentListViewModel {
         item.isNotificationEnabled ? "bell.slash" : "bell"
     }
 
-    func leave(
-        id: String,
-        completion: @escaping (Result<(today: [AppointmentListItem], upcoming: [AppointmentListItem]), Error>) -> Void
-    ) {
+    func leave(id: String) {
         Task { @MainActor in
             do {
                 try await leaveAppointmentUseCase.execute(appointmentID: id)
                 todayAppointments.removeAll { $0.id == id }
                 upcomingAppointments.removeAll { $0.id == id }
-                completion(.success((todayAppointments, upcomingAppointments)))
+                leaveResult = .success(())
             } catch {
-                completion(.failure(error))
+                leaveResult = .failure(error)
             }
         }
     }
