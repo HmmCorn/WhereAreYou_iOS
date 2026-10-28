@@ -6,20 +6,23 @@
 //
 
 import UIKit
+import Combine
 
 final class PastAppointmentListViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel = PastAppointmentListViewModel()
+    private let viewModel: PastAppointmentListViewModel
     weak var coordinator: AppointmentListCoordinating?
+    private var cancellables = Set<AnyCancellable>()
 
-    init() {
+    init(viewModel: PastAppointmentListViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
     }
 
     private let descriptionLabel: UILabel = {
@@ -57,6 +60,22 @@ final class PastAppointmentListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         reloadCards()
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
+        viewModel.$leaveResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.reloadCards()
+                case .failure:
+                    self?.present(UIAlertController.leaveFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -146,9 +165,7 @@ final class PastAppointmentListViewController: UIViewController {
 
     private func presentLeaveConfirmAlert(id: String, title: String) {
         let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
-            guard let self else { return }
-            let updated = viewModel.leave(id: id)
-            reloadCards(pastAppointments: updated)
+            self?.viewModel.leave(id: id)
         }
         present(alert, animated: true)
     }

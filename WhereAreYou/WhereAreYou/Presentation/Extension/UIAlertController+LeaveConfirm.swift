@@ -23,4 +23,14 @@ extension UIAlertController {
         return alert
     }
 
+    static func leaveFailureAlert() -> UIAlertController {
+        let alert = UIAlertController(
+            title: "약속에서 나가지 못했어요",
+            message: "잠시 후 다시 시도해 주세요.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        return alert
+    }
+
 }

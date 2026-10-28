@@ -11,19 +11,23 @@ import Combine
 final class AppointmentInfoViewModel {
 
     @Published private(set) var appointmentInfo: AppointmentInfo?
+    @Published private(set) var leaveResult: Result<Void, Error>?
 
     private let appointmentID: String
     private let fetchAppointmentInfoUseCase: FetchAppointmentInfoUseCase
     private let updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase
+    private let leaveAppointmentUseCase: LeaveAppointmentUseCase
 
     init(
         appointmentID: String,
         fetchAppointmentInfoUseCase: FetchAppointmentInfoUseCase,
-        updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase
+        updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase,
+        leaveAppointmentUseCase: LeaveAppointmentUseCase
     ) {
         self.appointmentID = appointmentID
         self.fetchAppointmentInfoUseCase = fetchAppointmentInfoUseCase
         self.updateAppointmentInfoUseCase = updateAppointmentInfoUseCase
+        self.leaveAppointmentUseCase = leaveAppointmentUseCase
     }
 
     func fetchAppointmentInfo() {
@@ -46,6 +50,17 @@ final class AppointmentInfoViewModel {
 
     func updatePlace(_ place: Place) {
         update(name: nil, date: nil, place: place)
+    }
+
+    func leave() {
+        Task { @MainActor in
+            do {
+                try await leaveAppointmentUseCase.execute(appointmentID: appointmentID)
+                leaveResult = .success(())
+            } catch {
+                leaveResult = .failure(error)
+            }
+        }
     }
 
     private func update(name: String?, date: Date?, place: Place?) {

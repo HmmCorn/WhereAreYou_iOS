@@ -10,6 +10,7 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseDatabase
 import FirebaseStorage
+import FirebaseFunctions
 
 /// Firebase NSError → AppError 변환기
 enum FirebaseErrorMapper {
@@ -26,6 +27,8 @@ enum FirebaseErrorMapper {
             return mapDatabase(nsError)
         case StorageErrorDomain:
             return mapStorage(nsError)
+        case FunctionsErrorDomain:
+            return mapFunctions(nsError)
         default:
             return mapGeneral(nsError)
         }
@@ -83,6 +86,23 @@ enum FirebaseErrorMapper {
         case .quotaExceeded:
             return .unknown(error)
         case .retryLimitExceeded:
+            return .network
+        default:
+            return .unknown(error)
+        }
+    }
+
+    private static func mapFunctions(_ error: NSError) -> AppError {
+        switch FunctionsErrorCode(rawValue: error.code) {
+        case .notFound:
+            return .notFound
+        case .permissionDenied:
+            return .permissionDenied
+        case .unauthenticated:
+            return .notAuthenticated
+        case .alreadyExists:
+            return .alreadyExists
+        case .unavailable, .deadlineExceeded:
             return .network
         default:
             return .unknown(error)

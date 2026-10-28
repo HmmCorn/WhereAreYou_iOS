@@ -76,6 +76,7 @@ final class AppointmentInfoViewController: UIViewController {
         infoCard.onDateRowTap = { [weak self] in self?.presentDatePicker() }
         infoCard.onPlaceRowTap = { [weak self] in self?.presentPlaceSearch() }
         infoCard.onMapButtonTap = { [weak self] in self?.presentPlaceMapSelection() }
+        infoCard.onLeaveTap = { [weak self] in self?.presentLeaveConfirmAlert() }
         infoCard.onCopyCodeTap = { [weak self] in
             guard let code = self?.viewModel.appointmentInfo?.code else { return }
             UIPasteboard.general.string = code
@@ -98,6 +99,19 @@ final class AppointmentInfoViewController: UIViewController {
                 self?.handleAppointmentInfoUpdate(info)
             }
             .store(in: &cancellables)
+
+        viewModel.$leaveResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.coordinator?.closeChatAfterLeaving()
+                case .failure:
+                    self?.present(UIAlertController.leaveFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     private func handleAppointmentInfoUpdate(_ info: AppointmentInfo) {
@@ -118,6 +132,16 @@ final class AppointmentInfoViewController: UIViewController {
         }) { _ in
             self.dismiss(animated: false)
         }
+    }
+
+    // MARK: - Leave
+
+    private func presentLeaveConfirmAlert() {
+        guard let title = viewModel.appointmentInfo?.title else { return }
+        let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
+            self?.viewModel.leave()
+        }
+        present(alert, animated: true)
     }
 
     // MARK: - Date Picker

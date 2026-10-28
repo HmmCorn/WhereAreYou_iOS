@@ -72,6 +72,17 @@ final class ChatCoordinator: NavigationCoordinator, DatePickerPresenting, PlaceS
         present(viewController, animated: false)
     }
 
+    func closeChatAfterLeaving() {
+        dismissPresented { [weak self] in
+            guard let self,
+                  let chatViewController,
+                  let index = navigationController.viewControllers.firstIndex(of: chatViewController),
+                  index > 0
+            else { return }
+            navigationController.popToViewController(navigationController.viewControllers[index - 1], animated: true)
+        }
+    }
+
     // MARK: - Share My Location
 
     func showShareMyLocationConfirm(address: String, onConfirm: @escaping () -> Void) {
