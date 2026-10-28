@@ -12,6 +12,7 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseDatabase
 import FirebaseStorage
+import FirebaseFunctions
 import FirebaseMessaging
 import UserNotifications
 import AppIntents
@@ -64,6 +65,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         firestoreSettings.cacheSettings = MemoryCacheSettings()
         Firestore.firestore().settings = firestoreSettings
         Database.database().useEmulator(withHost: host, port: 9000)
+        let functions = Functions.functions(region: FirebaseRegion.functions)
+        functions.useEmulator(withHost: host, port: 5001)
+        // 실기기는 Mac IP(HTTP)로 접속하므로, 허용하지 않으면 SDK가 로그인 토큰을 붙이지 않고 요청을 막는다. DEBUG 빌드에서만 존재하는 옵션
+        functions.allowInsecureTokenAttachment = true
         #endif
     }
 
