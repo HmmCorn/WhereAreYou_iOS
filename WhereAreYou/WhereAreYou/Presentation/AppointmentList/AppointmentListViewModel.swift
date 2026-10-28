@@ -16,7 +16,10 @@ final class AppointmentListViewModel {
     private(set) var todayAppointments: [AppointmentListItem] = []
     private(set) var upcomingAppointments: [AppointmentListItem] = []
 
-    init() {
+    private let leaveAppointmentUseCase: LeaveAppointmentUseCase
+
+    init(leaveAppointmentUseCase: LeaveAppointmentUseCase) {
+        self.leaveAppointmentUseCase = leaveAppointmentUseCase
         loadDummyData()
     }
 
@@ -42,10 +45,20 @@ final class AppointmentListViewModel {
         item.isNotificationEnabled ? "bell.slash" : "bell"
     }
 
-    func leave(id: String) -> (today: [AppointmentListItem], upcoming: [AppointmentListItem]) {
-        todayAppointments.removeAll { $0.id == id }
-        upcomingAppointments.removeAll { $0.id == id }
-        return (todayAppointments, upcomingAppointments)
+    func leave(
+        id: String,
+        completion: @escaping (Result<(today: [AppointmentListItem], upcoming: [AppointmentListItem]), Error>) -> Void
+    ) {
+        Task { @MainActor in
+            do {
+                try await leaveAppointmentUseCase.execute(appointmentID: id)
+                todayAppointments.removeAll { $0.id == id }
+                upcomingAppointments.removeAll { $0.id == id }
+                completion(.success((todayAppointments, upcomingAppointments)))
+            } catch {
+                completion(.failure(error))
+            }
+        }
     }
 
     private func toggledNotification(of item: AppointmentListItem) -> AppointmentListItem {

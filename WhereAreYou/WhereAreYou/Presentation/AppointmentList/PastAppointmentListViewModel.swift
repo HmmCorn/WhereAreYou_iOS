@@ -14,7 +14,10 @@ final class PastAppointmentListViewModel {
 
     private(set) var pastAppointments: [AppointmentListItem] = []
 
-    init() {
+    private let leaveAppointmentUseCase: LeaveAppointmentUseCase
+
+    init(leaveAppointmentUseCase: LeaveAppointmentUseCase) {
+        self.leaveAppointmentUseCase = leaveAppointmentUseCase
         loadDummyData()
     }
 
@@ -35,9 +38,16 @@ final class PastAppointmentListViewModel {
         item.isNotificationEnabled ? "bell.slash" : "bell"
     }
 
-    func leave(id: String) -> [AppointmentListItem] {
-        pastAppointments.removeAll { $0.id == id }
-        return pastAppointments
+    func leave(id: String, completion: @escaping (Result<[AppointmentListItem], Error>) -> Void) {
+        Task { @MainActor in
+            do {
+                try await leaveAppointmentUseCase.execute(appointmentID: id)
+                pastAppointments.removeAll { $0.id == id }
+                completion(.success(pastAppointments))
+            } catch {
+                completion(.failure(error))
+            }
+        }
     }
 
     private func toggledNotification(of item: AppointmentListItem) -> AppointmentListItem {

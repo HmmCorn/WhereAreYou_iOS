@@ -11,15 +11,16 @@ final class PastAppointmentListViewController: UIViewController {
 
     private static let cardSpacing: CGFloat = 16
 
-    private let viewModel = PastAppointmentListViewModel()
+    private let viewModel: PastAppointmentListViewModel
     weak var coordinator: AppointmentListCoordinating?
 
-    init() {
+    init(viewModel: PastAppointmentListViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
     }
 
     private let descriptionLabel: UILabel = {
@@ -146,9 +147,15 @@ final class PastAppointmentListViewController: UIViewController {
 
     private func presentLeaveConfirmAlert(id: String, title: String) {
         let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
-            guard let self else { return }
-            let updated = viewModel.leave(id: id)
-            reloadCards(pastAppointments: updated)
+            self?.viewModel.leave(id: id) { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let updated):
+                    reloadCards(pastAppointments: updated)
+                case .failure:
+                    present(UIAlertController.leaveFailureAlert(), animated: true)
+                }
+            }
         }
         present(alert, animated: true)
     }

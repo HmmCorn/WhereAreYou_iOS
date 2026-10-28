@@ -8,11 +8,17 @@
 extension ScreenFactory {
 
     func makeAppointmentListViewController() -> AppointmentListViewController {
-        AppointmentListViewController()
+        let viewModel = AppointmentListViewModel(leaveAppointmentUseCase: makeLeaveAppointmentUseCase())
+        return AppointmentListViewController(viewModel: viewModel)
     }
 
     func makePastAppointmentListViewController() -> PastAppointmentListViewController {
-        PastAppointmentListViewController()
+        let viewModel = PastAppointmentListViewModel(leaveAppointmentUseCase: makeLeaveAppointmentUseCase())
+        return PastAppointmentListViewController(viewModel: viewModel)
+    }
+
+    private func makeLeaveAppointmentUseCase() -> LeaveAppointmentUseCase {
+        LeaveAppointmentUseCase(repository: container.resolve(AppointmentRepository.self))
     }
 
 }
