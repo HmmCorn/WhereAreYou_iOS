@@ -12,7 +12,7 @@ import FirebaseFunctions
 /// 조회·정보 수정은 Firestore 연동 전까지 Mock에 맡긴다
 final class FirebaseAppointmentRepository: AppointmentRepository {
 
-    private let functions = Functions.functions(region: FirebaseRegion.functions)
+    private let functions = Functions.app
     // TODO: 조회·정보 수정 Firestore 연동 후 제거
     private let mockRepository: MockAppointmentRepository
 
