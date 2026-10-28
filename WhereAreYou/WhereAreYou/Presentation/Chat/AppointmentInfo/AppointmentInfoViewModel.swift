@@ -15,15 +15,18 @@ final class AppointmentInfoViewModel {
     private let appointmentID: String
     private let fetchAppointmentInfoUseCase: FetchAppointmentInfoUseCase
     private let updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase
+    private let leaveAppointmentUseCase: LeaveAppointmentUseCase
 
     init(
         appointmentID: String,
         fetchAppointmentInfoUseCase: FetchAppointmentInfoUseCase,
-        updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase
+        updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase,
+        leaveAppointmentUseCase: LeaveAppointmentUseCase
     ) {
         self.appointmentID = appointmentID
         self.fetchAppointmentInfoUseCase = fetchAppointmentInfoUseCase
         self.updateAppointmentInfoUseCase = updateAppointmentInfoUseCase
+        self.leaveAppointmentUseCase = leaveAppointmentUseCase
     }
 
     func fetchAppointmentInfo() {
@@ -46,6 +49,17 @@ final class AppointmentInfoViewModel {
 
     func updatePlace(_ place: Place) {
         update(name: nil, date: nil, place: place)
+    }
+
+    func leave(completion: @escaping (Result<Void, Error>) -> Void) {
+        Task { @MainActor in
+            do {
+                try await leaveAppointmentUseCase.execute(appointmentID: appointmentID)
+                completion(.success(()))
+            } catch {
+                completion(.failure(error))
+            }
+        }
     }
 
     private func update(name: String?, date: Date?, place: Place?) {

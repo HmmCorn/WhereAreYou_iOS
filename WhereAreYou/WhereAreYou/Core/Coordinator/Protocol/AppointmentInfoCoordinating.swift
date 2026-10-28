@@ -16,5 +16,6 @@ protocol AppointmentInfoCoordinating: AnyObject {
         style: SearchPlaceCardViewController.Style
     ) -> SearchPlaceCardViewController
     func showPlaceMapSelection(initialCoordinate: Coordinate?, onPlaceConfirmed: @escaping (Place) -> Void)
+    func closeChatAfterLeaving()
 
 }
