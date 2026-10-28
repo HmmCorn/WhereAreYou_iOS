@@ -99,6 +99,19 @@ final class AppointmentInfoViewController: UIViewController {
                 self?.handleAppointmentInfoUpdate(info)
             }
             .store(in: &cancellables)
+
+        viewModel.$leaveResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.coordinator?.closeChatAfterLeaving()
+                case .failure:
+                    self?.present(UIAlertController.leaveFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     private func handleAppointmentInfoUpdate(_ info: AppointmentInfo) {
@@ -126,15 +139,7 @@ final class AppointmentInfoViewController: UIViewController {
     private func presentLeaveConfirmAlert() {
         guard let title = viewModel.appointmentInfo?.title else { return }
         let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
-            self?.viewModel.leave { [weak self] result in
-                guard let self else { return }
-                switch result {
-                case .success:
-                    coordinator?.closeChatAfterLeaving()
-                case .failure:
-                    present(UIAlertController.leaveFailureAlert(), animated: true)
-                }
-            }
+            self?.viewModel.leave()
         }
         present(alert, animated: true)
     }

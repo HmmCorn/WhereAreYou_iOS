@@ -11,6 +11,7 @@ import Combine
 final class AppointmentInfoViewModel {
 
     @Published private(set) var appointmentInfo: AppointmentInfo?
+    @Published private(set) var leaveResult: Result<Void, Error>?
 
     private let appointmentID: String
     private let fetchAppointmentInfoUseCase: FetchAppointmentInfoUseCase
@@ -51,13 +52,13 @@ final class AppointmentInfoViewModel {
         update(name: nil, date: nil, place: place)
     }
 
-    func leave(completion: @escaping (Result<Void, Error>) -> Void) {
+    func leave() {
         Task { @MainActor in
             do {
                 try await leaveAppointmentUseCase.execute(appointmentID: appointmentID)
-                completion(.success(()))
+                leaveResult = .success(())
             } catch {
-                completion(.failure(error))
+                leaveResult = .failure(error)
             }
         }
     }
