@@ -80,6 +80,7 @@ final class RouteSearchViewController: UIViewController {
         label.font = .preferredFont(forTextStyle: .body)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
+        label.numberOfLines = 0
         return label
     }()
 
@@ -372,19 +373,21 @@ final class RouteSearchViewController: UIViewController {
         loadingIndicator.stopAnimating()
 
         if !hasPlaces {
-            emptyStateLabel.isHidden = false
-            routeScrollView.isHidden = true
+            showEmptyState("출발지와 도착지를 모두 선택해주세요.")
+            return
+        }
+
+        if let errorMessage = viewModel.searchErrorMessage {
+            showEmptyState(errorMessage)
+            return
+        }
+
+        if routes.isEmpty {
+            showEmptyState("검색된 경로가 없습니다.")
             return
         }
 
         emptyStateLabel.isHidden = true
-
-        if routes.isEmpty {
-            // TODO: 길찾기 API 확인 후 대체 텍스트 설정 필요
-            routeScrollView.isHidden = true
-            return
-        }
-
         routeScrollView.isHidden = false
 
         for (index, routeItem) in routes.enumerated() {
@@ -394,6 +397,13 @@ final class RouteSearchViewController: UIViewController {
             }
             routeCardsStack.addArrangedSubview(card)
         }
+    }
+
+    /// 경로 목록 대신 안내 문구 표시
+    private func showEmptyState(_ message: String) {
+        emptyStateLabel.text = message
+        emptyStateLabel.isHidden = false
+        routeScrollView.isHidden = true
     }
 
     // MARK: - Place search

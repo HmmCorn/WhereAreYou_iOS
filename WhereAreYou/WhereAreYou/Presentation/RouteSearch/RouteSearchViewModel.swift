@@ -17,6 +17,8 @@ final class RouteSearchViewModel {
     @Published private(set) var routes: [RouteItem] = []
     @Published private(set) var isLoading = false
     @Published private(set) var selectedRouteIndex: Int = 0
+    /// 경로 검색 실패 문구, 성공 시 nil
+    @Published private(set) var searchErrorMessage: String?
 
     private var departureDomain: Place?
     private var destinationDomain: Place?
@@ -87,6 +89,8 @@ final class RouteSearchViewModel {
     private func searchIfReady() {
         searchRoutesTask?.cancel()
 
+        searchErrorMessage = nil
+
         guard let departureDomain, let destinationDomain else {
             isLoading = false
             routesDomain = []
@@ -102,6 +106,7 @@ final class RouteSearchViewModel {
         searchRoutesTask = Task { [weak self] in
             guard let self else { return }
             let fetchedRoutes: [Route]
+            var errorMessage: String?
             do {
                 fetchedRoutes = try await self.searchRoutesUseCase.execute(
                     departure: departureDomain,
@@ -110,11 +115,14 @@ final class RouteSearchViewModel {
                     transportType: transportType
                 )
             } catch {
-                // TODO: 길찾기 API 확인 후 검색 실패 텍스트 설정 필요
                 fetchedRoutes = []
+                errorMessage = (error as? LocalizedError)?.errorDescription
+                    ?? AppError.unknown(error).errorDescription
             }
+            // 취소로 인한 에러도 여기서 걸러짐
             guard !Task.isCancelled else { return }
 
+            self.searchErrorMessage = errorMessage
             self.isLoading = false
             self.selectedRouteIndex = 0
             self.routesDomain = fetchedRoutes
