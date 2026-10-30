@@ -19,15 +19,13 @@ final class SearchRoutesUseCase {
         departure: Place,
         destination: Place,
         departureTime: Date,
-        transportType: TransportType,
-        completion: @escaping (Result<[Route], Error>) -> Void
-    ) {
-        repository.searchRoutes(
+        transportType: TransportType
+    ) async throws -> [Route] {
+        try await repository.searchRoutes(
             departure: departure,
             destination: destination,
             departureTime: departureTime,
-            transportType: transportType,
-            completion: completion
+            transportType: transportType
         )
     }
 

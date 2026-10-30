@@ -13,18 +13,15 @@ final class MockRouteSearchRepository: RouteSearchRepository {
         departure: Place,
         destination: Place,
         departureTime: Date,
-        transportType: TransportType,
-        completion: @escaping (Result<[Route], Error>) -> Void
-    ) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            let routes = Self.makeMockRoutes(
-                departure: departure,
-                destination: destination,
-                departureTime: departureTime,
-                transportType: transportType
-            )
-            completion(.success(routes))
-        }
+        transportType: TransportType
+    ) async throws -> [Route] {
+        try await Task.sleep(for: .seconds(1))
+        return Self.makeMockRoutes(
+            departure: departure,
+            destination: destination,
+            departureTime: departureTime,
+            transportType: transportType
+        )
     }
 
     private static func makeMockRoutes(
