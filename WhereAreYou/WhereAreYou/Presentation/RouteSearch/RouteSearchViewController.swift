@@ -74,6 +74,17 @@ final class RouteSearchViewController: UIViewController {
         return label
     }()
 
+    /// 대중교통 소요 시간 기준 안내, 대중교통 선택 시에만 표시
+    private let transitTimeNoticeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "대중교통은 현재 시각 기준 소요 시간입니다."
+        label.font = .preferredFont(forTextStyle: .caption1)
+        label.textColor = .tertiaryLabel
+        label.numberOfLines = 0
+        label.isHidden = true
+        return label
+    }()
+
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.text = "출발지와 도착지를 모두 선택해주세요."
@@ -202,14 +213,14 @@ final class RouteSearchViewController: UIViewController {
         let timeSectionRow = makeTimeSectionRow()
 
         [placeInputView, transportSectionLabel, transportSelector,
-         timeSectionRow, routeSectionLabel]
+         timeSectionRow, routeSectionLabel, transitTimeNoticeLabel]
             .forEach { topStack.addArrangedSubview($0) }
 
         topStack.setCustomSpacing(Self.sectionSpacing, after: placeInputView)
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: transportSectionLabel)
         topStack.setCustomSpacing(Self.sectionSpacing, after: transportSelector)
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: timeSectionRow)
-        topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: routeSectionLabel)
+        topStack.setCustomSpacing(4, after: routeSectionLabel)
 
         // 경로 검색 결과 영역: 빈 상태 / 로딩 / 경로 카드 목록
 
@@ -337,6 +348,13 @@ final class RouteSearchViewController: UIViewController {
                 var attr = AttributedString(time.koreanShortDateTimeString)
                 attr.font = .preferredFont(forTextStyle: .footnote)
                 self.timeButton.configuration?.attributedTitle = attr
+            }
+            .store(in: &cancellables)
+
+        viewModel.$selectedTransportType
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] type in
+                self?.transitTimeNoticeLabel.isHidden = type != .transit
             }
             .store(in: &cancellables)
 
