@@ -43,3 +43,40 @@ struct KakaoRoutePath: Decodable {
     /// [경도, 위도] 쌍 목록
     let points: [[Double]]
 }
+
+extension KakaoRoutePath {
+
+    /// Coordinate 목록으로 변환, 쌍이 아닌 값은 제외
+    var coordinates: [Coordinate] {
+        points.compactMap { point in
+            guard point.count >= 2 else { return nil }
+            return Coordinate(latitude: point[1], longitude: point[0])
+        }
+    }
+}
+
+extension KakaoWalkRouteResponse {
+
+    /// Route로 변환, 탐색 실패 시 빈 배열
+    func toRoutes(departure: Place, destination: Place, departureTime: Date) -> [Route] {
+        guard status == "OK", let route else { return [] }
+
+        let distanceKm = route.properties.totalDistance / 1000
+        let step = RouteStep(
+            departurePoint: departure,
+            destination: destination,
+            estimatedTime: route.properties.totalTime / 60,
+            distance: distanceKm,
+            transportType: .walk,
+            path: route.legs.flatMap(\.steps).flatMap(\.path.coordinates)
+        )
+        return [
+            Route(
+                departureTime: departureTime,
+                arrivalTime: departureTime.addingTimeInterval(route.properties.totalTime),
+                step: [step],
+                totalDistance: distanceKm
+            )
+        ]
+    }
+}
