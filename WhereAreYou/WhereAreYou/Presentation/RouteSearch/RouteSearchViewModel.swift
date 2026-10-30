@@ -17,14 +17,22 @@ final class RouteSearchViewModel {
     @Published private(set) var routes: [RouteItem] = []
     @Published private(set) var isLoading = false
     @Published private(set) var selectedRouteIndex: Int = 0
+    /// 경로 검색 실패 문구, 성공 시 nil
+    @Published private(set) var searchErrorMessage: String?
 
     private var departureDomain: Place?
     private var destinationDomain: Place?
     private var routesDomain: [Route] = []
 
+    /// 현재 선택된 경로, 검색 결과가 없으면 nil
+    var selectedRoute: Route? {
+        routesDomain.indices.contains(selectedRouteIndex) ? routesDomain[selectedRouteIndex] : nil
+    }
+
     private let searchRoutesUseCase: SearchRoutesUseCase
     private let getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase
     private var fetchCurrentLocationTask: Task<Void, Never>?
+    private var searchRoutesTask: Task<Void, Never>?
 
     init(
         searchRoutesUseCase: SearchRoutesUseCase,
@@ -36,6 +44,7 @@ final class RouteSearchViewModel {
 
     deinit {
         fetchCurrentLocationTask?.cancel()
+        searchRoutesTask?.cancel()
     }
 
     func setDeparture(_ place: Place?) {
@@ -81,8 +90,14 @@ final class RouteSearchViewModel {
         }
     }
 
+    /// 이전 검색 취소 후 재검색
     private func searchIfReady() {
+        searchRoutesTask?.cancel()
+
+        searchErrorMessage = nil
+
         guard let departureDomain, let destinationDomain else {
+            isLoading = false
             routesDomain = []
             routes = []
             selectedRouteIndex = 0
@@ -91,27 +106,32 @@ final class RouteSearchViewModel {
 
         isLoading = true
 
-        searchRoutesUseCase.execute(
-            departure: departureDomain,
-            destination: destinationDomain,
-            departureTime: departureTime,
-            transportType: selectedTransportType
-        ) { [weak self] result in
+        let departureTime = departureTime
+        let transportType = selectedTransportType
+        searchRoutesTask = Task { [weak self] in
             guard let self else { return }
-            DispatchQueue.main.async {
-                self.isLoading = false
-                self.selectedRouteIndex = 0
-
-                switch result {
-                case .success(let fetchedRoutes):
-                    self.routesDomain = fetchedRoutes
-                    self.routes = fetchedRoutes.map { RouteItem(route: $0) }
-                case .failure:
-                    // TODO: 길찾기 API 확인 후 검색 실패 텍스트 설정 필요
-                    self.routesDomain = []
-                    self.routes = []
-                }
+            let fetchedRoutes: [Route]
+            var errorMessage: String?
+            do {
+                fetchedRoutes = try await self.searchRoutesUseCase.execute(
+                    departure: departureDomain,
+                    destination: destinationDomain,
+                    departureTime: departureTime,
+                    transportType: transportType
+                )
+            } catch {
+                fetchedRoutes = []
+                errorMessage = (error as? LocalizedError)?.errorDescription
+                    ?? AppError.unknown(error).errorDescription
             }
+            // 취소로 인한 에러도 여기서 걸러짐
+            guard !Task.isCancelled else { return }
+
+            self.searchErrorMessage = errorMessage
+            self.isLoading = false
+            self.selectedRouteIndex = 0
+            self.routesDomain = fetchedRoutes
+            self.routes = fetchedRoutes.map { RouteItem(route: $0) }
         }
     }
 
