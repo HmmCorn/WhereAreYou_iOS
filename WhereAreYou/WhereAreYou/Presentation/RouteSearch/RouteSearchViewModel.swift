@@ -24,6 +24,11 @@ final class RouteSearchViewModel {
     private var destinationDomain: Place?
     private var routesDomain: [Route] = []
 
+    /// 현재 선택된 경로, 검색 결과가 없으면 nil
+    var selectedRoute: Route? {
+        routesDomain.indices.contains(selectedRouteIndex) ? routesDomain[selectedRouteIndex] : nil
+    }
+
     private let searchRoutesUseCase: SearchRoutesUseCase
     private let getCurrentLocationPlaceUseCase: GetCurrentLocationPlaceUseCase
     private var fetchCurrentLocationTask: Task<Void, Never>?

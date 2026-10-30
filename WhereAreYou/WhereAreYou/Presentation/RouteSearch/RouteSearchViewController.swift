@@ -138,8 +138,8 @@ final class RouteSearchViewController: UIViewController {
     private let initialDeparture: Place?
     private let initialDestination: Place?
 
-    /// 경로 선택 완료 시 호출
-    var onRouteSelected: (() -> Void)?
+    /// 경로 선택 완료 시 선택한 경로와 함께 호출
+    var onRouteSelected: ((Route) -> Void)?
 
     init(viewModel: RouteSearchViewModel, departure: Place? = nil, destination: Place? = nil) {
         self.viewModel = viewModel
@@ -320,7 +320,8 @@ final class RouteSearchViewController: UIViewController {
         }, for: .touchUpInside)
 
         selectRouteButton.addAction(UIAction { [weak self] _ in
-            self?.onRouteSelected?()
+            guard let self, let route = self.viewModel.selectedRoute else { return }
+            self.onRouteSelected?(route)
         }, for: .touchUpInside)
     }
 
