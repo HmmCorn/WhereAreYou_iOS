@@ -67,14 +67,82 @@ extension KakaoTransitRouteResponse {
     func toRoutes(departure: Place, destination: Place, departureTime: Date) -> [Route] {
         guard status == "OK", let routes else { return [] }
 
-        return routes.map { route in
-            Route(
-                departureTime: departureTime,
-                arrivalTime: departureTime.addingTimeInterval(route.properties.totalTime),
-                step: route.steps.map { $0.toRouteStep(departure: departure, destination: destination) },
-                totalDistance: route.properties.totalDistance / 1000
+        return routes.map { $0.toRoute(departure: departure, destination: destination, departureTime: departureTime) }
+    }
+}
+
+extension KakaoTransitRoute {
+
+    /// 추정 도보 구간 최소 시간(초), 이보다 짧으면 구간을 만들지 않음
+    private static let minimumWalkTime: Double = 60
+
+    /// Route로 변환, 응답에 없는 출발·도착 도보 구간은 추정해서 추가
+    func toRoute(departure: Place, destination: Place, departureTime: Date) -> Route {
+        var routeSteps = steps.map { $0.toRouteStep(departure: departure, destination: destination) }
+
+        if let firstStep = routeSteps.first, let lastStep = routeSteps.last {
+            let (startWalk, endWalk) = estimatedWalks(
+                departure: departure,
+                firstStop: firstStep.departurePoint,
+                lastStop: lastStep.destination,
+                destination: destination
             )
+            if let startWalk { routeSteps.insert(startWalk, at: 0) }
+            if let endWalk { routeSteps.append(endWalk) }
         }
+
+        return Route(
+            departureTime: departureTime,
+            arrivalTime: departureTime.addingTimeInterval(properties.totalTime),
+            step: routeSteps,
+            totalDistance: properties.totalDistance / 1000
+        )
+    }
+
+    // MARK: - Private
+
+    /// 전체 값과 구간 합의 차이를 출발·도착 쪽 직선거리 비율로 나눈 도보 구간
+    private func estimatedWalks(
+        departure: Place,
+        firstStop: Place,
+        lastStop: Place,
+        destination: Place
+    ) -> (start: RouteStep?, end: RouteStep?) {
+        let missingTime = properties.totalTime - steps.reduce(0) { $0 + $1.properties.time }
+        let missingDistance = max(properties.totalDistance - steps.reduce(0) { $0 + $1.properties.distance }, 0)
+
+        let startStraightDistance = departure.coordinate.distance(to: firstStop.coordinate)
+        let endStraightDistance = lastStop.coordinate.distance(to: destination.coordinate)
+        let totalStraightDistance = startStraightDistance + endStraightDistance
+        guard missingTime > 0, totalStraightDistance > 0 else { return (nil, nil) }
+
+        let startRatio = startStraightDistance / totalStraightDistance
+        let start = makeWalkStep(
+            from: departure,
+            to: firstStop,
+            time: missingTime * startRatio,
+            distance: missingDistance * startRatio
+        )
+        let end = makeWalkStep(
+            from: lastStop,
+            to: destination,
+            time: missingTime * (1 - startRatio),
+            distance: missingDistance * (1 - startRatio)
+        )
+        return (start, end)
+    }
+
+    /// 두 지점을 직선으로 잇는 도보 구간, 최소 시간 미만이면 nil
+    private func makeWalkStep(from: Place, to: Place, time: Double, distance: Double) -> RouteStep? {
+        guard time >= Self.minimumWalkTime else { return nil }
+        return RouteStep(
+            departurePoint: from,
+            destination: to,
+            estimatedTime: time / 60,
+            distance: distance / 1000,
+            transportType: .walk,
+            path: [from.coordinate, to.coordinate]
+        )
     }
 }
 
