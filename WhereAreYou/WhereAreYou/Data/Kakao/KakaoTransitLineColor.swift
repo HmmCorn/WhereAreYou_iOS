@@ -16,7 +16,35 @@ enum KakaoTransitLineColor {
         subwayColorHexes[lineName]
     }
 
+    /// 버스 종류 기준 색, 매핑에 없으면 nil
+    /// 심야버스는 종류가 "간선" 등으로 와서 이름의 "(심야)"로 구분
+    static func busColorHex(busType: String, busName: String) -> String? {
+        if busName.hasSuffix("(심야)") {
+            return nightBusColorHex
+        }
+        return busColorHexes[busType]
+    }
+
     // MARK: - Private
+
+    private static let nightBusColorHex = "#1E3A5F"
+
+    /// 카카오 응답의 vehicles[].type -> 색
+    private static let busColorHexes: [String: String] = [
+        "간선": "#3D5BAB",
+        "지선": "#5BB025",
+        "순환": "#F2B70A",
+        "광역": "#E60012",
+        "직행": "#E60012",
+        "급행": "#E60012",
+        "직통": "#E60012",
+        "좌석": "#0068B7",
+        "일반": "#33CC99",
+        "농어촌": "#33CC99",
+        "마을": "#53B332",
+        "공항": "#00A0E9",
+        "시외": "#8B5CA8"
+    ]
 
     /// 카카오 응답의 vehicles[].name -> 색
     private static let subwayColorHexes: [String: String] = [
