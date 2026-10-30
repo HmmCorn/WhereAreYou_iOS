@@ -73,7 +73,9 @@ extension DIContainer {
         register(SharedPlaceRepository.self) { MockSharedPlaceRepository() }
 
         // 길찾기
-        register(RouteSearchRepository.self) { MockRouteSearchRepository() }
+        register(RouteSearchRepository.self) {
+            KakaoRouteSearchRepository(apiClient: self.resolve(APIClient.self))
+        }
 
         // 약속 이동 라이브 액티비티
         register(RouteLiveActivityRepository.self, instance: ActivityKitRouteLiveActivityRepository())
