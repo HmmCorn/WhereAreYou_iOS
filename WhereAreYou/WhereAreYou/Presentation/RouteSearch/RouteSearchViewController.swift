@@ -77,7 +77,7 @@ final class RouteSearchViewController: UIViewController {
     /// 대중교통 소요 시간 기준 안내, 대중교통 선택 시에만 표시
     private let transitTimeNoticeLabel: UILabel = {
         let label = UILabel()
-        label.text = "대중교통은 현재 시각 기준 소요 시간입니다."
+        label.text = "대중교통은 선택한 출발 시간의 배차가 아닌,\n현재 시각 기준 소요 시간으로 도착 시간을 계산합니다."
         label.font = .preferredFont(forTextStyle: .caption1)
         label.textColor = .tertiaryLabel
         label.numberOfLines = 0
