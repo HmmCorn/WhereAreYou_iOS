@@ -20,7 +20,7 @@ struct RouteStepItem {
         self.title = title
         estimatedTimeMinutes = step.estimatedTime
         durationText = Self.formatDuration(step.estimatedTime)
-        transportIcon = step.transportType.icon
+        transportIcon = Self.icon(of: step)
         transportColor = step.transportType.color
     }
 
@@ -48,6 +48,14 @@ struct RouteStepItem {
     }
 
     // MARK: - Private
+
+    /// 구간 아이콘, 대중교통은 탑승 장소가 지하철역이면 지하철 아이콘 (RouteProgressSegment와 같은 기준)
+    private static func icon(of step: RouteStep) -> String {
+        guard step.transportType == .transit, step.departurePoint.type == .subway else {
+            return step.transportType.icon
+        }
+        return "tram"
+    }
 
     /// 구간 종류와 앞뒤 구간에 따른 문구
     private static func title(of step: RouteStep, previous: RouteStep?, next: RouteStep?, isOnlyStep: Bool) -> String {
