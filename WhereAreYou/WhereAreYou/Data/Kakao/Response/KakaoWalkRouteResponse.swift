@@ -58,7 +58,7 @@ extension KakaoRoutePath {
 extension KakaoWalkRouteResponse {
 
     /// Route로 변환, 탐색 실패 시 빈 배열
-    func toRoutes(departure: Place, destination: Place, departureTime: Date) -> [Route] {
+    func toDomain(departure: Place, destination: Place, departureTime: Date) -> [Route] {
         guard status == "OK", let route else { return [] }
 
         let distanceKm = route.properties.totalDistance / 1000

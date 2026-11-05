@@ -58,7 +58,7 @@ extension KakaoCarRoad {
 extension KakaoCarRouteResponse {
 
     /// Route 목록으로 변환, 탐색 실패한 경로는 제외
-    func toRoutes(departure: Place, destination: Place, departureTime: Date) -> [Route] {
+    func toDomain(departure: Place, destination: Place, departureTime: Date) -> [Route] {
         routes.compactMap { route in
             guard route.resultCode == 0, let summary = route.summary else { return nil }
 

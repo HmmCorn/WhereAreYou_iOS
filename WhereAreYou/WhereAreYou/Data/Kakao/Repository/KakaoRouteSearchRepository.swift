@@ -30,20 +30,20 @@ final class KakaoRouteSearchRepository: RouteSearchRepository {
             let response: KakaoWalkRouteResponse = try await apiClient.request(
                 KakaoRouteEndpoint.walk(start: departure.coordinate, end: destination.coordinate)
             )
-            return response.toRoutes(departure: departure, destination: destination, departureTime: departureTime)
+            return response.toDomain(departure: departure, destination: destination, departureTime: departureTime)
 
         case .transit:
             // 출발 시각 파라미터가 없어 현재 기준 소요시간을 출발 시각에 더함
             let response: KakaoTransitRouteResponse = try await apiClient.request(
                 KakaoRouteEndpoint.transit(start: departure.coordinate, end: destination.coordinate)
             )
-            return response.toRoutes(departure: departure, destination: destination, departureTime: departureTime)
+            return response.toDomain(departure: departure, destination: destination, departureTime: departureTime)
 
         case .car:
             let response: KakaoCarRouteResponse = try await apiClient.request(
                 carEndpoint(departure: departure, destination: destination, departureTime: departureTime)
             )
-            return response.toRoutes(departure: departure, destination: destination, departureTime: departureTime)
+            return response.toDomain(departure: departure, destination: destination, departureTime: departureTime)
         }
     }
 

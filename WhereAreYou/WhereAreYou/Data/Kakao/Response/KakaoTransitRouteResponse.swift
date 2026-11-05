@@ -64,7 +64,7 @@ struct KakaoTransitVehicle: Decodable {
 extension KakaoTransitRouteResponse {
 
     /// Route 목록으로 변환, 탐색 실패 시 빈 배열
-    func toRoutes(departure: Place, destination: Place, departureTime: Date) -> [Route] {
+    func toDomain(departure: Place, destination: Place, departureTime: Date) -> [Route] {
         guard status == "OK", let routes else { return [] }
 
         return routes.map { $0.toRoute(departure: departure, destination: destination, departureTime: departureTime) }
