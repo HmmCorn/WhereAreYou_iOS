@@ -108,7 +108,7 @@ final class RouteSearchViewModel {
 
         let departureTime = departureTime
         let transportType = selectedTransportType
-        searchRoutesTask = Task { [weak self] in
+        searchRoutesTask = Task { @MainActor [weak self] in
             guard let self else { return }
             let fetchedRoutes: [Route]
             var errorMessage: String?
