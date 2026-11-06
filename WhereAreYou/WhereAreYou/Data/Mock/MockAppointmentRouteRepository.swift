@@ -7,7 +7,8 @@
 
 import Foundation
 
-/// 서버 연결 전 참여자 경로 저장소 — MockAppointmentRepository의 참여자와 약속 장소에 맞춘 고정 경로를 돌려준다
+/// 서버 연결 전 참여자 경로 저장소 — 나와 고정 Mock 참여자의 경로를 MockAppointmentRepository.place 기준으로 돌려준다.
+/// 실제 약속의 다른 참여자는 ID가 달라 경로가 없다
 final class MockAppointmentRouteRepository: AppointmentRouteRepository {
 
     /// 내 경로 시나리오 — DEBUG 라이브 액티비티 시작 메뉴에서 바꿔 가며 확인한다
@@ -28,7 +29,7 @@ final class MockAppointmentRouteRepository: AppointmentRouteRepository {
         let place = MockAppointmentRepository.place
         let currentUserID = authRepository.currentUserID ?? MockAppointmentRepository.fallbackCurrentUserID
         let now = Date()
-        // 약속 시각과 내 경로만 당긴다. 다른 참여자 경로는 지도 표시용이라 그대로 둔다
+        // 내 경로만 당긴다. 다른 참여자 경로는 지도 표시용이라 그대로 둔다
         let myTimelineBase = MockAppointmentRepository.startsAfterAppointmentTime
             ? now.addingTimeInterval(-30 * 60)
             : now
