@@ -62,7 +62,7 @@ struct AppointmentDTO {
         ]
     }
 
-    private static func place(from data: [String: Any]) -> Place? {
+    static func place(from data: [String: Any]) -> Place? {
         guard let id = data["id"] as? String,
               let name = data["name"] as? String,
               let address = data["address"] as? String,

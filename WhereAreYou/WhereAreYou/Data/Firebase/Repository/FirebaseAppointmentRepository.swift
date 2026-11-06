@@ -6,18 +6,19 @@
 //
 
 import Foundation
+import FirebaseFirestore
 import FirebaseFunctions
 
-/// AppointmentRepository의 Firebase 구현체 — 생성·참여·나가기는 Functions callable로 서버가 처리한다.
-/// 조회·정보 수정은 Firestore 연동 전까지 Mock에 맡긴다
+/// AppointmentRepository의 Firebase 구현체 — 생성·참여·나가기는 Functions callable로 서버가 처리하고,
+/// 조회·정보 수정은 Firestore에 직접 한다
 final class FirebaseAppointmentRepository: AppointmentRepository {
 
+    private let db = Firestore.firestore()
     private let functions = Functions.app
-    // TODO: 조회·정보 수정 Firestore 연동 후 제거
-    private let mockRepository: MockAppointmentRepository
+    private let userRepository: UserRepository
 
-    init(mockRepository: MockAppointmentRepository) {
-        self.mockRepository = mockRepository
+    init(userRepository: UserRepository) {
+        self.userRepository = userRepository
     }
 
     func createAppointment(name: String, dateTime: Date, place: Place?) async throws -> Appointment {
@@ -44,7 +45,19 @@ final class FirebaseAppointmentRepository: AppointmentRepository {
     }
 
     func fetchAppointment(appointmentID: String) async throws -> Appointment {
-        try await mockRepository.fetchAppointment(appointmentID: appointmentID)
+        do {
+            let snapshot = try await db.collection("appointments").document(appointmentID).getDocument()
+            guard let data = snapshot.data(),
+                  let dto = AppointmentDocumentDTO(id: snapshot.documentID, data: data) else {
+                throw AppError.notFound
+            }
+            let usersByID = try await userRepository.fetchUsers(userIDs: Set(dto.participantIDs))
+            return dto.toDomain(usersByID: usersByID)
+        } catch let error as AppError {
+            throw error
+        } catch {
+            throw FirebaseErrorMapper.map(error)
+        }
     }
 
     func updateAppointment(
@@ -53,12 +66,25 @@ final class FirebaseAppointmentRepository: AppointmentRepository {
         dateTime: Date?,
         place: Place?
     ) async throws -> Appointment {
-        try await mockRepository.updateAppointment(
-            appointmentID: appointmentID,
-            name: name,
-            dateTime: dateTime,
-            place: place
-        )
+        var fields: [String: Any] = [:]
+        if let name {
+            fields["name"] = name
+        }
+        if let dateTime {
+            fields["dateTime"] = Timestamp(date: dateTime)
+        }
+        if let place {
+            fields["place"] = AppointmentDTO.data(from: place)
+        }
+
+        if !fields.isEmpty {
+            do {
+                try await db.collection("appointments").document(appointmentID).updateData(fields)
+            } catch {
+                throw FirebaseErrorMapper.map(error)
+            }
+        }
+        return try await fetchAppointment(appointmentID: appointmentID)
     }
 
     /// 약속 응답을 돌려주는 callable을 호출한다
