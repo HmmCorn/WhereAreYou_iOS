@@ -100,6 +100,13 @@ final class AppointmentInfoViewController: UIViewController {
             }
             .store(in: &cancellables)
 
+        viewModel.$isLeaving
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLeaving in
+                self?.infoCard.setLeaving(isLeaving)
+            }
+            .store(in: &cancellables)
+
         viewModel.$leaveResult
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)

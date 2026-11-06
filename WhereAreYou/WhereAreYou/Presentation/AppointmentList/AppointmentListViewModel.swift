@@ -19,6 +19,7 @@ final class AppointmentListViewModel {
 
     @Published private(set) var leaveResult: Result<Void, Error>?
 
+    private var leavingIDs: Set<String> = []
     private let leaveAppointmentUseCase: LeaveAppointmentUseCase
 
     init(leaveAppointmentUseCase: LeaveAppointmentUseCase) {
@@ -49,7 +50,9 @@ final class AppointmentListViewModel {
     }
 
     func leave(id: String) {
+        guard leavingIDs.insert(id).inserted else { return }
         Task { @MainActor in
+            defer { leavingIDs.remove(id) }
             do {
                 try await leaveAppointmentUseCase.execute(appointmentID: id)
                 todayAppointments.removeAll { $0.id == id }
