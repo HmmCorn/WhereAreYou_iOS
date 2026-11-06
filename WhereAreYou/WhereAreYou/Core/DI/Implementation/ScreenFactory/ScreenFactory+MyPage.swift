@@ -9,6 +9,9 @@ extension ScreenFactory {
 
     func makeMyPageViewController() -> MyPageViewController {
         let viewModel = MyPageViewModel(
+            fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase(
+                repository: container.resolve(AppointmentRepository.self)
+            ),
             observeLocationPermissionUseCase: ObserveLocationPermissionUseCase(
                 repository: container.resolve(LocationPermissionRepository.self)
             ),
