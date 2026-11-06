@@ -10,7 +10,7 @@ import Foundation
 /// Info.plist에 등록된 외부 API 키를 한 곳에서 읽어오기 위한 타입
 enum APIKey {
 
-    /// 카카오 로컬 API 호출에 사용하는 REST API 키
+    /// 카카오 로컬·길찾기 API 호출에 사용하는 REST API 키
     static var kakaoRestAPIKey: String {
         value(forInfoDictionaryKey: "KakaoRestAPIKey")
     }

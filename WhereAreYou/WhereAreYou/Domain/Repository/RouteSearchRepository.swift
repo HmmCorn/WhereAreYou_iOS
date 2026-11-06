@@ -13,8 +13,7 @@ protocol RouteSearchRepository {
         departure: Place,
         destination: Place,
         departureTime: Date,
-        transportType: TransportType,
-        completion: @escaping (Result<[Route], Error>) -> Void
-    )
+        transportType: TransportType
+    ) async throws -> [Route]
 
 }
