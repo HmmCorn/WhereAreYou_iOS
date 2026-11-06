@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import Combine
 
 final class HomeViewModel {
 
     private(set) var upcomingAppointments: [UpcomingAppointment] = []
+    @Published private(set) var joinResult: Result<AppointmentInfo, Error>?
 
     private let joinAppointmentUseCase: JoinAppointmentUseCase
 
@@ -18,13 +20,13 @@ final class HomeViewModel {
         loadDummyData()
     }
 
-    func joinAppointment(code: String, completion: @escaping (Result<AppointmentInfo, Error>) -> Void) {
+    func joinAppointment(code: String) {
         Task { @MainActor in
             do {
                 let appointment = try await joinAppointmentUseCase.execute(code: code)
-                completion(.success(AppointmentInfo(appointment: appointment)))
+                joinResult = .success(AppointmentInfo(appointment: appointment))
             } catch {
-                completion(.failure(error))
+                joinResult = .failure(error)
             }
         }
     }

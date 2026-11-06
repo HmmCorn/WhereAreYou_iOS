@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 final class AppointmentListViewController: UIViewController {
 
@@ -15,15 +16,17 @@ final class AppointmentListViewController: UIViewController {
     private static let sectionHeaderTopSpacing: CGFloat = 18
     private static let sectionHeaderBottomSpacing: CGFloat = 10
 
-    private let viewModel = AppointmentListViewModel()
+    private let viewModel: AppointmentListViewModel
     weak var coordinator: AppointmentListCoordinating?
+    private var cancellables = Set<AnyCancellable>()
 
-    init() {
+    init(viewModel: AppointmentListViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) has not been implemented — use init(viewModel:)")
     }
 
     private let logoImageView: UIImageView = {
@@ -88,6 +91,22 @@ final class AppointmentListViewController: UIViewController {
         setUpLayout()
         setUpActions()
         reloadCards()
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
+        viewModel.$leaveResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.reloadCards()
+                case .failure:
+                    self?.present(UIAlertController.leaveFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -245,9 +264,7 @@ final class AppointmentListViewController: UIViewController {
 
     private func presentLeaveConfirmAlert(id: String, title: String) {
         let alert = UIAlertController.leaveConfirmAlert(title: title) { [weak self] in
-            guard let self else { return }
-            let (today, upcoming) = viewModel.leave(id: id)
-            reloadCards(today: today, upcoming: upcoming)
+            self?.viewModel.leave(id: id)
         }
         present(alert, animated: true)
     }

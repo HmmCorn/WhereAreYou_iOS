@@ -131,6 +131,12 @@ final class AppointmentInfoCard: UIView {
         }
     }
 
+    /// 나가기 요청 중에는 버튼을 비활성화하고 진행 상태를 표시한다.
+    func setLeaving(_ isLeaving: Bool) {
+        leaveButton.isEnabled = !isLeaving
+        leaveButton.configuration?.showsActivityIndicator = isLeaving
+    }
+
     @objc private func dismissKeyboard() { endEditing(true) }
 
 }

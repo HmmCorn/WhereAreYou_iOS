@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 final class HomeViewController: UIViewController {
 
@@ -13,6 +14,7 @@ final class HomeViewController: UIViewController {
 
     private let viewModel: HomeViewModel
     weak var coordinator: HomeCoordinating?
+    private var cancellables = Set<AnyCancellable>()
 
     init(viewModel: HomeViewModel) {
         self.viewModel = viewModel
@@ -124,6 +126,23 @@ final class HomeViewController: UIViewController {
         setUpLayout()
         setUpActions()
         setUpUpcomingCards()
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
+        viewModel.$joinResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success(let appointmentInfo):
+                    self?.dismissJoinSheet()
+                    self?.presentChat(appointmentInfo: appointmentInfo)
+                case .failure:
+                    self?.presentJoinFailureAlert()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     private func setUpLayout() {
@@ -246,18 +265,7 @@ final class HomeViewController: UIViewController {
     }
 
     private func joinAppointment(code: String) {
-        viewModel.joinAppointment(code: code) { [weak self] result in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                switch result {
-                case .success(let appointmentInfo):
-                    self.dismissJoinSheet()
-                    self.presentChat(appointmentInfo: appointmentInfo)
-                case .failure:
-                    self.presentJoinFailureAlert()
-                }
-            }
-        }
+        viewModel.joinAppointment(code: code)
     }
 
     private func presentJoinFailureAlert() {

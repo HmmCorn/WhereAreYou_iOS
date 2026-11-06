@@ -48,7 +48,9 @@ extension DIContainer {
 
         // 약속
         register(AppointmentRepository.self) {
-            MockAppointmentRepository(authRepository: self.resolve(AuthRepository.self))
+            FirebaseAppointmentRepository(
+                mockRepository: MockAppointmentRepository(authRepository: self.resolve(AuthRepository.self))
+            )
         }
         register(AppointmentRouteRepository.self) {
             MockAppointmentRouteRepository(authRepository: self.resolve(AuthRepository.self))

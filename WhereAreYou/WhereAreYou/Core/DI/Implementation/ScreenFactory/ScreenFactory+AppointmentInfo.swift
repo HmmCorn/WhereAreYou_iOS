@@ -12,7 +12,8 @@ extension ScreenFactory {
         let viewModel = AppointmentInfoViewModel(
             appointmentID: appointmentID,
             fetchAppointmentInfoUseCase: FetchAppointmentInfoUseCase(repository: repository),
-            updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase(repository: repository)
+            updateAppointmentInfoUseCase: UpdateAppointmentInfoUseCase(repository: repository),
+            leaveAppointmentUseCase: LeaveAppointmentUseCase(repository: repository)
         )
         return AppointmentInfoViewController(viewModel: viewModel)
     }

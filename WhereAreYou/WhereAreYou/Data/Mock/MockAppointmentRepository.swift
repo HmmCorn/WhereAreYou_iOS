@@ -54,6 +54,11 @@ final class MockAppointmentRepository: AppointmentRepository {
         return storedAppointment(appointmentID: "appointment_joined")
     }
 
+    func leaveAppointment(appointmentID: String) async throws {
+        try await Task.sleep(for: .milliseconds(300))
+        storedAppointments[appointmentID] = nil
+    }
+
     func fetchAppointment(appointmentID: String) async throws -> Appointment {
         try await Task.sleep(for: .milliseconds(300))
         return storedAppointment(appointmentID: appointmentID)
