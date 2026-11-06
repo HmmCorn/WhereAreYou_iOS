@@ -125,11 +125,29 @@ final class HomeViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
-        setUpUpcomingCards()
+        reloadUpcomingCards()
         bindViewModel()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.loadAppointments()
+    }
+
     private func bindViewModel() {
+        viewModel.$loadResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.reloadUpcomingCards()
+                case .failure:
+                    self?.present(UIAlertController.appointmentLoadFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
+
         viewModel.$joinResult
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
@@ -205,9 +223,18 @@ final class HomeViewController: UIViewController {
         }, for: .touchUpInside)
     }
 
-    private func setUpUpcomingCards() {
+    private func reloadUpcomingCards() {
         let appointments = viewModel.upcomingAppointments
         let cards = appointments.map { UpcomingAppointmentCard(appointment: $0) }
+
+        // 카드를 지우면 카드에 걸린 높이·너비 제약도 함께 사라진다
+        upcomingStack.arrangedSubviews.forEach {
+            upcomingStack.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+
+        upcomingSectionLabel.isHidden = appointments.isEmpty
+        upcomingScrollView.isHidden = appointments.isEmpty
 
         zip(cards, appointments).forEach { card, appointment in
             card.onTap = { [weak self] in
