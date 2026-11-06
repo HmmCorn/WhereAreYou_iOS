@@ -15,9 +15,11 @@ final class FirebaseAppointmentRepository: AppointmentRepository {
 
     private let db = Firestore.firestore()
     private let functions = Functions.app
+    private let authRepository: AuthRepository
     private let userRepository: UserRepository
 
-    init(userRepository: UserRepository) {
+    init(authRepository: AuthRepository, userRepository: UserRepository) {
+        self.authRepository = authRepository
         self.userRepository = userRepository
     }
 
@@ -53,6 +55,33 @@ final class FirebaseAppointmentRepository: AppointmentRepository {
             }
             let usersByID = try await userRepository.fetchUsers(userIDs: Set(dto.participantIDs))
             return dto.toDomain(usersByID: usersByID)
+        } catch let error as AppError {
+            throw error
+        } catch {
+            throw FirebaseErrorMapper.map(error)
+        }
+    }
+
+    func fetchMyAppointments(from: Date, to: Date?) async throws -> [Appointment] {
+        guard let currentUserID = authRepository.currentUserID else {
+            throw AppError.notAuthenticated
+        }
+
+        var query = db.collection("appointments")
+            .whereField("participantIDs", arrayContains: currentUserID)
+            .whereField("dateTime", isGreaterThanOrEqualTo: Timestamp(date: from))
+        if let to {
+            query = query.whereField("dateTime", isLessThan: Timestamp(date: to))
+        }
+
+        do {
+            let snapshot = try await query.order(by: "dateTime").getDocuments()
+            let dtos = snapshot.documents.compactMap {
+                AppointmentDocumentDTO(id: $0.documentID, data: $0.data())
+            }
+            // 약속마다 조회하지 않도록 참여자를 모아 한 번에 읽는다
+            let usersByID = try await userRepository.fetchUsers(userIDs: Set(dtos.flatMap(\.participantIDs)))
+            return dtos.map { $0.toDomain(usersByID: usersByID) }
         } catch let error as AppError {
             throw error
         } catch {
