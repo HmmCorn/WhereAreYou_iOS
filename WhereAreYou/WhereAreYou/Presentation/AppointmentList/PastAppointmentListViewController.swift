@@ -59,11 +59,23 @@ final class PastAppointmentListViewController: UIViewController {
         title = "지난 약속"
         view.backgroundColor = .systemBackground
         setUpLayout()
-        reloadCards()
         bindViewModel()
     }
 
     private func bindViewModel() {
+        viewModel.$loadResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.reloadCards()
+                case .failure:
+                    self?.present(UIAlertController.appointmentLoadFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
+
         viewModel.$leaveResult
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
@@ -81,6 +93,7 @@ final class PastAppointmentListViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: animated)
+        viewModel.loadAppointments()
     }
 
     private func setUpLayout() {

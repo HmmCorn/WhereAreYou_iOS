@@ -17,3 +17,18 @@ struct AppointmentListItem {
     let date: Date
     let isNotificationEnabled: Bool
 }
+
+extension AppointmentListItem {
+
+    init(appointment: Appointment, isNotificationEnabled: Bool) {
+        self.init(
+            id: appointment.id,
+            title: appointment.name,
+            participantCount: appointment.participants.count,
+            location: appointment.place.map { AppointmentLocation(place: $0) },
+            date: appointment.dateTime,
+            isNotificationEnabled: isNotificationEnabled
+        )
+    }
+
+}

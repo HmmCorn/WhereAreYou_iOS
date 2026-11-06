@@ -15,14 +15,41 @@ final class PastAppointmentListViewModel {
 
     private(set) var pastAppointments: [AppointmentListItem] = []
 
+    @Published private(set) var loadResult: Result<Void, Error>?
     @Published private(set) var leaveResult: Result<Void, Error>?
 
     private var leavingIDs: Set<String> = []
+    private let fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase
     private let leaveAppointmentUseCase: LeaveAppointmentUseCase
 
-    init(leaveAppointmentUseCase: LeaveAppointmentUseCase) {
+    init(
+        fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase,
+        leaveAppointmentUseCase: LeaveAppointmentUseCase
+    ) {
+        self.fetchMyAppointmentsUseCase = fetchMyAppointmentsUseCase
         self.leaveAppointmentUseCase = leaveAppointmentUseCase
-        loadDummyData()
+    }
+
+    func loadAppointments() {
+        Task { @MainActor in
+            do {
+                let now = Date()
+                let appointments = try await fetchMyAppointmentsUseCase.execute(
+                    from: now.addingTimeInterval(-30 * 24 * 60 * 60),
+                    to: now
+                )
+                // TODO: 약속 알림 연동 시 users.appointmentsNotification 값으로 교체
+                pastAppointments = appointments.reversed().map {
+                    AppointmentListItem(
+                        appointment: $0,
+                        isNotificationEnabled: item(id: $0.id)?.isNotificationEnabled ?? true
+                    )
+                }
+                loadResult = .success(())
+            } catch {
+                loadResult = .failure(error)
+            }
+        }
     }
 
     func toggleNotification(id: String) {
@@ -65,27 +92,6 @@ final class PastAppointmentListViewModel {
             date: item.date,
             isNotificationEnabled: !item.isNotificationEnabled
         )
-    }
-
-    private func loadDummyData() {
-        let allPastAppointments = (1...15).map { index in
-            AppointmentListItem(
-                id: "past-\(index)",
-                title: "지난 약속 \(index)",
-                participantCount: index % 10 + 1,
-                location: AppointmentLocation(
-                    title: "테스트 장소 \(index)",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Date().addingTimeInterval(-Double(index) * 24 * 60 * 60),
-                isNotificationEnabled: true
-            )
-        }
-
-        pastAppointments = allPastAppointments.sorted {
-            $0.date > $1.date
-        }
     }
 
 }
