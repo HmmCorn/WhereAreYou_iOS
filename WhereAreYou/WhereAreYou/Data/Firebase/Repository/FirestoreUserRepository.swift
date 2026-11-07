@@ -86,22 +86,36 @@ final class FirestoreUserRepository: UserRepository {
 
     func fetchUsers(userIDs: Set<String>) async throws -> [String: User] {
         let userIDs = Array(userIDs)
-        var usersByID: [String: User] = [:]
 
         do {
-            for start in stride(from: 0, to: userIDs.count, by: Self.inQueryLimit) {
-                let chunk = Array(userIDs[start..<min(start + Self.inQueryLimit, userIDs.count)])
-                let snapshot = try await db.collection("users")
-                    .whereField(FieldPath.documentID(), in: chunk)
-                    .getDocuments()
-                for document in snapshot.documents {
-                    usersByID[document.documentID] = UserDTO(data: document.data())?.toDomain(id: document.documentID)
+            return try await withThrowingTaskGroup(of: [String: User].self) { group in
+                for start in stride(from: 0, to: userIDs.count, by: Self.inQueryLimit) {
+                    let chunk = Array(userIDs[start..<min(start + Self.inQueryLimit, userIDs.count)])
+                    group.addTask {
+                        try await self.fetchUsers(chunk: chunk)
+                    }
                 }
+                var usersByID: [String: User] = [:]
+                for try await users in group {
+                    usersByID.merge(users) { current, _ in current }
+                }
+                return usersByID
             }
-            return usersByID
         } catch {
             throw FirebaseErrorMapper.map(error)
         }
+    }
+
+    private func fetchUsers(chunk: [String]) async throws -> [String: User] {
+        let snapshot = try await db.collection("users")
+            .whereField(FieldPath.documentID(), in: chunk)
+            .getDocuments()
+
+        var usersByID: [String: User] = [:]
+        for document in snapshot.documents {
+            usersByID[document.documentID] = UserDTO(data: document.data())?.toDomain(id: document.documentID)
+        }
+        return usersByID
     }
 
 }
