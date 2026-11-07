@@ -90,11 +90,23 @@ final class AppointmentListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpLayout()
         setUpActions()
-        reloadCards()
         bindViewModel()
     }
 
     private func bindViewModel() {
+        viewModel.$loadResult
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] result in
+                switch result {
+                case .success:
+                    self?.reloadCards()
+                case .failure:
+                    self?.present(UIAlertController.appointmentLoadFailureAlert(), animated: true)
+                }
+            }
+            .store(in: &cancellables)
+
         viewModel.$leaveResult
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
@@ -112,6 +124,7 @@ final class AppointmentListViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+        viewModel.loadAppointments()
     }
 
     private func setUpLayout() {

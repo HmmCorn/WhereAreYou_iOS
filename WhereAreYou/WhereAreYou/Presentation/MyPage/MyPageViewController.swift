@@ -116,6 +116,7 @@ final class MyPageViewController: UIViewController {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
         reloadContent()
+        viewModel.loadAppointmentNotifications()
     }
 
     private func setUpLayout() {
@@ -220,11 +221,15 @@ final class MyPageViewController: UIViewController {
         notificationSwitch.isOn = profile.isNotificationEnabled
         notificationRow.value = profile.isNotificationEnabled ? "전체 알림 켜짐" : "전체 알림 꺼짐"
 
-        let enabledCount = viewModel.appointmentNotifications.filter { $0.isNotificationEnabled }.count
-        appointmentNotificationRow.value = "\(enabledCount)개의 약속 알림 켜짐"
+        updateAppointmentNotificationRow(items: viewModel.appointmentNotifications)
 
         appInfoRow.value = "버전 정보"
         signOutRow.value = "현재 계정에서 나가기"
+    }
+
+    private func updateAppointmentNotificationRow(items: [AppointmentListItem]) {
+        let enabledCount = items.filter { $0.isNotificationEnabled }.count
+        appointmentNotificationRow.value = "\(enabledCount)개의 약속 알림 켜짐"
     }
 
     private func presentProfileEdit() {
@@ -251,6 +256,13 @@ final class MyPageViewController: UIViewController {
     }
 
     private func bindViewModel() {
+        viewModel.$appointmentNotifications
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] items in
+                self?.updateAppointmentNotificationRow(items: items)
+            }
+            .store(in: &cancellables)
+
         viewModel.$locationPermissionState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
