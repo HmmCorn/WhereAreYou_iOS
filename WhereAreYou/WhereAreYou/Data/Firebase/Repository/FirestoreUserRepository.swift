@@ -106,6 +106,37 @@ final class FirestoreUserRepository: UserRepository {
         }
     }
 
+    func updateUser(
+        userID: String,
+        nickname: String?,
+        profileImage: String?,
+        locationSharingScope: LocationSharingScope?,
+        isNotificationEnabled: Bool?
+    ) async throws -> User {
+        var fields: [String: Any] = [:]
+        if let nickname {
+            fields["nickname"] = nickname
+        }
+        if let profileImage {
+            fields["profileImage"] = profileImage
+        }
+        if let locationSharingScope {
+            fields["locationSharingScope"] = UserDTO.value(from: locationSharingScope)
+        }
+        if let isNotificationEnabled {
+            fields["isNotificationEnabled"] = isNotificationEnabled
+        }
+
+        if !fields.isEmpty {
+            do {
+                try await db.collection("users").document(userID).updateData(fields)
+            } catch {
+                throw FirebaseErrorMapper.map(error)
+            }
+        }
+        return try await fetchUser(userID: userID)
+    }
+
     private func fetchUsers(chunk: [String]) async throws -> [String: User] {
         let snapshot = try await db.collection("users")
             .whereField(FieldPath.documentID(), in: chunk)
