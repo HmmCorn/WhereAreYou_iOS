@@ -266,7 +266,7 @@ final class MyPageViewController: UIViewController {
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
-                self?.showProfileSaveError(error)
+                self?.handleProfileSaveError(error)
             }
             .store(in: &cancellables)
 
@@ -324,7 +324,25 @@ final class MyPageViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    /// 위치 공유 설정 화면처럼 하위 화면이 떠 있는 동안 실패할 수 있어, 화면에 붙어 있는 내비게이션 컨트롤러에서 띄운다
+    /// 위치 공유 설정 화면에 있는 동안 실패하면 되돌아간 값을 볼 수 있게 마이페이지로 돌아온 뒤 알럿을 띄운다
+    private func handleProfileSaveError(_ error: Error) {
+        guard let navigationController,
+              navigationController.topViewController is LocationSharingSelectionViewController
+        else {
+            showProfileSaveError(error)
+            return
+        }
+
+        navigationController.popToViewController(self, animated: true)
+        if let transitionCoordinator = navigationController.transitionCoordinator {
+            transitionCoordinator.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.showProfileSaveError(error)
+            }
+        } else {
+            showProfileSaveError(error)
+        }
+    }
+
     private func showProfileSaveError(_ error: Error) {
         let alert = UIAlertController(
             title: "저장 실패",
