@@ -95,7 +95,8 @@ extension MyPageViewModel {
                 locationSharingOption: current.locationSharingOption,
                 isNotificationEnabled: current.isNotificationEnabled
             ),
-            item: .profile
+            item: .profile,
+            retry: { [weak self] in self?.saveProfile(nickname: nickname, profileImageName: profileImageName) }
         ) { [updateMyUserUseCase] in
             try await updateMyUserUseCase.execute(nickname: nickname, profileImage: profileImageName)
         }
@@ -111,7 +112,8 @@ extension MyPageViewModel {
                 locationSharingOption: current.locationSharingOption,
                 isNotificationEnabled: isEnabled
             ),
-            item: .notification
+            item: .notification,
+            retry: { [weak self] in self?.saveNotificationEnabled(isEnabled) }
         ) { [updateMyUserUseCase] in
             try await updateMyUserUseCase.execute(isNotificationEnabled: isEnabled)
         }
@@ -127,7 +129,8 @@ extension MyPageViewModel {
                 locationSharingOption: option,
                 isNotificationEnabled: current.isNotificationEnabled
             ),
-            item: .locationSharing
+            item: .locationSharing,
+            retry: { [weak self] in self?.saveLocationSharingOption(option) }
         ) { [updateMyUserUseCase] in
             try await updateMyUserUseCase.execute(locationSharingScope: option.scope)
         }
@@ -137,6 +140,7 @@ extension MyPageViewModel {
     private func save(
         _ newProfile: MyPageProfile,
         item: ProfileSaveFailure.Item,
+        retry: @escaping () -> Void,
         update: @escaping () async throws -> User
     ) {
         guard let previous = profile else { return }
@@ -159,7 +163,7 @@ extension MyPageViewModel {
                 } else {
                     isNetworkError = false
                 }
-                profileSaveFailure = ProfileSaveFailure(item: item, isNetworkError: isNetworkError)
+                profileSaveFailure = ProfileSaveFailure(item: item, isNetworkError: isNetworkError, retry: retry)
             }
         }
     }
@@ -168,7 +172,7 @@ extension MyPageViewModel {
 
 // MARK: - 저장 실패
 
-/// 저장에 실패한 항목과 원인 — 화면이 알럿 문구를 만드는 데 쓴다
+/// 저장에 실패한 항목과 원인, 같은 값으로 다시 저장하는 동작 — 화면이 알럿 문구와 다시 시도 버튼을 만드는 데 쓴다
 struct ProfileSaveFailure {
 
     enum Item {
@@ -179,6 +183,7 @@ struct ProfileSaveFailure {
 
     let item: Item
     let isNetworkError: Bool
+    let retry: () -> Void
 
 }
 

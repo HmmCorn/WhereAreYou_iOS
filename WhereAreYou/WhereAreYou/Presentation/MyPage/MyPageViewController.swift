@@ -356,7 +356,12 @@ final class MyPageViewController: UIViewController {
             : "잠시 후 다시 시도해 주세요."
 
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        let retryAction = UIAlertAction(title: "다시 시도", style: .default) { _ in
+            failure.retry()
+        }
+        alert.addAction(retryAction)
+        alert.preferredAction = retryAction
         (navigationController ?? self).present(alert, animated: true)
     }
 
