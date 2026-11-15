@@ -23,4 +23,12 @@ enum LocationSharingOption: CaseIterable {
         }
     }
 
+    var scope: LocationSharingScope {
+        switch self {
+        case .always: return .always
+        case .onlyDuringAppointment: return .onlyDuringAppointment
+        case .never: return .never
+        }
+    }
+
 }

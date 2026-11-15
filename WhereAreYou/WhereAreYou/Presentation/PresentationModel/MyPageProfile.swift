@@ -13,3 +13,14 @@ struct MyPageProfile {
     let locationSharingOption: LocationSharingOption
     let isNotificationEnabled: Bool
 }
+
+extension MyPageProfile {
+
+    init(user: User) {
+        nickname = user.nickname
+        profileImageName = user.profileImage
+        locationSharingOption = LocationSharingOption(scope: user.locationSharingScope)
+        isNotificationEnabled = user.isNotificationEnabled
+    }
+
+}
