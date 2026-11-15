@@ -9,7 +9,7 @@ import Combine
 import Foundation
 
 // MARK: - 마이페이지 화면(탭)의 데이터
-//       - profile: 프로필 카드에 표시할 사용자 정보
+//       - profile: 프로필 카드·위치 공유·전체 알림에 표시할 내 유저 정보
 //       - appointmentNotifications: 약속별 알림 화면에서 쓸 약속 목록
 //       - locationPermissionState: 위치 권한 상태를 표시용 타입으로 변환해 발행
 //         (실제 CoreLocation 접근은 Data 계층이 담당하며, ObserveLocationPermissionUseCase를 통해 전달받음)
@@ -18,26 +18,27 @@ import Foundation
 
 final class MyPageViewModel {
 
-    private(set) var profile: MyPageProfile
+    @Published private(set) var profile: MyPageProfile?
 
     @Published private(set) var appointmentNotifications: [AppointmentListItem] = []
     @Published private(set) var locationPermissionState: LocationPermissionState
     @Published private(set) var liveActivityPermissionState: LiveActivityPermissionState
     @Published private(set) var signOutResult: Result<Void, Error>?
 
+    private let fetchMyUserUseCase: FetchMyUserUseCase
     private let fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase
     private let observeLocationPermissionUseCase: ObserveLocationPermissionUseCase
     private let observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase
     private let signOutUseCase: SignOutUseCase
 
     init(
-        profile: MyPageProfile? = nil,
+        fetchMyUserUseCase: FetchMyUserUseCase,
         fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase,
         observeLocationPermissionUseCase: ObserveLocationPermissionUseCase,
         observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase,
         signOutUseCase: SignOutUseCase
     ) {
-        self.profile = profile ?? Self.makeDummyProfile()
+        self.fetchMyUserUseCase = fetchMyUserUseCase
         self.fetchMyAppointmentsUseCase = fetchMyAppointmentsUseCase
         self.observeLocationPermissionUseCase = observeLocationPermissionUseCase
         self.observeLiveActivityPermissionUseCase = observeLiveActivityPermissionUseCase
@@ -66,39 +67,41 @@ final class MyPageViewModel {
 
 extension MyPageViewModel {
 
+    /// 실패해도 알럿 없이 이전 값을 유지한다
+    func loadProfile() {
+        Task { @MainActor in
+            guard let user = try? await fetchMyUserUseCase.execute() else { return }
+            profile = MyPageProfile(user: user)
+        }
+    }
+
     func setProfile(nickname: String, profileImageName: String) {
+        guard let current = profile else { return }
         profile = MyPageProfile(
             nickname: nickname,
             profileImageName: profileImageName,
-            locationSharingOption: profile.locationSharingOption,
-            isNotificationEnabled: profile.isNotificationEnabled
+            locationSharingOption: current.locationSharingOption,
+            isNotificationEnabled: current.isNotificationEnabled
         )
     }
 
     func setNotificationEnabled(_ isEnabled: Bool) {
+        guard let current = profile else { return }
         profile = MyPageProfile(
-            nickname: profile.nickname,
-            profileImageName: profile.profileImageName,
-            locationSharingOption: profile.locationSharingOption,
+            nickname: current.nickname,
+            profileImageName: current.profileImageName,
+            locationSharingOption: current.locationSharingOption,
             isNotificationEnabled: isEnabled
         )
     }
 
     func setLocationSharingOption(_ option: LocationSharingOption) {
+        guard let current = profile else { return }
         profile = MyPageProfile(
-            nickname: profile.nickname,
-            profileImageName: profile.profileImageName,
+            nickname: current.nickname,
+            profileImageName: current.profileImageName,
             locationSharingOption: option,
-            isNotificationEnabled: profile.isNotificationEnabled
-        )
-    }
-
-    private static func makeDummyProfile() -> MyPageProfile {
-        MyPageProfile(
-            nickname: "성훈",
-            profileImageName: "shark",
-            locationSharingOption: .onlyDuringAppointment,
-            isNotificationEnabled: true
+            isNotificationEnabled: current.isNotificationEnabled
         )
     }
 
