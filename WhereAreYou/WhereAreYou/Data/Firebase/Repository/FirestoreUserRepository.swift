@@ -38,7 +38,7 @@ final class FirestoreUserRepository: UserRepository {
                     "nickname": nickname,
                     "profileImage": "basic",
                     "defaultTransportMode": "TRANSIT",
-                    "locationSharingScope": "ONLY_DURING_APPOINTMENT",
+                    "locationSharingScope": UserDTO.value(from: .onlyDuringAppointment),
                     "isNotificationEnabled": true,
                     "appointmentsNotification": [String: Bool](),
                     "createdAt": FieldValue.serverTimestamp()

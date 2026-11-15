@@ -39,23 +39,31 @@ struct UserDTO {
             }
         }()
 
-        let sharingScope: LocationSharingScope = {
-            switch locationSharingScope {
-            case "ALWAYS": return .always
-            case "NEVER": return .never
-            default: return .onlyDuringAppointment
-            }
-        }()
-
         return User(
             id: id,
             nickname: nickname,
             profileImage: profileImage,
             defaultTransportMode: transportMode,
-            locationSharingScope: sharingScope,
+            locationSharingScope: Self.locationSharingScope(from: locationSharingScope),
             isNotificationEnabled: isNotificationEnabled,
             appointmentsNotification: appointmentsNotification
         )
+    }
+
+    static func value(from scope: LocationSharingScope) -> String {
+        switch scope {
+        case .always: return "ALWAYS"
+        case .onlyDuringAppointment: return "ONLY_DURING_APPOINTMENT"
+        case .never: return "NEVER"
+        }
+    }
+
+    private static func locationSharingScope(from value: String?) -> LocationSharingScope {
+        switch value {
+        case "ALWAYS": return .always
+        case "NEVER": return .never
+        default: return .onlyDuringAppointment
+        }
     }
 
 }
