@@ -205,7 +205,7 @@ final class MyPageViewController: UIViewController {
 
         notificationSwitch.addAction(UIAction { [weak self] _ in
             guard let self else { return }
-            viewModel.setNotificationEnabled(notificationSwitch.isOn)
+            viewModel.saveNotificationEnabled(notificationSwitch.isOn)
         }, for: .valueChanged)
     }
 
@@ -237,7 +237,7 @@ final class MyPageViewController: UIViewController {
             nickname: profile.nickname,
             profileImageName: profile.profileImageName
         ) { [weak self] nickname, profileImageName in
-            self?.viewModel.setProfile(nickname: nickname, profileImageName: profileImageName)
+            self?.viewModel.saveProfile(nickname: nickname, profileImageName: profileImageName)
         }
     }
 
@@ -246,7 +246,7 @@ final class MyPageViewController: UIViewController {
         coordinator?.showLocationSharingSelection(
             selectedOption: profile.locationSharingOption
         ) { [weak self] option in
-            self?.viewModel.setLocationSharingOption(option)
+            self?.viewModel.saveLocationSharingOption(option)
         }
     }
 
@@ -259,6 +259,14 @@ final class MyPageViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
                 self?.updateProfileRows(profile)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$profileSaveError
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                self?.showProfileSaveError(error)
             }
             .store(in: &cancellables)
 
@@ -314,6 +322,17 @@ final class MyPageViewController: UIViewController {
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
+    }
+
+    /// 위치 공유 설정 화면처럼 하위 화면이 떠 있는 동안 실패할 수 있어, 화면에 붙어 있는 내비게이션 컨트롤러에서 띄운다
+    private func showProfileSaveError(_ error: Error) {
+        let alert = UIAlertController(
+            title: "저장 실패",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        (navigationController ?? self).present(alert, animated: true)
     }
 
     private func presentAppointmentNotificationList() {

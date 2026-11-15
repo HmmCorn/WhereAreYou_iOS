@@ -15,6 +15,10 @@ extension ScreenFactory {
                 authRepository: authRepository,
                 userRepository: userRepository
             ),
+            updateMyUserUseCase: UpdateMyUserUseCase(
+                authRepository: authRepository,
+                userRepository: userRepository
+            ),
             fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase(
                 repository: container.resolve(AppointmentRepository.self)
             ),
