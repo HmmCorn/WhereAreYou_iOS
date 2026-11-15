@@ -262,11 +262,11 @@ final class MyPageViewController: UIViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$profileSaveError
+        viewModel.$profileSaveFailure
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] error in
-                self?.handleProfileSaveError(error)
+            .sink { [weak self] failure in
+                self?.handleProfileSaveFailure(failure)
             }
             .store(in: &cancellables)
 
@@ -325,30 +325,37 @@ final class MyPageViewController: UIViewController {
     }
 
     /// 위치 공유 설정 화면에 있는 동안 실패하면 되돌아간 값을 볼 수 있게 마이페이지로 돌아온 뒤 알럿을 띄운다
-    private func handleProfileSaveError(_ error: Error) {
+    private func handleProfileSaveFailure(_ failure: ProfileSaveFailure) {
         guard let navigationController,
+              failure.item == .locationSharing,
               navigationController.topViewController is LocationSharingSelectionViewController
         else {
-            showProfileSaveError(error)
+            showProfileSaveFailureAlert(failure)
             return
         }
 
         navigationController.popToViewController(self, animated: true)
         if let transitionCoordinator = navigationController.transitionCoordinator {
             transitionCoordinator.animate(alongsideTransition: nil) { [weak self] _ in
-                self?.showProfileSaveError(error)
+                self?.showProfileSaveFailureAlert(failure)
             }
         } else {
-            showProfileSaveError(error)
+            showProfileSaveFailureAlert(failure)
         }
     }
 
-    private func showProfileSaveError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "저장 실패",
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
+    private func showProfileSaveFailureAlert(_ failure: ProfileSaveFailure) {
+        let title: String
+        switch failure.item {
+        case .profile: title = "프로필이 바뀌지 않았어요"
+        case .locationSharing: title = "위치 공유 설정이 바뀌지 않았어요"
+        case .notification: title = "알림 설정이 바뀌지 않았어요"
+        }
+        let message = failure.isNetworkError
+            ? "네트워크 연결을 확인한 뒤 다시 시도해 주세요."
+            : "잠시 후 다시 시도해 주세요."
+
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         (navigationController ?? self).present(alert, animated: true)
     }
