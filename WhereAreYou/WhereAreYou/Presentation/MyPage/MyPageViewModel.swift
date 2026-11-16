@@ -97,8 +97,8 @@ extension MyPageViewModel {
             ),
             item: .profile,
             retry: { [weak self] in self?.saveProfile(nickname: nickname, profileImageName: profileImageName) }
-        ) { [updateMyUserUseCase] in
-            try await updateMyUserUseCase.execute(nickname: nickname, profileImage: profileImageName)
+        ) {
+            try await self.updateMyUserUseCase.execute(nickname: nickname, profileImage: profileImageName)
         }
     }
 
@@ -114,8 +114,8 @@ extension MyPageViewModel {
             ),
             item: .notification,
             retry: { [weak self] in self?.saveNotificationEnabled(isEnabled) }
-        ) { [updateMyUserUseCase] in
-            try await updateMyUserUseCase.execute(isNotificationEnabled: isEnabled)
+        ) {
+            try await self.updateMyUserUseCase.execute(isNotificationEnabled: isEnabled)
         }
     }
 
@@ -131,8 +131,8 @@ extension MyPageViewModel {
             ),
             item: .locationSharing,
             retry: { [weak self] in self?.saveLocationSharingOption(option) }
-        ) { [updateMyUserUseCase] in
-            try await updateMyUserUseCase.execute(locationSharingScope: option.scope)
+        ) {
+            try await self.updateMyUserUseCase.execute(locationSharingScope: option.scope)
         }
     }
 
