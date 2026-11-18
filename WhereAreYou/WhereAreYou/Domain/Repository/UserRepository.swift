@@ -14,4 +14,7 @@ protocol UserRepository {
 
     func fetchUser(userID: String) async throws -> User
 
+    /// 여러 사용자를 한 번에 조회해 ID별로 돌려준다. 없는 사용자는 결과에서 빠진다
+    func fetchUsers(userIDs: Set<String>) async throws -> [String: User]
+
 }

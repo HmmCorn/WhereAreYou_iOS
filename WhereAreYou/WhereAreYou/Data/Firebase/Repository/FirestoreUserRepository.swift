@@ -11,6 +11,9 @@ import FirebaseFirestore
 /// UserRepository의 Firestore 구현체
 final class FirestoreUserRepository: UserRepository {
 
+    /// Firestore `in` 질의 한 번에 넣을 수 있는 값 개수
+    private static let inQueryLimit = 30
+
     private let db = Firestore.firestore()
 
     func createUserIfNeeded(userID: String, nickname: String) async throws -> User {
@@ -81,5 +84,38 @@ final class FirestoreUserRepository: UserRepository {
         }
     }
 
+    func fetchUsers(userIDs: Set<String>) async throws -> [String: User] {
+        let userIDs = Array(userIDs)
+
+        do {
+            return try await withThrowingTaskGroup(of: [String: User].self) { group in
+                for start in stride(from: 0, to: userIDs.count, by: Self.inQueryLimit) {
+                    let chunk = Array(userIDs[start..<min(start + Self.inQueryLimit, userIDs.count)])
+                    group.addTask {
+                        try await self.fetchUsers(chunk: chunk)
+                    }
+                }
+                var usersByID: [String: User] = [:]
+                for try await users in group {
+                    usersByID.merge(users) { current, _ in current }
+                }
+                return usersByID
+            }
+        } catch {
+            throw FirebaseErrorMapper.map(error)
+        }
+    }
+
+    private func fetchUsers(chunk: [String]) async throws -> [String: User] {
+        let snapshot = try await db.collection("users")
+            .whereField(FieldPath.documentID(), in: chunk)
+            .getDocuments()
+
+        var usersByID: [String: User] = [:]
+        for document in snapshot.documents {
+            usersByID[document.documentID] = UserDTO(data: document.data())?.toDomain(id: document.documentID)
+        }
+        return usersByID
+    }
 
 }

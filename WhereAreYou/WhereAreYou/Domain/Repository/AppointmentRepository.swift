@@ -20,6 +20,9 @@ protocol AppointmentRepository {
 
     func fetchAppointment(appointmentID: String) async throws -> Appointment
 
+    /// 내가 참여 중인 약속을 약속 시각 오름차순으로 돌려준다. from 이상 to 미만이며, to가 nil이면 끝을 제한하지 않는다
+    func fetchMyAppointments(from: Date, to: Date?) async throws -> [Appointment]
+
     /// nil인 항목은 변경하지 않는다
     func updateAppointment(
         appointmentID: String,

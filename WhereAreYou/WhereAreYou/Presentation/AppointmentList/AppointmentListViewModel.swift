@@ -17,14 +17,42 @@ final class AppointmentListViewModel {
     private(set) var todayAppointments: [AppointmentListItem] = []
     private(set) var upcomingAppointments: [AppointmentListItem] = []
 
+    @Published private(set) var loadResult: Result<Void, Error>?
     @Published private(set) var leaveResult: Result<Void, Error>?
 
     private var leavingIDs: Set<String> = []
+    private let fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase
     private let leaveAppointmentUseCase: LeaveAppointmentUseCase
 
-    init(leaveAppointmentUseCase: LeaveAppointmentUseCase) {
+    init(
+        fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase,
+        leaveAppointmentUseCase: LeaveAppointmentUseCase
+    ) {
+        self.fetchMyAppointmentsUseCase = fetchMyAppointmentsUseCase
         self.leaveAppointmentUseCase = leaveAppointmentUseCase
-        loadDummyData()
+    }
+
+    func loadAppointments() {
+        Task { @MainActor in
+            do {
+                let appointments = try await fetchMyAppointmentsUseCase.execute(
+                    from: Calendar.current.startOfDay(for: Date()),
+                    to: nil
+                )
+                // TODO: 약속 알림 연동 시 users.appointmentsNotification 값으로 교체
+                let items = appointments.map {
+                    AppointmentListItem(
+                        appointment: $0,
+                        isNotificationEnabled: item(id: $0.id)?.isNotificationEnabled ?? true
+                    )
+                }
+                todayAppointments = items.filter { Calendar.current.isDateInToday($0.date) }
+                upcomingAppointments = items.filter { !Calendar.current.isDateInToday($0.date) }
+                loadResult = .success(())
+            } catch {
+                loadResult = .failure(error)
+            }
+        }
     }
 
     func toggleNotification(id: String) {
@@ -73,82 +101,6 @@ final class AppointmentListViewModel {
             date: item.date,
             isNotificationEnabled: !item.isNotificationEnabled
         )
-    }
-
-    private func loadDummyData() {
-        let allAppointments = [
-            AppointmentListItem(
-                id: "1",
-                title: "고등학교 친구들과 저녁",
-                participantCount: 5,
-                location: AppointmentLocation(
-                    title: "고기굽는방앗간 이수역점",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Calendar.current.startOfDay(for: Date()).addingTimeInterval(12 * 60 * 60),
-                isNotificationEnabled: true
-            ),
-            AppointmentListItem(
-                id: "today-2",
-                title: "오늘 저녁 약속",
-                participantCount: 3,
-                location: AppointmentLocation(
-                    title: "테스트 장소",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Calendar.current.startOfDay(for: Date()),
-                isNotificationEnabled: true
-            ),
-            AppointmentListItem(
-                id: "today-3",
-                title: "곧 시작하는 약속",
-                participantCount: 4,
-                location: AppointmentLocation(
-                    title: "테스트 장소",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Date().addingTimeInterval(30 * 60),
-                isNotificationEnabled: true
-            ),
-            AppointmentListItem(
-                id: "2",
-                title: "고등학교 친구들과 저녁",
-                participantCount: 5,
-                location: AppointmentLocation(
-                    title: "고기굽는방앗간 이수역점",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Date().addingTimeInterval(1 * 24 * 60 * 60),
-                isNotificationEnabled: true
-            ),
-            AppointmentListItem(
-                id: "3",
-                title: "고등학교 친구들과 저녁",
-                participantCount: 5,
-                location: AppointmentLocation(
-                    title: "고기굽는방앗간 이수역점",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Date().addingTimeInterval(365 * 24 * 60 * 60),
-                isNotificationEnabled: false
-            )
-        ]
-
-        let (today, upcoming) = allAppointments.reduce(into: ([AppointmentListItem](), [AppointmentListItem]())) { result, item in
-            if Calendar.current.isDateInToday(item.date) {
-                result.0.append(item)
-            } else {
-                result.1.append(item)
-            }
-        }
-
-        todayAppointments = today.sorted { $0.date < $1.date }
-        upcomingAppointments = upcoming.sorted { $0.date < $1.date }
     }
 
 }

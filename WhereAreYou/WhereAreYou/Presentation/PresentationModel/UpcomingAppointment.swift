@@ -13,4 +13,13 @@ struct UpcomingAppointment {
     let participantCount: Int
     let location: AppointmentLocation?
     let date: Date
+
+    init(appointment: Appointment) {
+        id = appointment.id
+        title = appointment.name
+        participantCount = appointment.participants.count
+        location = appointment.place.map { AppointmentLocation(place: $0) }
+        date = appointment.dateTime
+    }
+
 }

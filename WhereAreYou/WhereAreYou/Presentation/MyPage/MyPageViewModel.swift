@@ -19,30 +19,32 @@ import Foundation
 final class MyPageViewModel {
 
     private(set) var profile: MyPageProfile
-    private(set) var appointmentNotifications: [AppointmentListItem] = []
 
+    @Published private(set) var appointmentNotifications: [AppointmentListItem] = []
     @Published private(set) var locationPermissionState: LocationPermissionState
     @Published private(set) var liveActivityPermissionState: LiveActivityPermissionState
     @Published private(set) var signOutResult: Result<Void, Error>?
 
+    private let fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase
     private let observeLocationPermissionUseCase: ObserveLocationPermissionUseCase
     private let observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase
     private let signOutUseCase: SignOutUseCase
 
     init(
         profile: MyPageProfile? = nil,
+        fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase,
         observeLocationPermissionUseCase: ObserveLocationPermissionUseCase,
         observeLiveActivityPermissionUseCase: ObserveLiveActivityPermissionUseCase,
         signOutUseCase: SignOutUseCase
     ) {
         self.profile = profile ?? Self.makeDummyProfile()
+        self.fetchMyAppointmentsUseCase = fetchMyAppointmentsUseCase
         self.observeLocationPermissionUseCase = observeLocationPermissionUseCase
         self.observeLiveActivityPermissionUseCase = observeLiveActivityPermissionUseCase
         self.signOutUseCase = signOutUseCase
         self.locationPermissionState = LocationPermissionState(observeLocationPermissionUseCase.currentStatus)
         self.liveActivityPermissionState = LiveActivityPermissionState(observeLiveActivityPermissionUseCase.currentStatus)
 
-        loadDummyAppointmentNotifications()
         bindLocationPermission()
         bindLiveActivityPermission()
     }
@@ -119,45 +121,20 @@ extension MyPageViewModel {
         )
     }
 
-    private func loadDummyAppointmentNotifications() {
-        appointmentNotifications = [
-            AppointmentListItem(
-                id: "1",
-                title: "고등학교 친구들과 저녁",
-                participantCount: 5,
-                location: AppointmentLocation(
-                    title: "고기굽는방앗간 이수역점",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Date().addingTimeInterval(1 * 24 * 60 * 60),
-                isNotificationEnabled: true
-            ),
-            AppointmentListItem(
-                id: "2",
-                title: "스터디 모임",
-                participantCount: 3,
-                location: AppointmentLocation(
-                    title: "강남역 스터디카페",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Date().addingTimeInterval(3 * 24 * 60 * 60),
-                isNotificationEnabled: false
-            ),
-            AppointmentListItem(
-                id: "3",
-                title: "가족 모임",
-                participantCount: 4,
-                location: AppointmentLocation(
-                    title: "할머니댁",
-                    address: "",
-                    coordinate: Coordinate(latitude: 0, longitude: 0)
-                ),
-                date: Date().addingTimeInterval(10 * 24 * 60 * 60),
-                isNotificationEnabled: true
-            )
-        ]
+    /// 알림 행의 개수 표시에만 쓰여 실패해도 알럿 없이 이전 목록을 유지한다
+    func loadAppointmentNotifications() {
+        Task { @MainActor in
+            guard let appointments = try? await fetchMyAppointmentsUseCase.execute(from: Date(), to: nil) else {
+                return
+            }
+            // TODO: 약속 알림 연동 시 users.appointmentsNotification 값으로 교체
+            appointmentNotifications = appointments.map { appointment in
+                AppointmentListItem(
+                    appointment: appointment,
+                    isNotificationEnabled: appointmentNotifications.first { $0.id == appointment.id }?.isNotificationEnabled ?? true
+                )
+            }
+        }
     }
 
 }

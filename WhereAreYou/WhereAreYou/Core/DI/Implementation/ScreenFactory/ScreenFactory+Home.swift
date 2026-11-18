@@ -9,6 +9,9 @@ extension ScreenFactory {
 
     func makeHomeViewController() -> HomeViewController {
         let viewModel = HomeViewModel(
+            fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase(
+                repository: container.resolve(AppointmentRepository.self)
+            ),
             joinAppointmentUseCase: JoinAppointmentUseCase(
                 repository: container.resolve(AppointmentRepository.self)
             )
