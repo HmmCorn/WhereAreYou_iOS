@@ -58,16 +58,12 @@ final class MyPageViewController: UIViewController {
         imageView.widthAnchor.constraint(equalToConstant: 16).isActive = true
         return imageView
     }()
-    private lazy var profileRow: MyPageRow = {
-        let row = MyPageRow(
-            icon: nil,
-            title: "닉네임",
-            isCircularImage: true,
-            accessoryView: profileEditIcon
-        )
-        row.setProfileIcon(viewModel.profile.profileImageName)
-        return row
-    }()
+    private lazy var profileRow = MyPageRow(
+        icon: nil,
+        title: "닉네임",
+        isCircularImage: true,
+        accessoryView: profileEditIcon
+    )
 
     // MARK: - 위치 카드
 
@@ -108,6 +104,7 @@ final class MyPageViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpLayout()
+        setUpStaticContent()
         setUpActions()
         bindViewModel()
     }
@@ -115,7 +112,7 @@ final class MyPageViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
-        reloadContent()
+        viewModel.loadProfile()
         viewModel.loadAppointmentNotifications()
     }
 
@@ -208,23 +205,25 @@ final class MyPageViewController: UIViewController {
 
         notificationSwitch.addAction(UIAction { [weak self] _ in
             guard let self else { return }
-            viewModel.setNotificationEnabled(notificationSwitch.isOn)
+            viewModel.saveNotificationEnabled(notificationSwitch.isOn)
         }, for: .valueChanged)
     }
 
-    private func reloadContent() {
-        let profile = viewModel.profile
-
-        profileRow.value = profile.nickname
-        profileRow.setProfileIcon(profile.profileImageName)
-        locationSharingRow.value = profile.locationSharingOption.title
-        notificationSwitch.isOn = profile.isNotificationEnabled
-        notificationRow.value = profile.isNotificationEnabled ? "전체 알림 켜짐" : "전체 알림 꺼짐"
-
-        updateAppointmentNotificationRow(items: viewModel.appointmentNotifications)
-
+    private func setUpStaticContent() {
         appInfoRow.value = "버전 정보"
         signOutRow.value = "현재 계정에서 나가기"
+    }
+
+    /// 내 정보를 아직 불러오지 못했으면 값을 비우고 스위치를 끈다
+    private func updateProfileRows(_ profile: MyPageProfile?) {
+        profileRow.value = profile?.nickname
+        if let profile {
+            profileRow.setProfileIcon(profile.profileImageName)
+        }
+        locationSharingRow.value = profile?.locationSharingOption.title
+        notificationSwitch.isEnabled = profile != nil
+        notificationSwitch.setOn(profile?.isNotificationEnabled ?? false, animated: true)
+        notificationRow.value = profile.map { $0.isNotificationEnabled ? "전체 알림 켜짐" : "전체 알림 꺼짐" }
     }
 
     private func updateAppointmentNotificationRow(items: [AppointmentListItem]) {
@@ -233,21 +232,21 @@ final class MyPageViewController: UIViewController {
     }
 
     private func presentProfileEdit() {
+        guard let profile = viewModel.profile else { return }
         coordinator?.showProfileEdit(
-            nickname: viewModel.profile.nickname,
-            profileImageName: viewModel.profile.profileImageName
+            nickname: profile.nickname,
+            profileImageName: profile.profileImageName
         ) { [weak self] nickname, profileImageName in
-            self?.viewModel.setProfile(nickname: nickname, profileImageName: profileImageName)
-            self?.reloadContent()
+            self?.viewModel.saveProfile(nickname: nickname, profileImageName: profileImageName)
         }
     }
 
     private func presentLocationSharingSelection() {
+        guard let profile = viewModel.profile else { return }
         coordinator?.showLocationSharingSelection(
-            selectedOption: viewModel.profile.locationSharingOption
+            selectedOption: profile.locationSharingOption
         ) { [weak self] option in
-            self?.viewModel.setLocationSharingOption(option)
-            self?.locationSharingRow.value = option.title
+            self?.viewModel.saveLocationSharingOption(option)
         }
     }
 
@@ -256,6 +255,21 @@ final class MyPageViewController: UIViewController {
     }
 
     private func bindViewModel() {
+        viewModel.$profile
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] profile in
+                self?.updateProfileRows(profile)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$profileSaveFailure
+            .compactMap { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] failure in
+                self?.handleProfileSaveFailure(failure)
+            }
+            .store(in: &cancellables)
+
         viewModel.$appointmentNotifications
             .receive(on: DispatchQueue.main)
             .sink { [weak self] items in
@@ -308,6 +322,47 @@ final class MyPageViewController: UIViewController {
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
+    }
+
+    /// 위치 공유 설정 화면에 있는 동안 실패하면 되돌아간 값을 볼 수 있게 마이페이지로 돌아온 뒤 알럿을 띄운다
+    private func handleProfileSaveFailure(_ failure: ProfileSaveFailure) {
+        guard let navigationController,
+              failure.item == .locationSharing,
+              navigationController.topViewController is LocationSharingSelectionViewController
+        else {
+            showProfileSaveFailureAlert(failure)
+            return
+        }
+
+        navigationController.popToViewController(self, animated: true)
+        if let transitionCoordinator = navigationController.transitionCoordinator {
+            transitionCoordinator.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.showProfileSaveFailureAlert(failure)
+            }
+        } else {
+            showProfileSaveFailureAlert(failure)
+        }
+    }
+
+    private func showProfileSaveFailureAlert(_ failure: ProfileSaveFailure) {
+        let title: String
+        switch failure.item {
+        case .profile: title = "프로필이 바뀌지 않았어요"
+        case .locationSharing: title = "위치 공유 설정이 바뀌지 않았어요"
+        case .notification: title = "알림 설정이 바뀌지 않았어요"
+        }
+        let message = failure.isNetworkError
+            ? "네트워크 연결을 확인한 뒤 다시 시도해 주세요."
+            : "잠시 후 다시 시도해 주세요."
+
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        let retryAction = UIAlertAction(title: "다시 시도", style: .default) { _ in
+            failure.retry()
+        }
+        alert.addAction(retryAction)
+        alert.preferredAction = retryAction
+        (navigationController ?? self).present(alert, animated: true)
     }
 
     private func presentAppointmentNotificationList() {

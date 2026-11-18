@@ -38,7 +38,7 @@ final class FirestoreUserRepository: UserRepository {
                     "nickname": nickname,
                     "profileImage": "basic",
                     "defaultTransportMode": "TRANSIT",
-                    "locationSharingScope": "ONLY_DURING_APPOINTMENT",
+                    "locationSharingScope": UserDTO.value(from: .onlyDuringAppointment),
                     "isNotificationEnabled": true,
                     "appointmentsNotification": [String: Bool](),
                     "createdAt": FieldValue.serverTimestamp()
@@ -104,6 +104,37 @@ final class FirestoreUserRepository: UserRepository {
         } catch {
             throw FirebaseErrorMapper.map(error)
         }
+    }
+
+    func updateUser(
+        userID: String,
+        nickname: String?,
+        profileImage: String?,
+        locationSharingScope: LocationSharingScope?,
+        isNotificationEnabled: Bool?
+    ) async throws -> User {
+        var fields: [String: Any] = [:]
+        if let nickname {
+            fields["nickname"] = nickname
+        }
+        if let profileImage {
+            fields["profileImage"] = profileImage
+        }
+        if let locationSharingScope {
+            fields["locationSharingScope"] = UserDTO.value(from: locationSharingScope)
+        }
+        if let isNotificationEnabled {
+            fields["isNotificationEnabled"] = isNotificationEnabled
+        }
+
+        if !fields.isEmpty {
+            do {
+                try await db.collection("users").document(userID).updateData(fields)
+            } catch {
+                throw FirebaseErrorMapper.map(error)
+            }
+        }
+        return try await fetchUser(userID: userID)
     }
 
     private func fetchUsers(chunk: [String]) async throws -> [String: User] {

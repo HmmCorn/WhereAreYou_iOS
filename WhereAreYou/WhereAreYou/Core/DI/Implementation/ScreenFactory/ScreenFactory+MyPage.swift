@@ -8,7 +8,17 @@
 extension ScreenFactory {
 
     func makeMyPageViewController() -> MyPageViewController {
+        let authRepository = container.resolve(AuthRepository.self)
+        let userRepository = container.resolve(UserRepository.self)
         let viewModel = MyPageViewModel(
+            fetchMyUserUseCase: FetchMyUserUseCase(
+                authRepository: authRepository,
+                userRepository: userRepository
+            ),
+            updateMyUserUseCase: UpdateMyUserUseCase(
+                authRepository: authRepository,
+                userRepository: userRepository
+            ),
             fetchMyAppointmentsUseCase: FetchMyAppointmentsUseCase(
                 repository: container.resolve(AppointmentRepository.self)
             ),
@@ -19,7 +29,7 @@ extension ScreenFactory {
                 repository: container.resolve(LiveActivityPermissionRepository.self)
             ),
             signOutUseCase: SignOutUseCase(
-                authRepository: container.resolve(AuthRepository.self),
+                authRepository: authRepository,
                 fcmInstallationIDRepository: container.resolve(FCMInstallationIDRepository.self)
             )
         )
