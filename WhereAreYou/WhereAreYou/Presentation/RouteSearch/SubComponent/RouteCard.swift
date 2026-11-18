@@ -92,7 +92,7 @@ final class RouteCard: UIView {
         icon.contentMode = .scaleAspectFit
 
         let nameLabel = UILabel()
-        nameLabel.text = "\(step.departureName) > \(step.destinationName)"
+        nameLabel.text = step.title
         nameLabel.font = .boldPreferredFont(forTextStyle: .subheadline)
 
         let durationLabel = UILabel()

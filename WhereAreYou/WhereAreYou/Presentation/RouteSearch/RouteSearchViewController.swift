@@ -74,12 +74,24 @@ final class RouteSearchViewController: UIViewController {
         return label
     }()
 
+    /// 대중교통 소요 시간 기준 안내, 대중교통 선택 시에만 표시
+    private let transitTimeNoticeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "대중교통은 선택한 출발 시간의 배차가 아닌,\n현재 시각 기준 소요 시간으로 도착 시간을 계산합니다."
+        label.font = .preferredFont(forTextStyle: .caption1)
+        label.textColor = .tertiaryLabel
+        label.numberOfLines = 0
+        label.isHidden = true
+        return label
+    }()
+
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.text = "출발지와 도착지를 모두 선택해주세요."
         label.font = .preferredFont(forTextStyle: .body)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
+        label.numberOfLines = 0
         return label
     }()
 
@@ -126,8 +138,8 @@ final class RouteSearchViewController: UIViewController {
     private let initialDeparture: Place?
     private let initialDestination: Place?
 
-    /// 경로 선택 완료 시 호출
-    var onRouteSelected: (() -> Void)?
+    /// 경로 선택 완료 시 선택한 경로와 함께 호출
+    var onRouteSelected: ((Route) -> Void)?
 
     init(viewModel: RouteSearchViewModel, departure: Place? = nil, destination: Place? = nil) {
         self.viewModel = viewModel
@@ -201,14 +213,14 @@ final class RouteSearchViewController: UIViewController {
         let timeSectionRow = makeTimeSectionRow()
 
         [placeInputView, transportSectionLabel, transportSelector,
-         timeSectionRow, routeSectionLabel]
+         timeSectionRow, routeSectionLabel, transitTimeNoticeLabel]
             .forEach { topStack.addArrangedSubview($0) }
 
         topStack.setCustomSpacing(Self.sectionSpacing, after: placeInputView)
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: transportSectionLabel)
         topStack.setCustomSpacing(Self.sectionSpacing, after: transportSelector)
         topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: timeSectionRow)
-        topStack.setCustomSpacing(Self.sectionHeaderBottomSpacing, after: routeSectionLabel)
+        topStack.setCustomSpacing(4, after: routeSectionLabel)
 
         // 경로 검색 결과 영역: 빈 상태 / 로딩 / 경로 카드 목록
 
@@ -308,7 +320,8 @@ final class RouteSearchViewController: UIViewController {
         }, for: .touchUpInside)
 
         selectRouteButton.addAction(UIAction { [weak self] _ in
-            self?.onRouteSelected?()
+            guard let self, let route = self.viewModel.selectedRoute else { return }
+            self.onRouteSelected?(route)
         }, for: .touchUpInside)
     }
 
@@ -336,6 +349,13 @@ final class RouteSearchViewController: UIViewController {
                 var attr = AttributedString(time.koreanShortDateTimeString)
                 attr.font = .preferredFont(forTextStyle: .footnote)
                 self.timeButton.configuration?.attributedTitle = attr
+            }
+            .store(in: &cancellables)
+
+        viewModel.$selectedTransportType
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] type in
+                self?.transitTimeNoticeLabel.isHidden = type != .transit
             }
             .store(in: &cancellables)
 
@@ -372,19 +392,21 @@ final class RouteSearchViewController: UIViewController {
         loadingIndicator.stopAnimating()
 
         if !hasPlaces {
-            emptyStateLabel.isHidden = false
-            routeScrollView.isHidden = true
+            showEmptyState("출발지와 도착지를 모두 선택해주세요.")
+            return
+        }
+
+        if let errorMessage = viewModel.searchErrorMessage {
+            showEmptyState(errorMessage)
+            return
+        }
+
+        if routes.isEmpty {
+            showEmptyState("검색된 경로가 없습니다.")
             return
         }
 
         emptyStateLabel.isHidden = true
-
-        if routes.isEmpty {
-            // TODO: 길찾기 API 확인 후 대체 텍스트 설정 필요
-            routeScrollView.isHidden = true
-            return
-        }
-
         routeScrollView.isHidden = false
 
         for (index, routeItem) in routes.enumerated() {
@@ -394,6 +416,13 @@ final class RouteSearchViewController: UIViewController {
             }
             routeCardsStack.addArrangedSubview(card)
         }
+    }
+
+    /// 경로 목록 대신 안내 문구 표시
+    private func showEmptyState(_ message: String) {
+        emptyStateLabel.text = message
+        emptyStateLabel.isHidden = false
+        routeScrollView.isHidden = true
     }
 
     // MARK: - Place search
