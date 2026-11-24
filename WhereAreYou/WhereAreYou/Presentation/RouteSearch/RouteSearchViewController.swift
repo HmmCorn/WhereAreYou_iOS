@@ -322,9 +322,26 @@ final class RouteSearchViewController: UIViewController {
         }, for: .touchUpInside)
 
         selectRouteButton.addAction(UIAction { [weak self] _ in
-            guard let self, let route = self.viewModel.selectedRoute else { return }
-            self.onRouteSelected?(route)
+            self?.selectRouteTapped()
         }, for: .touchUpInside)
+    }
+
+    /// 검색 시각과 출발 시각이 차이 나면 안내 알럿 후 선택, 아니면 바로 선택
+    private func selectRouteTapped() {
+        guard let route = viewModel.selectedRoute else { return }
+
+        guard let gap = viewModel.searchTimeGap else {
+            onRouteSelected?(route)
+            return
+        }
+
+        let alert = UIAlertController.searchTimeNoticeAlert(
+            searchedAt: gap.searchedAt,
+            departureTime: gap.departureTime
+        ) { [weak self] in
+            self?.onRouteSelected?(route)
+        }
+        present(alert, animated: true)
     }
 
     // MARK: - ViewModel binding
