@@ -14,7 +14,12 @@ extension DatePickerPresenting {
 
     /// 날짜/시간 선택 시트를 모달로 present
     func showDatePicker(title: String, initialDate: Date?, onDateSelected: @escaping (Date) -> Void) {
-        let viewController = DatePickerSheetViewController(title: title, initialDate: initialDate)
+        showDatePicker(title: title, message: nil, initialDate: initialDate, onDateSelected: onDateSelected)
+    }
+
+    /// 제목 아래 보조 안내와 함께 날짜/시간 선택 시트를 모달로 present
+    func showDatePicker(title: String, message: String?, initialDate: Date?, onDateSelected: @escaping (Date) -> Void) {
+        let viewController = DatePickerSheetViewController(title: title, message: message, initialDate: initialDate)
         viewController.onDateSelected = onDateSelected
 
         if let sheet = viewController.sheetPresentationController {

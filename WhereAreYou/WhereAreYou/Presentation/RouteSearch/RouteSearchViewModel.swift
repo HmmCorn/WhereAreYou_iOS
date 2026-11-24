@@ -19,6 +19,8 @@ final class RouteSearchViewModel {
     @Published private(set) var selectedRouteIndex: Int = 0
     /// 경로 검색 실패 문구, 성공 시 nil
     @Published private(set) var searchErrorMessage: String?
+    /// 마지막 경로 검색 요청 시각, 검색 전이면 nil
+    @Published private(set) var searchedAt: Date?
 
     private var departureDomain: Place?
     private var destinationDomain: Place?
@@ -101,10 +103,12 @@ final class RouteSearchViewModel {
             routesDomain = []
             routes = []
             selectedRouteIndex = 0
+            searchedAt = nil
             return
         }
 
         isLoading = true
+        searchedAt = Date()
 
         let departureTime = departureTime
         let transportType = selectedTransportType

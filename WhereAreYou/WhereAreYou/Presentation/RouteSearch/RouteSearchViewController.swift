@@ -45,11 +45,14 @@ final class RouteSearchViewController: UIViewController {
 
     private let timeSectionLabel: UILabel = {
         let label = UILabel()
-        label.text = "출발 시간 설정"
+        label.text = RouteSearchViewController.timeSettingTitle
         label.font = .preferredFont(forTextStyle: .callout)
         label.textColor = .secondaryLabel
         return label
     }()
+
+    private static let timeSettingTitle = "출발 시각 설정"
+    private static let timeSharingNotice = "출발 시각은 약속 참여자에게 공유됩니다."
 
     private let timeButton: UIButton = {
         let button = UIButton.filled(
@@ -74,12 +77,11 @@ final class RouteSearchViewController: UIViewController {
         return label
     }()
 
-    /// 대중교통 소요 시간 기준 안내, 대중교통 선택 시에만 표시
+    /// 대중교통 검색 기준 시각 안내, 대중교통 선택 시에만 표시
     private let transitTimeNoticeLabel: UILabel = {
         let label = UILabel()
-        label.text = "대중교통은 선택한 출발 시간의 배차가 아닌,\n현재 시각 기준 소요 시간으로 도착 시간을 계산합니다."
         label.font = .preferredFont(forTextStyle: .caption1)
-        label.textColor = .tertiaryLabel
+        label.textColor = .pointBlue
         label.numberOfLines = 0
         label.isHidden = true
         return label
@@ -196,7 +198,7 @@ final class RouteSearchViewController: UIViewController {
 
     private func setUpLayout() {
 
-        // 상단 고정 영역: 장소 입력 / 이동 수단 / 출발 시간 / 섹션 헤더들
+        // 상단 고정 영역: 장소 입력 / 이동 수단 / 출발 시각 / 섹션 헤더들
 
         let topStack = UIStackView()
         topStack.axis = .vertical
@@ -352,10 +354,12 @@ final class RouteSearchViewController: UIViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$selectedTransportType
+        Publishers.CombineLatest(viewModel.$selectedTransportType, viewModel.$searchedAt)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] type in
-                self?.transitTimeNoticeLabel.isHidden = type != .transit
+            .sink { [weak self] type, searchedAt in
+                guard let self else { return }
+                self.transitTimeNoticeLabel.isHidden = type != .transit
+                self.transitTimeNoticeLabel.text = Self.transitTimeNotice(searchedAt: searchedAt)
             }
             .store(in: &cancellables)
 
@@ -418,6 +422,12 @@ final class RouteSearchViewController: UIViewController {
         }
     }
 
+    /// 대중교통 검색 기준 시각 문구, 검색 전에는 시각 생략
+    private static func transitTimeNotice(searchedAt: Date?) -> String {
+        guard let searchedAt else { return "대중교통은 현재 시각 기준으로 검색되므로\n출발 시각에 재검색이 필요합니다." }
+        return "대중교통은 현재 시각(\(searchedAt.koreanTimeString)) 기준으로 검색되므로\n출발 시각에 재검색이 필요합니다."
+    }
+
     /// 경로 목록 대신 안내 문구 표시
     private func showEmptyState(_ message: String) {
         emptyStateLabel.text = message
@@ -445,7 +455,11 @@ final class RouteSearchViewController: UIViewController {
     // MARK: - Time picker
 
     private func presentTimePicker() {
-        coordinator?.showDatePicker(title: "출발 시간 설정", initialDate: viewModel.departureTime) { [weak self] date in
+        coordinator?.showDatePicker(
+            title: Self.timeSettingTitle,
+            message: Self.timeSharingNotice,
+            initialDate: viewModel.departureTime
+        ) { [weak self] date in
             self?.viewModel.setDepartureTime(date)
         }
     }
