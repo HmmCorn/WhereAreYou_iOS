@@ -10,6 +10,15 @@ import Combine
 
 final class RouteSearchViewModel {
 
+    /// 대중교통 검색 시각과 출발 시각의 차이 안내에 쓰는 두 시각
+    struct SearchTimeGap {
+        let searchedAt: Date
+        let departureTime: Date
+    }
+
+    /// 검색 시각과 출발 시각의 허용 차이(초)
+    private static let searchTimeTolerance: TimeInterval = 15 * 60
+
     @Published private(set) var departure: PlaceInfo?
     @Published private(set) var destination: PlaceInfo?
     @Published private(set) var departureTime: Date = Date()
@@ -19,6 +28,8 @@ final class RouteSearchViewModel {
     @Published private(set) var selectedRouteIndex: Int = 0
     /// 경로 검색 실패 문구, 성공 시 nil
     @Published private(set) var searchErrorMessage: String?
+    /// 마지막 경로 검색 요청 시각, 검색 전이면 nil
+    @Published private(set) var searchedAt: Date?
 
     private var departureDomain: Place?
     private var destinationDomain: Place?
@@ -27,6 +38,17 @@ final class RouteSearchViewModel {
     /// 현재 선택된 경로, 검색 결과가 없으면 nil
     var selectedRoute: Route? {
         routesDomain.indices.contains(selectedRouteIndex) ? routesDomain[selectedRouteIndex] : nil
+    }
+
+    /// 대중교통 검색 시각과 출발 시각이 15분보다 차이 날 때의 두 시각, 그 외 nil
+    /// 걷기는 시각과 무관하고, 자동차는 미래 길찾기로 출발 시각이 반영되어 제외
+    var searchTimeGap: SearchTimeGap? {
+        guard selectedTransportType == .transit,
+              !isLoading,
+              selectedRoute != nil,
+              let searchedAt else { return nil }
+        guard abs(departureTime.timeIntervalSince(searchedAt)) > Self.searchTimeTolerance else { return nil }
+        return SearchTimeGap(searchedAt: searchedAt, departureTime: departureTime)
     }
 
     private let searchRoutesUseCase: SearchRoutesUseCase
@@ -101,10 +123,12 @@ final class RouteSearchViewModel {
             routesDomain = []
             routes = []
             selectedRouteIndex = 0
+            searchedAt = nil
             return
         }
 
         isLoading = true
+        searchedAt = Date()
 
         let departureTime = departureTime
         let transportType = selectedTransportType

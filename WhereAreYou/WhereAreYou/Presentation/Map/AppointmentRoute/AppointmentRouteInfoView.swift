@@ -152,7 +152,7 @@ private final class RouteSummaryCardView: UIView {
         return button
     }()
 
-    private let departureTimeSummary = SummaryColumnView(title: "출발 시간")
+    private let departureTimeSummary = SummaryColumnView(title: "출발 시각")
     private let arrivalTimeSummary = SummaryColumnView(title: "도착 예정")
     private let remainingTimeSummary = SummaryColumnView(title: "남은 시간")
 

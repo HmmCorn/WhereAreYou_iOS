@@ -18,6 +18,16 @@ final class DatePickerSheetViewController: UIViewController {
         return label
     }()
 
+    /// 제목 아래 보조 안내, message가 없으면 숨김
+    private let messageLabel: UILabel = {
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .footnote)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }()
+
     private let datePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.datePickerMode = .dateAndTime
@@ -35,10 +45,12 @@ final class DatePickerSheetViewController: UIViewController {
     )
 
     private let viewTitle: String
+    private let message: String?
     private let initialDate: Date?
 
-    init(title: String, initialDate: Date? = nil) {
+    init(title: String, message: String? = nil, initialDate: Date? = nil) {
         self.viewTitle = title
+        self.message = message
         self.initialDate = initialDate
         super.init(nibName: nil, bundle: nil)
     }
@@ -54,21 +66,32 @@ final class DatePickerSheetViewController: UIViewController {
         datePicker.date = initialDate ?? Date()
 
         headerLabel.text = viewTitle
+        messageLabel.text = message
+        messageLabel.isHidden = message == nil
 
         headerLabel.translatesAutoresizingMaskIntoConstraints = false
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         confirmButton.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(headerLabel)
+        view.addSubview(messageLabel)
         view.addSubview(datePicker)
         view.addSubview(confirmButton)
+
+        // message가 없으면 기존처럼 제목 바로 아래에 피커 배치
+        let pickerTopAnchor = message == nil ? headerLabel.bottomAnchor : messageLabel.bottomAnchor
 
         NSLayoutConstraint.activate([
             headerLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
             headerLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             headerLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
-            datePicker.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 16),
+            messageLabel.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 8),
+            messageLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            messageLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+
+            datePicker.topAnchor.constraint(equalTo: pickerTopAnchor, constant: 16),
             datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
